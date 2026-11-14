@@ -1,0 +1,65 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-sage-50: #f4f7f4;
+    --color-sage-100: #e3ebe3;
+    --color-sage-500: #608062;
+    --color-sage-600: #4d694f;
+    --color-sage-700: #3d523f;
+    --color-sage-800: #2d3b2e;
+
+    --color-slate-850: #15202b;
+    --color-slate-900: #0f172a;
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 5rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        html {
+            scroll-behavior: auto;
+        }
+    }
+
+    ::selection {
+        background-color: var(--color-sage-500);
+        color: #fff;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-sage-600);
+        outline-offset: 2px;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+.gradient-overlay {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(61, 82, 63, 0.8) 100%);
+}
+
+.card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card-hover:hover {
+        transform: none;
+    }
+}
