@@ -26,7 +26,6 @@
 		method GET HEAD
 		path /
 	}
-	header @html >Cache-Control "public, max-age=0, s-maxage=3600, stale-while-revalidate=300"
 	header @html -Set-Cookie
 
 	try_files {path} {path}/ /index.php?{query}

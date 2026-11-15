@@ -3,7 +3,7 @@
 FROM dunglas/frankenphp:1-php8.4-bookworm AS base
 
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
-    && install-php-extensions intl zip opcache \
+    && install-php-extensions intl zip opcache pdo_mysql \
     && printf 'expose_php=Off\nopcache.validate_timestamps=0\nopcache.memory_consumption=128\nopcache.max_accelerated_files=20000\n' \
         > "$PHP_INI_DIR/conf.d/zz-production.ini"
 

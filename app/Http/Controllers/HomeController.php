@@ -4,18 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Support\EmissionFactors;
 use App\Support\ProductCatalog;
-use Illuminate\View\View;
+use Illuminate\Http\Response;
 
 class HomeController extends Controller
 {
-    public function __invoke(): View
+    public function __invoke(): Response
     {
-        return view('home', [
-            'products' => ProductCatalog::all(),
-            'categories' => ProductCatalog::categories(),
-            'materials' => EmissionFactors::materials(),
-            'energySources' => EmissionFactors::energySources(),
-            'calculatorDefaults' => EmissionFactors::defaults(),
-        ]);
+        return response()
+            ->view('home', [
+                'products' => ProductCatalog::all(),
+                'categories' => ProductCatalog::categories(),
+                'materials' => EmissionFactors::materials(),
+                'energySources' => EmissionFactors::energySources(),
+                'calculatorDefaults' => EmissionFactors::defaults(),
+            ])
+            ->header('Cache-Control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=300');
     }
 }
