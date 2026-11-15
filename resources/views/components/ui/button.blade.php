@@ -8,16 +8,17 @@
 ])
 
 @php
-    $base = 'inline-flex items-center justify-center gap-2 transition-all';
+    $base = 'inline-flex items-center justify-center gap-2 transition-[color,background-color,border-color,box-shadow,transform] duration-200';
 
     $variants = [
         'primary' => 'rounded-xl bg-sage-600 text-white shadow-md shadow-sage-600/20 hover:bg-sage-700 hover:shadow-lg',
         'primary-light' => 'rounded-xl bg-sage-500 text-white shadow-lg shadow-sage-500/30 hover:bg-sage-600',
         'secondary' => 'rounded-xl border border-slate-700 bg-slate-800/80 text-white backdrop-blur-md hover:bg-slate-800',
         'ghost' => 'rounded-lg p-2 text-slate-600 hover:text-slate-900',
-        'icon' => 'size-10 rounded-full bg-white/90 text-slate-800 shadow-md hover:bg-white',
+        'icon' => 'size-11 rounded-full bg-white text-slate-700 shadow-sm ring-1 ring-slate-900/10 hover:bg-slate-50 hover:text-slate-900',
         'filter' => 'rounded-xl px-5 py-2.5 text-sm font-medium',
         'tab' => 'whitespace-nowrap border-b-2 pb-3 text-sm',
+        'segmented' => 'min-h-11 rounded-lg px-3 text-sm',
     ];
 
     $sizes = [
@@ -33,7 +34,7 @@
         'bold' => 'font-bold',
     ];
 
-    $isBare = in_array($variant, ['ghost', 'icon', 'filter', 'tab'], true);
+    $isBare = in_array($variant, ['ghost', 'icon', 'filter', 'tab', 'segmented'], true);
 @endphp
 
 <{{ $href ? 'a' : 'button' }}

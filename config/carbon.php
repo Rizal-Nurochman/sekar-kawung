@@ -14,6 +14,12 @@ return [
     // Textile slug used as the savings baseline (Katun Konvensional, 8.5 kg CO2e/kg).
     'baseline_slug' => 'katun-konvensional',
 
+    // Calculator defaults. The prototype starts at Katun Daur Ulang and grid electricity.
+    'default_textile_slug' => 'katun-daur-ulang',
+    'default_energy_source_slug' => 'grid',
+    'default_quantity_kg' => 1000,
+    'default_distance_km' => 250,
+
     // Manufacturing energy, kg CO2e per kg produced (before the energy source multiplier).
     'energy_base_kg_per_kg' => 1.2,
 
