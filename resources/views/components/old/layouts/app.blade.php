@@ -62,16 +62,16 @@
                 </nav>
 
                 <div class="hidden items-center gap-4 md:flex">
-                    <x-ui.button href="#kalkulator" variant="primary" weight="medium">
+                    <x-old.ui.button href="#kalkulator" variant="primary" weight="medium">
                         <i class="fa-solid fa-calculator" aria-hidden="true"></i>
                         <span>Hitung Emisi</span>
-                    </x-ui.button>
+                    </x-old.ui.button>
                 </div>
 
                 <div class="flex items-center md:hidden">
-                    <x-ui.button variant="ghost" type="button" id="mobile-menu-btn" x-on:click="toggleNav()" x-bind:aria-expanded="navOpen" x-bind:aria-label="navOpen ? 'Tutup menu' : 'Buka menu'" aria-controls="mobile-menu">
+                    <x-old.ui.button variant="ghost" type="button" id="mobile-menu-btn" x-on:click="toggleNav()" x-bind:aria-expanded="navOpen" x-bind:aria-label="navOpen ? 'Tutup menu' : 'Buka menu'" aria-controls="mobile-menu">
                         <i class="fa-solid fa-bars text-2xl" aria-hidden="true"></i>
-                    </x-ui.button>
+                    </x-old.ui.button>
                 </div>
             </div>
         </div>
@@ -82,9 +82,9 @@
                 <a href="#kalkulator" class="block py-2 text-base font-medium text-slate-600 hover:text-sage-600">Kalkulator Karbon</a>
                 <a href="#tentang" class="block py-2 text-base font-medium text-slate-600 hover:text-sage-600">Tentang Kami</a>
                 <a href="#kontak" class="block py-2 text-base font-medium text-slate-600 hover:text-sage-600">Kontak</a>
-                <x-ui.button href="#kalkulator" variant="primary" full-width>
+                <x-old.ui.button href="#kalkulator" variant="primary" full-width>
                     <span>Hitung Emisi Sekarang</span>
-                </x-ui.button>
+                </x-old.ui.button>
             </nav>
         </div>
     </header>

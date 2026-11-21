@@ -1,6 +1,6 @@
 @props(['product'])
 
-<x-ui.card
+<x-old.ui.card
     as="article"
     tone="white"
     padding="none"
@@ -54,4 +54,4 @@
             <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
         </span>
     </div>
-</x-ui.card>
+</x-old.ui.card>

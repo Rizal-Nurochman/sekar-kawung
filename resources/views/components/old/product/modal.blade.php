@@ -18,7 +18,7 @@
     aria-labelledby="modal-title"
     aria-describedby="modal-description"
 >
-    <x-ui.card
+    <x-old.ui.card
         id="modal-card"
         x-ref="dialog"
         as="div"
@@ -46,7 +46,7 @@
             >
         </div>
 
-        <x-ui.button
+        <x-old.ui.button
             type="button"
             x-ref="closeButton"
             variant="icon"
@@ -55,7 +55,7 @@
             x-on:click="closeModal()"
         >
             <i class="fa-solid fa-xmark text-lg" aria-hidden="true"></i>
-        </x-ui.button>
+        </x-old.ui.button>
 
         <div class="flex min-h-0 flex-1 flex-col">
             <div x-ref="scrollArea" tabindex="0" class="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-6 sm:px-7 sm:pb-7">
@@ -103,7 +103,7 @@
 
                 <div x-ref="tabBar" class="sticky top-0 z-10 -mx-5 border-b border-slate-200 bg-white/95 px-5 py-1.5 backdrop-blur-sm sm:-mx-7 sm:px-7">
                     <div role="tablist" aria-label="Bagian detail produk" class="grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1">
-                        <x-ui.button
+                        <x-old.ui.button
                             type="button"
                             variant="segmented"
                             role="tab"
@@ -116,9 +116,9 @@
                             x-bind:class="activeTab === 'product' ? 'bg-white font-semibold text-sage-800 shadow-sm' : 'font-medium text-slate-600 hover:text-slate-900'"
                         >
                             <span>Tentang produk</span>
-                        </x-ui.button>
+                        </x-old.ui.button>
 
-                        <x-ui.button
+                        <x-old.ui.button
                             type="button"
                             variant="segmented"
                             role="tab"
@@ -131,7 +131,7 @@
                             x-bind:class="activeTab === 'impact' ? 'bg-white font-semibold text-sage-800 shadow-sm' : 'font-medium text-slate-600 hover:text-slate-900'"
                         >
                             <span>Dampak lingkungan</span>
-                        </x-ui.button>
+                        </x-old.ui.button>
                     </div>
                 </div>
 
@@ -290,7 +290,7 @@
             </div>
 
             <div class="flex shrink-0 items-center justify-end border-t border-slate-200 bg-white px-5 pb-[calc(1rem_+_env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:pb-4">
-                <x-ui.button
+                <x-old.ui.button
                     type="button"
                     id="modal-calculator-button"
                     variant="primary"
@@ -301,8 +301,8 @@
                 >
                     <i class="fa-solid fa-calculator" aria-hidden="true"></i>
                     <span>Hitung di kalkulator</span>
-                </x-ui.button>
+                </x-old.ui.button>
             </div>
         </div>
-    </x-ui.card>
+    </x-old.ui.card>
 </div>

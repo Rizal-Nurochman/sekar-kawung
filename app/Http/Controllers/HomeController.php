@@ -10,8 +10,9 @@ class HomeController extends Controller
 {
     public function __invoke(): Response
     {
+        // TODO: swap to view('landing') once the full redesign lands.
         return response()
-            ->view('home', [
+            ->view('old.home', [
                 'products' => ProductCatalog::all(),
                 'categories' => ProductCatalog::categories(),
                 'materials' => EmissionFactors::materials(),
