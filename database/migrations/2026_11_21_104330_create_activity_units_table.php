@@ -11,15 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('textiles', function (Blueprint $table) {
+        Schema::create('activity_units', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->boolean('is_calculable')->default(true);
-            $table->unsignedInteger('sort_order')->default(0);
+            $table->text('unit_name');
             $table->timestamps();
-
-            $table->index(['is_calculable', 'sort_order']);
         });
     }
 
@@ -28,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('textiles');
+        Schema::dropIfExists('activity_units');
     }
 };

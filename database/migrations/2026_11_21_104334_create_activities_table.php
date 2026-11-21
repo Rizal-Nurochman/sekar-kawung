@@ -11,17 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('energy_sources', function (Blueprint $table) {
+        Schema::create('activities', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('description')->nullable();
-            $table->string('slug')->unique();
-            $table->decimal('emission_multiplier', total: 6, places: 3);
+            $table->foreignId('subprocess_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('activity_unit_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('emission_factor_id')->nullable()->constrained()->nullOnDelete();
             $table->unsignedInteger('sort_order')->default(0);
-            $table->boolean('is_active')->default(true);
+            $table->text('description');
             $table->timestamps();
 
-            $table->index(['is_active', 'sort_order']);
+            $table->index(['subprocess_id', 'sort_order']);
         });
     }
 
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('energy_sources');
+        Schema::dropIfExists('activities');
     }
 };

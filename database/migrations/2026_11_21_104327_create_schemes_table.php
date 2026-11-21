@@ -11,14 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('material_textile', function (Blueprint $table) {
+        Schema::create('schemes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('textile_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('material_id')->constrained()->cascadeOnDelete();
-            $table->decimal('share_percent', total: 5, places: 2)->nullable();
+            $table->text('description');
+            $table->unsignedInteger('sort_order')->default(0);
             $table->timestamps();
-
-            $table->unique(['textile_id', 'material_id']);
         });
     }
 
@@ -27,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('material_textile');
+        Schema::dropIfExists('schemes');
     }
 };

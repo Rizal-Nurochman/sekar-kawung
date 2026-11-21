@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('materials', function (Blueprint $table) {
+        Schema::create('emission_factors', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->string('scientific_name')->nullable();
-            $table->text('description')->nullable();
+            $table->foreignId('source_id')->nullable()->constrained()->nullOnDelete();
+            $table->text('unit_name');
+            $table->decimal('ef_value', total: 20, places: 10)->nullable();
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('materials');
+        Schema::dropIfExists('emission_factors');
     }
 };
