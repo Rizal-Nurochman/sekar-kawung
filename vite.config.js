@@ -12,6 +12,9 @@ export default defineConfig({
                 bunny('Inter', {
                     weights: [300, 400, 500, 600, 700, 800],
                 }),
+                bunny('Plus Jakarta Sans', {
+                    weights: [400, 500, 600, 700, 800],
+                }),
             ],
         }),
         tailwindcss(),
