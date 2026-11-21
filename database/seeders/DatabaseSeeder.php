@@ -15,13 +15,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
-            MaterialSeeder::class,
-            EnergySourceSeeder::class,
-            TextileSeeder::class,
-            ProductSeeder::class,
-        ]);
-
         User::query()->firstOrCreate(
             ['email' => 'test@example.com'],
             ['name' => 'Test User', 'password' => 'password'],
