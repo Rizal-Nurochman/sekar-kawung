@@ -1,4 +1,4 @@
-<x-layouts.app>
+<x-old.layouts.app>
     {{-- Hero --}}
     <section class="relative overflow-hidden bg-slate-900 text-white">
         <div class="absolute inset-0 opacity-25 mix-blend-overlay">
@@ -7,11 +7,6 @@
         <div class="gradient-overlay absolute inset-0"></div>
 
         <div class="relative mx-auto flex max-w-7xl flex-col items-center px-4 py-24 text-center sm:px-6 lg:px-8 lg:py-32">
-            <span class="mb-6 inline-flex items-center gap-2 rounded-full border border-gray-200 bg-sage-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sage-300 backdrop-blur-sm">
-                <i class="fa-solid fa-seedling text-sm" aria-hidden="true"></i>
-                <span>Solusi Tekstil Berkelanjutan</span>
-            </span>
-
             <h1 class="max-w-4xl text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
                 Masa Depan Industri Tekstil Berkelanjutan &amp; <span class="text-sage-400">Rendah Karbon</span>
             </h1>
@@ -21,15 +16,15 @@
             </p>
 
             <div class="mt-10 flex w-full flex-col gap-4 sm:w-auto sm:flex-row">
-                <x-ui.button href="#katalog" variant="primary-light" size="xl" weight="semibold">
+                <x-old.ui.button href="#katalog" variant="primary-light" size="xl" weight="semibold">
                     <span>Lihat Katalok Produk</span>
                     <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                </x-ui.button>
+                </x-old.ui.button>
 
-                <x-ui.button href="#kalkulator" variant="secondary" size="xl" weight="semibold">
+                <x-old.ui.button href="#kalkulator" variant="secondary" size="xl" weight="semibold">
                     <i class="fa-solid fa-calculator text-sage-400" aria-hidden="true"></i>
                     <span>Coba Kalkulator Karbon</span>
-                </x-ui.button>
+                </x-old.ui.button>
             </div>
 
             <div class="mt-16 grid w-full max-w-4xl grid-cols-2 gap-6 border-t border-slate-800/80 pt-8 text-left md:grid-cols-4">
@@ -68,7 +63,7 @@
 
             <div class="mb-10 flex flex-wrap gap-2 border-b border-gray-100 pb-2" id="filter-container" role="group" aria-label="Filter kategori produk">
                 @foreach ($categories as $category)
-                    <x-ui.button
+                    <x-old.ui.button
                         type="button"
                         variant="filter"
                         x-bind:class="filter === '{{ $category['id'] }}' ? 'bg-sage-600 text-white' : 'bg-slate-100 text-slate-600'"
@@ -76,13 +71,13 @@
                         x-on:click="setFilter('{{ $category['id'] }}')"
                     >
                         {{ $category['label'] }}
-                    </x-ui.button>
+                    </x-old.ui.button>
                 @endforeach
             </div>
 
             <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3" id="product-grid">
                 @foreach ($products as $product)
-                    <x-catalog.product-card
+                    <x-old.catalog.product-card
                         :product="$product"
                         x-show="filter === 'all' || filter === '{{ $product['category'] }}'"
                         x-on:click="openProduct({{ $product['id'] }})"
@@ -100,16 +95,16 @@
             <h2 class="text-3xl font-bold">Desa Kerek, Tuban</h2>
             <p class="mt-3 text-slate-600">Koleksi material tenun Sekar Kawung dari Tuban, Jawa Timur.</p>
             <div class="mt-6 grid gap-6 sm:grid-cols-2">
-                <x-ui.card tone="plain" padding="md" rounded="2xl">
+                <x-old.ui.card tone="plain" padding="md" rounded="2xl">
                     <h3 class="font-bold">Kapas Putih</h3>
                     <p class="mt-2 italic">Gossypium hirsutum L.</p>
                     <p>Untuk tenun warna putih.</p>
-                </x-ui.card>
-                <x-ui.card tone="plain" padding="md" rounded="2xl">
+                </x-old.ui.card>
+                <x-old.ui.card tone="plain" padding="md" rounded="2xl">
                     <h3 class="font-bold">Kapas Cokelat</h3>
                     <p class="mt-2 italic">Gossypium barbadense L.</p>
                     <p>Untuk tenun warna cokelat.</p>
-                </x-ui.card>
+                </x-old.ui.card>
             </div>
         </div>
     </section>
@@ -128,20 +123,20 @@
             </div>
 
             <div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
-                <x-ui.card tone="white" padding="md" rounded="3xl" class="sm:p-8 lg:col-span-5">
+                <x-old.ui.card tone="white" padding="md" rounded="3xl" class="sm:p-8 lg:col-span-5">
                     <h3 class="mb-6 flex items-center gap-2 text-xl font-bold text-slate-900">
                         <i class="fa-solid fa-sliders text-sage-600" aria-hidden="true"></i>
                         <span>Parameter Produksi</span>
                     </h3>
 
                     <form id="calc-form" class="space-y-6" @submit.prevent="updateChart()">
-                        <x-form.select id="calc-material" label="Jenis Material Tekstil" x-model.number="material" x-ref="materialSelect">
+                        <x-old.form.select id="calc-material" label="Jenis Material Tekstil" x-model.number="material" x-ref="materialSelect">
                             @foreach ($materials as $material)
                                 <option value="{{ $material['value'] }}">{{ $material['label'] }}</option>
                             @endforeach
-                        </x-form.select>
+                        </x-old.form.select>
 
-                        <x-form.input
+                        <x-old.form.input
                             id="calc-quantity"
                             type="number"
                             min="1"
@@ -152,13 +147,13 @@
                             x-model.number="quantity"
                         />
 
-                        <x-form.select id="calc-energy" label="Sumber Energi Pabrik" x-model.number="energy">
+                        <x-old.form.select id="calc-energy" label="Sumber Energi Pabrik" x-model.number="energy">
                             @foreach ($energySources as $energySource)
                                 <option value="{{ $energySource['value'] }}">{{ $energySource['label'] }}</option>
                             @endforeach
-                        </x-form.select>
+                        </x-old.form.select>
 
-                        <x-form.input
+                        <x-old.form.input
                             id="calc-distance"
                             type="number"
                             min="0"
@@ -169,14 +164,14 @@
                             x-model.number="distance"
                         />
 
-                        <x-ui.button type="button" id="btn-calculate" variant="primary" size="lg" weight="semibold" full-width x-on:click="updateChart()">
+                        <x-old.ui.button type="button" id="btn-calculate" variant="primary" size="lg" weight="semibold" full-width x-on:click="updateChart()">
                             <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
                             <span>Hitung Jejak Karbon</span>
-                        </x-ui.button>
+                        </x-old.ui.button>
                     </form>
-                </x-ui.card>
+                </x-old.ui.card>
 
-                <x-ui.card tone="white" padding="md" rounded="3xl" class="sm:p-8 lg:col-span-7" aria-live="polite">
+                <x-old.ui.card tone="white" padding="md" rounded="3xl" class="sm:p-8 lg:col-span-7" aria-live="polite">
                     <h3 class="mb-6 flex items-center justify-between text-xl font-bold text-slate-900">
                         <span class="flex items-center gap-2">
                             <i class="fa-solid fa-square-poll-vertical text-sage-600" aria-hidden="true"></i>
@@ -250,7 +245,7 @@
                             </template>
                         </ul>
                     </div>
-                </x-ui.card>
+                </x-old.ui.card>
             </div>
         </div>
     </section>
@@ -278,5 +273,5 @@
     </section>
 
     {{-- Product detail modal --}}
-    <x-product.modal />
-</x-layouts.app>
+    <x-old.product.modal />
+</x-old.layouts.app>
