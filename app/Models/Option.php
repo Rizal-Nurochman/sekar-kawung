@@ -33,6 +33,7 @@ class Option extends Model
 
     public function activities(): BelongsToMany
     {
-        return $this->belongsToMany(Activity::class, 'activity_option');
+        return $this->belongsToMany(Activity::class, 'activity_option')
+            ->orderBy('activities.id');
     }
 }

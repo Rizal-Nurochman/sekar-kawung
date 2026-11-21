@@ -40,6 +40,7 @@ class Activity extends Model
 
     public function options(): BelongsToMany
     {
-        return $this->belongsToMany(Option::class, 'activity_option');
+        return $this->belongsToMany(Option::class, 'activity_option')
+            ->orderBy('options.id');
     }
 }
