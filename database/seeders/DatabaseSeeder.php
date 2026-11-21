@@ -15,6 +15,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call([
+            LcaMasterDataSeeder::class,
+        ]);
+
         User::query()->firstOrCreate(
             ['email' => 'test@example.com'],
             ['name' => 'Test User', 'password' => 'password'],
