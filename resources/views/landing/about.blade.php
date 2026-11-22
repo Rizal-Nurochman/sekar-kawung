@@ -119,10 +119,6 @@
                     </article>
                 @endforeach
             </div>
-
-            <p class="mt-8 text-right">
-                <a href="{{ route('methodology') }}" class="inline-flex items-center gap-2 text-base leading-6 hover:underline">Read More <span aria-hidden="true">→</span></a>
-            </p>
         </div>
     </section>
 
