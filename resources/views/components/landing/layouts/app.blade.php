@@ -48,9 +48,9 @@
 
                 <div class="hidden items-center gap-10 text-base leading-6 text-pine-900 md:flex">
                     <a href="{{ route('home') }}" class="tracking-normal transition-colors hover:text-sage-600 {{ request()->routeIs('home') ? 'font-bold' : 'font-normal' }}">Home</a>
-                    <a href="{{ route('calculator') }}" class="tracking-normal transition-colors hover:text-sage-600 {{ request()->routeIs('calculator') ? 'font-bold' : 'font-normal' }}">Public Calculator</a>
-                    <a href="{{ route('methodology') }}" class="tracking-normal transition-colors hover:text-sage-600 {{ request()->routeIs('methodology') ? 'font-bold' : 'font-normal' }}">Methodology</a>
                     <a href="{{ route('about') }}" class="tracking-normal transition-colors hover:text-sage-600 {{ request()->routeIs('about') ? 'font-bold' : 'font-normal' }}">About</a>
+                    <a href="{{ route('methodology') }}" class="tracking-normal transition-colors hover:text-sage-600 {{ request()->routeIs('methodology') ? 'font-bold' : 'font-normal' }}">Methodology</a>
+                    <a href="{{ route('calculator') }}" class="tracking-normal transition-colors hover:text-sage-600 {{ request()->routeIs('calculator') ? 'font-bold' : 'font-normal' }}">Public Calculator</a>
                 </div>
 
                 <div class="flex items-center md:hidden">
@@ -64,9 +64,9 @@
             <div id="landing-mobile-menu" x-bind:class="{ hidden: !navOpen }" class="absolute inset-x-0 top-full mt-2 hidden md:hidden">
                 <nav class="mt-2 space-y-1 rounded-3xl border border-white/65 bg-white/95 px-4 py-4 shadow-lg backdrop-blur-[14px]" aria-label="Navigasi seluler" x-on:click="closeNav()">
                     <a href="{{ route('home') }}" class="block rounded-xl px-3 py-2 text-base font-medium text-pine-900 hover:bg-mist-100">Home</a>
-                    <a href="{{ route('calculator') }}" class="block rounded-xl px-3 py-2 text-base text-pine-900 hover:bg-mist-100">Public Calculator</a>
-                    <a href="{{ route('methodology') }}" class="block rounded-xl px-3 py-2 text-base text-pine-900 hover:bg-mist-100">Methodology</a>
                     <a href="{{ route('about') }}" class="block rounded-xl px-3 py-2 text-base text-pine-900 hover:bg-mist-100">About</a>
+                    <a href="{{ route('methodology') }}" class="block rounded-xl px-3 py-2 text-base text-pine-900 hover:bg-mist-100">Methodology</a>
+                    <a href="{{ route('calculator') }}" class="block rounded-xl px-3 py-2 text-base text-pine-900 hover:bg-mist-100">Public Calculator</a>
                 </nav>
             </div>
         </header>
