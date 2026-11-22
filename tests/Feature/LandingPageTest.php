@@ -60,8 +60,15 @@ it('exposes the fallback card definition', function () {
     expect(HomeController::processCards())->toHaveCount(4);
 });
 
-it('serves the coming soon stubs for separate routes', function () {
+it('serves the methodology page with calculation examples', function () {
+    $this->get('/methodology')->assertOk()
+        ->assertSee('Understanding Carbon Emissions and Product Footprints')
+        ->assertSee('Electricity Use')
+        ->assertSee('Research and References')
+        ->assertDontSee('Segera Hadir');
+});
+
+it('serves the remaining separate routes', function () {
     $this->get('/calculator')->assertOk()->assertSee('Public Calculator');
-    $this->get('/methodology')->assertOk()->assertSee('Methodology');
     $this->get('/about')->assertOk()->assertSee('About');
 });
