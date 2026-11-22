@@ -18,11 +18,6 @@ export const adminCalculator = (params = {}) => ({
 
     init() {
         this.rowCount = this.rows().length;
-
-        for (const pill of this.$el.querySelectorAll('[data-unit-pill]')) {
-            this.fitUnitPill(pill);
-        }
-
         this.recalculate();
         this.$el.addEventListener('input', () => this.recalculate());
         this.$el.addEventListener('change', () => this.recalculate());
@@ -94,8 +89,7 @@ export const adminCalculator = (params = {}) => ({
 
     /**
      * Keep the read-only unit pill in sync with the chosen option. Falls back
-     * to the activity unit (or blank) when the option has no unit. The pill
-     * keeps its fixed width, so long labels shrink to 12px instead.
+     * to the activity unit (or blank) when the option has no unit.
      */
     syncUnit(event, fallback = '') {
         const row = event.target?.closest('[data-calculator-row]');
@@ -106,19 +100,9 @@ export const adminCalculator = (params = {}) => ({
             const unit = selected?.dataset.unit || fallback || '';
 
             pill.textContent = unit;
-            this.fitUnitPill(pill, unit);
         }
 
         this.recalculate();
-    },
-
-    fitUnitPill(pill, unit = null) {
-        const text = unit ?? pill.textContent ?? '';
-        const compact = text.trim().length > 12;
-
-        pill.classList.toggle('text-xs', compact);
-        pill.classList.toggle('text-[14px]', !compact);
-        pill.dataset.unitCompact = compact ? '1' : '0';
     },
 
     /**

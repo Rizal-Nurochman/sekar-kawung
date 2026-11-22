@@ -114,7 +114,6 @@
                                             } else {
                                                 $defaultUnit = $fallbackUnit;
                                             }
-                                            $unitTextSize = mb_strlen((string) $defaultUnit) > 12 ? 'text-xs' : 'text-[14px]';
                                         @endphp
                                         <div data-calculator-row class="min-w-0">
                                             <input type="hidden" name="items[{{ $rowIndex }}][activity_id]" value="{{ $activity->id }}">
@@ -160,7 +159,7 @@
                                                     data-base-ef="{{ (float) ($activity->emissionFactor?->ef_value ?? 0) }}"
                                                     x-on:focus="selectOnFocus($event)"
                                                 >
-                                                <span data-unit-pill data-unit-compact="{{ $unitTextSize === 'text-xs' ? '1' : '0' }}" class="flex w-24 shrink-0 items-center justify-center truncate bg-mist-100 px-3 text-center {{ $unitTextSize }} font-medium leading-5 text-pine-900">{{ $defaultUnit }}</span>
+                                                <span data-unit-pill class="flex w-24 shrink-0 items-center justify-center truncate bg-mist-100 px-3 text-center text-[14px] font-medium leading-5 text-pine-900">{{ $defaultUnit }}</span>
                                             </div>
 
                                         </div>

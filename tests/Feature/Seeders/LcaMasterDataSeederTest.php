@@ -15,7 +15,7 @@ it('seeds every LCA master data table with the expected row count', function () 
     $this->assertDatabaseCount('schemes', 2);
     $this->assertDatabaseCount('processes', 4);
     $this->assertDatabaseCount('subprocesses', 17);
-    $this->assertDatabaseCount('activity_units', 10);
+    $this->assertDatabaseCount('activity_units', 5);
     $this->assertDatabaseCount('sources', 13);
     $this->assertDatabaseCount('emission_factors', 16);
     $this->assertDatabaseCount('options', 7);
