@@ -227,9 +227,8 @@
         </form>
     @elseif ($mode === 'review')
         @php
-            $processSummaries = $review['processes'];
+            $boundaries = $review['boundaries'];
             $items = $review['items'];
-            $stages = $review['stages'];
             $grandTotal = (float) $review['total'];
             $lastProcess = $ordered->last();
         @endphp
@@ -259,82 +258,116 @@
                     @endif
                 </x-admin.ui.panel>
 
-                <x-admin.ui.panel title="Rincian per proses" description="Kontribusi tiap proses terhadap total." flush>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Proses</th>
-                                <th scope="col">Skema</th>
-                                <th scope="col" class="text-right">Emisi (kg CO2e)</th>
-                                <th scope="col" class="w-24 text-right">Porsi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($processSummaries as $summary)
-                                <tr>
-                                    <td class="font-medium text-pine-900">{{ $summary['description'] }}</td>
-                                    <td class="text-[13px] text-ink-soft">{{ $summary['scheme'] }}</td>
-                                    <td class="cell-num">{{ \App\Support\Number::emissionId($summary['total']) }}</td>
-                                    <td class="cell-num font-normal text-ink-muted">{{ $grandTotal > 0 ? \App\Support\Number::percent($summary['total'] / $grandTotal * 100) : '0' }}%</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </x-admin.ui.panel>
+                @foreach ($boundaries as $index => $boundary)
+                    @php
+                        $position = $index + 1;
+                        $boundaryTotal = $boundaries->count();
+                    @endphp
+                    <section aria-labelledby="review-proses-{{ $boundary['id'] }}" class="mt-2">
+                        <p class="text-[13px] font-medium text-ink-muted">{{ $boundary['scheme'] }}</p>
+                        <h2 id="review-proses-{{ $boundary['id'] }}" class="mt-1 text-lg font-bold leading-7 tracking-tight text-pine-900">
+                            Proses {{ $position }} dari {{ $boundaryTotal }} : {{ $boundary['description'] }}
+                        </h2>
+                        <p class="mt-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 rounded-panel bg-pine-900 px-4 py-3">
+                            <span class="text-[13px] font-semibold text-white">Subtotal proses</span>
+                            <span class="text-xl font-bold tabular-nums tracking-tight text-white">{{ \App\Support\Number::emissionId($boundary['total']) }} <span class="text-[12px] font-medium text-sage-pale">kg CO2e</span></span>
+                        </p>
 
-                <x-admin.ui.panel title="Rincian aktivitas" :description="$items->count().' baris perhitungan.'" flush>
-                    <div class="overflow-x-auto">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Aktivitas</th>
-                                    <th scope="col">Kuantitas</th>
-                                    <th scope="col">Faktor</th>
-                                    <th scope="col" class="text-right">Emisi (kg CO2e)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($items as $row)
-                                    <tr>
-                                        <td>
-                                            <p class="text-[13.5px] font-medium text-pine-900">{{ $row['activity'] }}</p>
-                                            <p class="mt-0.5 text-xs leading-4 text-ink-muted">{{ $row['scheme'] }} · {{ $row['subprocess'] }}</p>
-                                            @if ($row['option'])
-                                                <p class="mt-0.5 text-xs leading-4 text-ink-muted">Opsi: {{ $row['option'] }}</p>
-                                            @elseif ($row['is_heritage'])
-                                                <p class="mt-0.5 text-xs leading-4 text-ink-muted">Tahap manual tanpa emisi</p>
-                                            @endif
-                                        </td>
-                                        <td class="whitespace-nowrap text-[13px] tabular-nums text-ink-soft">{{ \App\Support\Number::quantity($row['quantity']) }} {{ $row['unit'] }}</td>
-                                        <td class="whitespace-nowrap text-[13px] tabular-nums text-ink-muted">
-                                            {{ \App\Support\Number::emissionId($row['factor']) }}
-                                            @if ($row['source'])
-                                                <span class="block max-w-40 truncate text-xs">{{ $row['source'] }}</span>
-                                            @endif
-                                        </td>
-                                        <td class="cell-num">{{ \App\Support\Number::emissionId($row['emission']) }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </x-admin.ui.panel>
+                        @if ($boundary['items']->isEmpty())
+                            <x-admin.ui.panel class="mt-4" flush>
+                                <x-admin.ui.empty-state
+                                    title="Belum ada isian pada proses ini"
+                                    description="Proses ini belum punya kuantitas tersimpan."
+                                >
+                                    <x-slot:icon>
+                                        <x-lucide-list-tree />
+                                    </x-slot:icon>
+                                </x-admin.ui.empty-state>
+                            </x-admin.ui.panel>
+                        @else
+                            <x-admin.ui.panel class="mt-4" title="Rincian per tahap" :description="'Kontribusi emisi tiap subproses pada '.$boundary['description'].'.'" flush>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Tahap</th>
+                                            <th scope="col" class="text-right">Item</th>
+                                            <th scope="col" class="text-right">Emisi (kg CO2e)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($boundary['stages'] as $stage)
+                                            <tr>
+                                                <td class="font-medium text-pine-900">{{ $stage['name'] }}</td>
+                                                <td class="cell-num font-normal text-ink-muted">{{ $stage['count'] }}</td>
+                                                <td class="cell-num">{{ \App\Support\Number::emissionId($stage['total']) }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </x-admin.ui.panel>
+
+                            <x-admin.ui.panel class="mt-4" title="Rincian aktivitas" :description="$boundary['count'].' baris perhitungan.'" flush>
+                                <div class="overflow-x-auto">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Aktivitas</th>
+                                                <th scope="col">Kuantitas</th>
+                                                <th scope="col">Faktor</th>
+                                                <th scope="col" class="text-right">Emisi (kg CO2e)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($boundary['items'] as $row)
+                                                <tr>
+                                                    <td>
+                                                        <p class="text-[13.5px] font-medium text-pine-900">{{ $row['activity'] }}</p>
+                                                        <p class="mt-0.5 text-xs leading-4 text-ink-muted">{{ $row['subprocess'] }}</p>
+                                                        @if ($row['option'])
+                                                            <p class="mt-0.5 text-xs leading-4 text-ink-muted">Opsi: {{ $row['option'] }}</p>
+                                                        @elseif ($row['is_heritage'])
+                                                            <p class="mt-0.5 text-xs leading-4 text-ink-muted">Tahap manual tanpa emisi</p>
+                                                        @endif
+                                                    </td>
+                                                    <td class="whitespace-nowrap text-[13px] tabular-nums text-ink-soft">{{ \App\Support\Number::quantity($row['quantity']) }}{{ $row['unit'] !== '' ? ' '.$row['unit'] : '' }}</td>
+                                                    <td class="whitespace-nowrap text-[13px] tabular-nums text-ink-muted">
+                                                        {{ \App\Support\Number::emissionId($row['factor']) }}
+                                                        @if ($row['source'])
+                                                            <span class="block max-w-40 truncate text-xs">{{ $row['source'] }}</span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="cell-num">{{ \App\Support\Number::emissionId($row['emission']) }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </x-admin.ui.panel>
+                        @endif
+                    </section>
+                @endforeach
 
                 @if ($review['sources']->isNotEmpty())
-                    <x-admin.ui.panel title="Sumber faktor emisi" description="Referensi yang dipakai pada perhitungan ini.">
-                        <ul class="divide-y divide-line">
-                            @foreach ($review['sources'] as $source)
-                                <li class="flex flex-wrap items-center justify-between gap-2 py-2.5 first:pt-0 last:pb-0">
-                                    <span class="text-[13.5px] text-ink-soft">{{ $source->title }}</span>
-                                    @if ($source->link_reference)
-                                        <a href="{{ $source->link_reference }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-[13px] font-semibold text-pine-900 hover:underline">
-                                            Referensi
-                                            <x-lucide-external-link class="size-3.5" />
-                                        </a>
-                                    @endif
-                                </li>
-                            @endforeach
-                        </ul>
+                    <x-admin.ui.panel title="Sumber faktor emisi" description="Referensi yang dipakai pada perhitungan ini. Klik untuk melihat daftar." flush>
+                        <details class="group px-5 py-3">
+                            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 text-[13.5px] font-medium text-pine-900 [&::-webkit-details-marker]:hidden">
+                                <span>{{ $review['sources']->count() }} sumber</span>
+                                <x-lucide-chevron-down class="size-4 shrink-0 text-ink-muted transition-transform group-open:rotate-180" />
+                            </summary>
+                            <ul class="mt-2 divide-y divide-line border-t border-line">
+                                @foreach ($review['sources'] as $source)
+                                    <li class="flex flex-wrap items-center justify-between gap-2 py-2.5">
+                                        <span class="text-[13.5px] text-ink-soft">{{ $source->title }}</span>
+                                        @if ($source->link_reference)
+                                            <a href="{{ $source->link_reference }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-[13px] font-semibold text-pine-900 hover:underline">
+                                                Referensi
+                                                <x-lucide-external-link class="size-3.5" />
+                                            </a>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </details>
                     </x-admin.ui.panel>
                 @endif
 

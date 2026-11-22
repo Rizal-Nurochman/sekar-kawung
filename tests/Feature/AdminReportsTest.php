@@ -243,6 +243,55 @@ it('preserves items and totals when editorial fields are updated', function (): 
         ->and((float) $report->items()->sum('emission_result'))->toBe(12.5);
 });
 
+it('renders one card per scheme with its process details', function (): void {
+    $this->actingAs($this->user);
+    $scheme = Scheme::factory()->create(['description' => 'Skema Uji', 'sort_order' => 1]);
+    $otherScheme = Scheme::factory()->create(['description' => 'Skema Lain', 'sort_order' => 2]);
+    $first = Process::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 1, 'description' => 'Proses Pertama']);
+    $second = Process::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2, 'description' => 'Proses Kedua']);
+    $third = Process::factory()->create(['scheme_id' => $otherScheme->id, 'sort_order' => 1, 'description' => 'Proses Ketiga']);
+    $firstSub = Subprocess::factory()->create(['process_id' => $first->id]);
+    $secondSub = Subprocess::factory()->create(['process_id' => $second->id]);
+    $activityA = Activity::factory()->create(['subprocess_id' => $firstSub->id]);
+    $activityB = Activity::factory()->create(['subprocess_id' => $secondSub->id]);
+
+    $report = SustainabilityReport::query()->create([
+        'scheme_id' => $second->scheme_id,
+        'process_id' => $second->id,
+        'title' => 'Laporan batas',
+        'slug' => 'laporan-batas',
+        'total_emission' => 30,
+        'is_published' => false,
+    ]);
+
+    SustainabilityReportItem::query()->create([
+        'sustainability_report_id' => $report->id,
+        'activity_id' => $activityA->id,
+        'option_id' => null,
+        'quantity' => 4,
+        'emission_result' => 10,
+    ]);
+    SustainabilityReportItem::query()->create([
+        'sustainability_report_id' => $report->id,
+        'activity_id' => $activityB->id,
+        'option_id' => null,
+        'quantity' => 2,
+        'emission_result' => 20,
+    ]);
+
+    $this->get(route('admin.reports.show', $report))->assertOk()
+        ->assertSee('Skema Uji', false)
+        ->assertSee('Skema Lain', false)
+        ->assertSee('Proses 1 dari 3', false)
+        ->assertSee('Proses 2 dari 3', false)
+        ->assertSee('Proses 3 dari 3', false)
+        ->assertSee('Proses Pertama', false)
+        ->assertSee('Subtotal proses', false)
+        ->assertDontSee('Subtotal skema', false)
+        ->assertSee('Belum ada isian pada proses ini', false)
+        ->assertDontSee('Slug', false);
+});
+
 it('creates a report through the calculator action and persists items with total', function (): void {
     $this->actingAs($this->user);
     [$scheme, $process] = reportSchemeWithProcess();

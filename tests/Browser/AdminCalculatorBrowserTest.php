@@ -106,7 +106,9 @@ it('walks the full wizard from start to published report', function () {
         ->assertSeeIn('#total-sementara', '16')
         ->click('#wizard-next')
         ->assertSee('Periksa kembali sebelum menerbitkan')
-        ->assertSee('Rincian per proses')
+        ->assertSee('Proses 1 dari 2')
+        ->assertSee('Proses 2 dari 2')
+        ->assertSee('Rincian per tahap')
         ->assertSee('Rincian aktivitas')
         ->assertVisible('#wizard-save')
         ->assertNoJavaScriptErrors();

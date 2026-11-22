@@ -88,7 +88,69 @@ class ReportController extends Controller
      */
     public function show(SustainabilityReport $report): View
     {
-        $report->load(['scheme', 'process', 'items.activity.subprocess', 'items.activity.emissionFactor.source', 'items.option.emissionFactor.source']);
+        $report->load([
+            'scheme',
+            'process',
+            'items.activity.subprocess.process.scheme',
+            'items.activity.activityUnit',
+            'items.activity.emissionFactor.source',
+            'items.option.activityUnit',
+            'items.option.emissionFactor.source',
+        ]);
+
+        $orderedProcesses = Process::query()
+            ->with('scheme')
+            ->join('schemes', 'schemes.id', '=', 'processes.scheme_id')
+            ->orderBy('schemes.sort_order')
+            ->orderBy('schemes.id')
+            ->orderBy('processes.sort_order')
+            ->orderBy('processes.id')
+            ->select('processes.*')
+            ->get();
+
+        $grandTotal = (float) $report->items->sum(fn ($item) => (float) $item->emission_result);
+
+        $boundaries = $orderedProcesses->map(function (Process $process) use ($report): array {
+            $rows = $report->items
+                ->filter(fn ($item) => (int) ($item->activity?->subprocess?->process_id) === (int) $process->getKey())
+                ->values();
+
+            $processTotal = (float) $rows->sum(fn ($item) => (float) $item->emission_result);
+
+            $stages = $rows
+                ->groupBy(fn ($item) => $item->activity?->subprocess?->description ?? 'Tahap lain')
+                ->map(fn ($items, $name) => [
+                    'name' => $name,
+                    'total' => (float) $items->sum(fn ($item) => (float) $item->emission_result),
+                    'count' => $items->count(),
+                ])
+                ->sortByDesc('total')
+                ->values();
+
+            return [
+                'id' => $process->getKey(),
+                'scheme_id' => $process->scheme_id,
+                'scheme' => $process->scheme?->description,
+                'description' => $process->description,
+                'total' => $processTotal,
+                'count' => $rows->count(),
+                'filled' => $rows->where(fn ($item): bool => (float) $item->quantity > 0)->count(),
+                'stages' => $stages,
+                'items' => $rows,
+            ];
+        })->values();
+
+        $schemes = $boundaries
+            ->groupBy('scheme_id')
+            ->map(fn ($processes, $schemeId) => [
+                'id' => (int) $schemeId,
+                'name' => $processes->first()['scheme'],
+                'total' => (float) $processes->sum('total'),
+                'count' => (int) $processes->sum('count'),
+                'filled' => (int) $processes->sum('filled'),
+                'processes' => $processes->values(),
+            ])
+            ->values();
 
         $stages = $report->items
             ->groupBy(fn ($item) => $item->activity?->subprocess?->description ?? 'Tahap lain')
@@ -112,6 +174,9 @@ class ReportController extends Controller
 
         return view('admin.reports.show', [
             'report' => $report,
+            'schemes' => $schemes,
+            'boundaries' => $boundaries,
+            'grandTotal' => $grandTotal,
             'stages' => $stages,
             'stageTotal' => $stageTotal,
             'hotspot' => $hotspot,

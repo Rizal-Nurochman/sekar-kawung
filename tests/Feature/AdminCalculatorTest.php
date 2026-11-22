@@ -198,7 +198,9 @@ it('shows a comprehensive review only at the end with save action', function () 
 
     $this->get(route('admin.calculator.edit'))->assertOk()
         ->assertSee('Periksa kembali sebelum menerbitkan', false)
-        ->assertSee('Rincian per proses', false)
+        ->assertSee('Proses 1 dari 1', false)
+        ->assertSee('Subtotal proses', false)
+        ->assertSee('Rincian per tahap', false)
         ->assertSee('Rincian aktivitas', false)
         ->assertSee('id="wizard-save"', false)
         ->assertSee($activity->description, false);

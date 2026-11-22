@@ -175,6 +175,7 @@ class CalculatorWizard
      * @param  array<string, array{option_id: ?int, quantity: float}>  $entries
      * @return array{
      *     processes: Collection,
+     *     boundaries: Collection,
      *     stages: Collection,
      *     items: Collection,
      *     total: float,
@@ -336,6 +337,29 @@ class CalculatorWizard
             ];
         })->values();
 
+        // Per-boundary cumulative scheme subtotals: within one scheme,
+        // boundary 2 includes boundary 1 (PRD progressive Cradle-to-Gate).
+        $cumulativeByScheme = [];
+        $boundarySections = $inventory->map(function (Process $process) use ($enriched, $stages, $total, &$cumulativeByScheme): array {
+            $rows = $enriched->where(fn ($row): bool => $row['process'] === $process->description);
+            $processTotal = (float) $rows->sum('emission');
+            $schemeKey = $process->scheme?->description ?? 'Tanpa skema';
+            $cumulativeByScheme[$schemeKey] = ($cumulativeByScheme[$schemeKey] ?? 0.0) + $processTotal;
+
+            return [
+                'id' => $process->getKey(),
+                'scheme' => $process->scheme?->description,
+                'description' => $process->description,
+                'total' => $processTotal,
+                'cumulative' => (float) $cumulativeByScheme[$schemeKey],
+                'share' => $total > 0 ? $processTotal / $total * 100 : 0.0,
+                'count' => $rows->count(),
+                'filled' => $rows->where(fn ($row): bool => (float) $row['quantity'] > 0)->count(),
+                'stages' => $stages->where(fn ($stage): bool => $stage['process'] === $process->description)->values(),
+                'items' => $rows->values(),
+            ];
+        })->values();
+
         $hotspot = $enriched->sortByDesc('emission')->first();
         $sources = $inventory
             ->flatMap(fn (Process $process) => $process->subprocesses)
@@ -359,6 +383,7 @@ class CalculatorWizard
 
         return [
             'processes' => $processSummaries,
+            'boundaries' => $boundarySections,
             'stages' => $stages,
             'items' => $enriched,
             'total' => $total,
