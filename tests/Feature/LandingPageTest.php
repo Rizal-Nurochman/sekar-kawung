@@ -18,7 +18,8 @@ it('shows the hero copy, navigation, and calculator call to action', function ()
     $this->seed();
 
     $this->get('/')->assertOk()
-        ->assertSee('Merawat biodiversitas melalui budaya untuk mencapai ekonomi lestari.')
+        ->assertSee('Carbon Footprint Emissions Calculator')
+        ->assertSee('Nurturing biodiversity through culture to achieve a sustainable economy.')
         ->assertSee('Start Carbon Calculator')
         ->assertSee('Mulai Kenali Jejak Karbon Anda.')
         ->assertSee('Mulai Menghitung');

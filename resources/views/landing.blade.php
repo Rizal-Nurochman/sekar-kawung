@@ -1,6 +1,6 @@
 <x-landing.layouts.app>
     <x-slot:hero>
-        <section class="mx-auto grid w-full max-w-[1103px] items-center gap-8 px-4 pb-20 pt-14 sm:px-6 lg:min-h-[688px] lg:grid-cols-[253px_818px] lg:items-start lg:justify-center lg:gap-[32px] lg:px-0 lg:pb-0 lg:pt-[149px]">
+        <section class="mx-auto grid w-full max-w-[1152px] items-center gap-8 px-4 pb-20 pt-10 sm:px-6 lg:min-h-[734px] lg:grid-cols-[253px_minmax(0,1fr)] lg:items-start lg:gap-[32px] lg:pb-0 lg:pt-[150px] xl:grid-cols-[253px_867px] xl:px-0">
             <img
                 src="{{ asset('images/landing/hero-mark.png') }}"
                 alt="Motif Sekar Kawung"
@@ -9,22 +9,25 @@
                 class="mx-auto h-auto w-44 object-contain sm:w-52 lg:mx-0 lg:h-[278px] lg:w-[253px]"
                 fetchpriority="high"
             >
-            <div class="lg:w-[818px]">
+            <div class="min-w-0 lg:pt-[3px]">
                 <img
                     src="{{ asset('images/landing/hero-wordmark.png') }}"
                     alt="Sekar Kawung"
                     width="1024"
                     height="177"
-                    class="h-auto w-72 object-contain object-bottom object-left sm:w-[408px] lg:h-[87px] lg:w-[408px]"
+                    class="h-auto w-72 object-contain object-left sm:w-[450px] lg:-translate-y-[14px]"
                     fetchpriority="high"
                 >
-                <p class="mt-4 max-w-[65ch] text-xl leading-8 tracking-normal text-black sm:text-2xl">
-                    Merawat biodiversitas melalui budaya untuk mencapai ekonomi lestari.
+                <h1 class="-mt-2 font-serif text-3xl font-normal leading-tight text-black sm:text-4xl lg:-mt-[17px] lg:text-[36px] lg:leading-[64px] xl:w-max xl:origin-left xl:scale-x-[1.22] xl:text-[42px] xl:whitespace-nowrap">
+                    Carbon Footprint Emissions Calculator
+                </h1>
+                <p class="mt-4 text-xl font-light leading-8 tracking-wide text-black sm:text-2xl lg:text-[28px] lg:tracking-[2px]">
+                    Nurturing biodiversity through culture to achieve a sustainable economy.
                 </p>
                 <div class="mt-6">
                     <a
                         href="{{ route('calculator') }}"
-                        class="inline-flex items-center justify-center rounded-full bg-pine-900 px-6 py-3 text-base font-semibold leading-6 tracking-normal text-white transition-colors hover:bg-pine-950"
+                        class="inline-flex items-center justify-center rounded-xl bg-pine-900 px-6 py-3 text-base font-bold leading-5 tracking-normal text-white transition-colors hover:bg-pine-950 lg:text-xl lg:leading-4"
                     >
                         Start Carbon Calculator
                     </a>
