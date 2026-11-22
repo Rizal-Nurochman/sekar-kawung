@@ -1,8 +1,13 @@
 @php
     $totalItems = $report->items->count();
+    $reportSubheading = $report->scheme?->description;
+
+    if ($report->process) {
+        $reportSubheading = trim(($reportSubheading ? $reportSubheading.' · ' : '').$report->process->description);
+    }
 @endphp
 
-<x-admin.layouts.app title="{{ $report->title }} - Admin Sekar Kawung" heading="{{ $report->title }}" subheading="{{ $report->scheme?->description }}@if ($report->process) · {{ $report->process->description }}@endif">
+<x-admin.layouts.app :title="$report->title.' - Admin Sekar Kawung'" :heading="$report->title" :subheading="$reportSubheading">
     <x-slot:breadcrumbs>
         <x-admin.ui.breadcrumbs :items="[
             ['label' => 'Laporan', 'url' => route('admin.reports.index')],

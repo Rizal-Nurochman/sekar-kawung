@@ -102,7 +102,7 @@
                                     @foreach ($subprocess->activities as $activity)
                                         @php
                                             $hasOptions = $activity->options->isNotEmpty();
-                                            $fallbackUnit = $activity->activityUnit?->unit_name ?? '–';
+                                            $fallbackUnit = $activity->activityUnit?->unit_name ?? '';
                                             $saved = $entries[(string) $activity->id] ?? ['option_id' => null, 'quantity' => null];
                                             $oldRow = $oldByActivity->get((string) $activity->id) ?? $oldByActivity->get((int) $activity->id);
                                             $currentOptionId = $oldRow['option_id'] ?? $saved['option_id'] ?? null;
@@ -110,10 +110,11 @@
                                             if ($hasOptions && $currentOptionId !== null && $currentOptionId !== '') {
                                                 $matched = $activity->options->firstWhere('id', (int) $currentOptionId);
                                                 $defaultUnit = $matched?->activityUnit?->unit_name ?? $fallbackUnit;
-                                                $defaultUnit = $defaultUnit !== '' ? $defaultUnit : '–';
+                                                $defaultUnit = $defaultUnit ?? '';
                                             } else {
                                                 $defaultUnit = $fallbackUnit;
                                             }
+                                            $unitTextSize = mb_strlen((string) $defaultUnit) > 12 ? 'text-xs' : 'text-[14px]';
                                         @endphp
                                         <div data-calculator-row class="min-w-0">
                                             <input type="hidden" name="items[{{ $rowIndex }}][activity_id]" value="{{ $activity->id }}">
@@ -159,12 +160,9 @@
                                                     data-base-ef="{{ (float) ($activity->emissionFactor?->ef_value ?? 0) }}"
                                                     x-on:focus="selectOnFocus($event)"
                                                 >
-                                                <span data-unit-pill class="flex w-24 shrink-0 items-center justify-center truncate bg-mist-100 px-3 text-center text-[14px] font-medium leading-5 text-pine-900">{{ $defaultUnit }}</span>
+                                                <span data-unit-pill data-unit-compact="{{ $unitTextSize === 'text-xs' ? '1' : '0' }}" class="flex w-24 shrink-0 items-center justify-center truncate bg-mist-100 px-3 text-center {{ $unitTextSize }} font-medium leading-5 text-pine-900">{{ $defaultUnit }}</span>
                                             </div>
 
-                                            @if ($activity->activityUnit === null && ! $hasOptions)
-                                                <p class="mt-1 text-xs leading-5 text-ink-muted">Satuan perlu dikonfirmasi</p>
-                                            @endif
                                         </div>
                                         @php $rowIndex++; @endphp
                                     @endforeach
@@ -250,14 +248,14 @@
             <div class="min-w-0 space-y-6">
                 <x-admin.ui.panel title="Total emisi">
                     <p class="mt-1 flex flex-wrap items-baseline gap-x-2" aria-live="polite">
-                        <span id="review-total" class="text-[34px] font-bold leading-10 tracking-tight tabular-nums text-pine-900">{{ number_format($grandTotal, 4, ',', '.') }}</span>
+                        <span id="review-total" class="text-[34px] font-bold leading-10 tracking-tight tabular-nums text-pine-900">{{ \App\Support\Number::emissionId($grandTotal) }}</span>
                         <span class="text-sm font-medium text-ink-muted">kg CO2e</span>
                     </p>
                     <p class="mt-1 text-[13px] leading-5 text-ink-muted">{{ $review['filled'] }} dari {{ $review['totalActivities'] }} aktivitas terisi · {{ $items->count() }} baris</p>
                     @if ($review['hotspot'])
                         <p class="mt-3 border-t border-line pt-3 text-[13px] leading-5 text-ink-soft">
                             Kontribusi terbesar: <span class="font-semibold text-pine-900">{{ $review['hotspot']['activity'] }}</span>
-                            ({{ number_format((float) $review['hotspot']['emission'], 4, ',', '.') }} kg CO2e)
+                            ({{ \App\Support\Number::emissionId($review['hotspot']['emission']) }} kg CO2e)
                         </p>
                     @endif
                 </x-admin.ui.panel>
@@ -277,8 +275,8 @@
                                 <tr>
                                     <td class="font-medium text-pine-900">{{ $summary['description'] }}</td>
                                     <td class="text-[13px] text-ink-soft">{{ $summary['scheme'] }}</td>
-                                    <td class="cell-num">{{ number_format((float) $summary['total'], 4, ',', '.') }}</td>
-                                    <td class="cell-num font-normal text-ink-muted">{{ $grandTotal > 0 ? number_format((float) $summary['total'] / $grandTotal * 100, 1, ',', '.') : '0,0' }}%</td>
+                                    <td class="cell-num">{{ \App\Support\Number::emissionId($summary['total']) }}</td>
+                                    <td class="cell-num font-normal text-ink-muted">{{ $grandTotal > 0 ? \App\Support\Number::percent($summary['total'] / $grandTotal * 100) : '0' }}%</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -308,14 +306,14 @@
                                                 <p class="mt-0.5 text-xs leading-4 text-ink-muted">Tahap manual tanpa emisi</p>
                                             @endif
                                         </td>
-                                        <td class="whitespace-nowrap text-[13px] tabular-nums text-ink-soft">{{ number_format((float) $row['quantity'], 4, ',', '.') }} {{ $row['unit'] }}</td>
+                                        <td class="whitespace-nowrap text-[13px] tabular-nums text-ink-soft">{{ \App\Support\Number::quantity($row['quantity']) }} {{ $row['unit'] }}</td>
                                         <td class="whitespace-nowrap text-[13px] tabular-nums text-ink-muted">
-                                            {{ number_format((float) $row['factor'], 4, ',', '.') }}
+                                            {{ \App\Support\Number::emissionId($row['factor']) }}
                                             @if ($row['source'])
                                                 <span class="block max-w-40 truncate text-xs">{{ $row['source'] }}</span>
                                             @endif
                                         </td>
-                                        <td class="cell-num">{{ number_format((float) $row['emission'], 4, ',', '.') }}</td>
+                                        <td class="cell-num">{{ \App\Support\Number::emissionId($row['emission']) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -364,7 +362,7 @@
                     <x-admin.ui.panel title="Ringkasan">
                         <p class="text-[13px] font-medium text-ink-muted">Total akhir</p>
                         <p class="mt-1 flex flex-wrap items-baseline gap-x-1.5">
-                            <span class="text-[32px] font-bold leading-10 tracking-tight tabular-nums text-pine-900">{{ number_format($grandTotal, 4, ',', '.') }}</span>
+                            <span class="text-[32px] font-bold leading-10 tracking-tight tabular-nums text-pine-900">{{ \App\Support\Number::emissionId($grandTotal) }}</span>
                             <span class="text-[13px] font-medium text-ink-muted">kg CO2e</span>
                         </p>
                         <p class="mt-2 text-xs leading-5 text-ink-muted">{{ $review['filled'] }} dari {{ $review['totalActivities'] }} aktivitas terisi</p>

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\Admin\UpsertReport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateReportRequest;
 use App\Models\Process;
@@ -11,8 +10,6 @@ use App\Models\SustainabilityReport;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -67,19 +64,23 @@ class ReportController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * A report is tied to the calculator run that produced it, so its scheme
-     * and system boundary stay fixed; only the editorial fields can change.
+     * A report is tied to the calculator run that produced it, so its scheme,
+     * system boundary, items, and total stay fixed; only the editorial fields
+     * can change. The slug always regenerates from the title.
      */
-    public function update(UpdateReportRequest $request, SustainabilityReport $report, UpsertReport $upsert): RedirectResponse
+    public function update(UpdateReportRequest $request, SustainabilityReport $report): RedirectResponse
     {
-        $validated = $request->safe()->only(['title', 'slug', 'summary', 'is_published']);
-        $validated['scheme_id'] = $report->scheme_id;
-        $validated['process_id'] = $report->process_id;
+        $validated = $request->safe()->only(['title', 'summary']);
         $validated['is_published'] = $request->boolean('is_published');
 
-        $report = $this->persist($upsert, $validated, $report);
+        $report->update([
+            'title' => $validated['title'],
+            'slug' => $this->resolveSlug($validated['title'], $validated['title'], $report->getKey()),
+            'summary' => $validated['summary'] ?? null,
+            'is_published' => $validated['is_published'],
+        ]);
 
-        return redirect()->route('admin.reports.show', $report)->with('status', 'Laporan berhasil diperbarui.');
+        return redirect()->route('admin.reports.show', $report->refresh())->with('status', 'Laporan berhasil diperbarui.');
     }
 
     /**
@@ -127,41 +128,6 @@ class ReportController extends Controller
         $report->delete();
 
         return redirect()->route('admin.reports.index')->with('status', 'Laporan berhasil dihapus.');
-    }
-
-    /**
-     * Persist a report via UpsertReport when available, otherwise fall back
-     * to a minimal local creation so this slice stays testable while the
-     * UpsertReport action is still being built by another agent.
-     *
-     * @param  array<string, mixed>  $validated
-     */
-    protected function persist(UpsertReport $upsert, array $validated, ?SustainabilityReport $report = null): SustainabilityReport
-    {
-        $data = Arr::only($validated, ['title', 'slug', 'scheme_id', 'process_id', 'summary', 'is_published']);
-
-        if (method_exists($upsert, 'handle')) {
-            return $upsert->handle($data, $report);
-        }
-
-        return DB::transaction(function () use ($data, $report): SustainabilityReport {
-            $attributes = [
-                'title' => $data['title'],
-                'slug' => $this->resolveSlug($data['slug'] ?? null, $data['title'], $report?->getKey()),
-                'scheme_id' => $data['scheme_id'],
-                'process_id' => $data['process_id'],
-                'summary' => $data['summary'] ?? null,
-                'is_published' => (bool) ($data['is_published'] ?? false),
-            ];
-
-            if ($report instanceof SustainabilityReport) {
-                $report->update($attributes);
-
-                return $report->refresh();
-            }
-
-            return SustainabilityReport::query()->create($attributes + ['total_emission' => 0]);
-        });
     }
 
     /**

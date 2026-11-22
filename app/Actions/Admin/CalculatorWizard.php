@@ -225,11 +225,11 @@ class CalculatorWizard
 
                     if ($option !== null) {
                         $factor = (float) ($option->emissionFactor?->ef_value ?? 0);
-                        $unit = $option->activityUnit?->unit_name ?? $activity->activityUnit?->unit_name ?? '–';
+                        $unit = $option->activityUnit?->unit_name ?? $activity->activityUnit?->unit_name ?? '';
                         $source = $option->emissionFactor?->source;
                     } else {
                         $factor = (float) ($activity->emissionFactor?->ef_value ?? 0);
-                        $unit = $activity->activityUnit?->unit_name ?? '–';
+                        $unit = $activity->activityUnit?->unit_name ?? '';
                         $source = $activity->emissionFactor?->source;
                         $optionId = null;
                     }
@@ -271,12 +271,12 @@ class CalculatorWizard
 
                     if ($option !== null) {
                         $factor = (float) ($option->emissionFactor?->ef_value ?? 0);
-                        $unit = $option->activityUnit?->unit_name ?? $activity->activityUnit?->unit_name ?? '–';
+                        $unit = $option->activityUnit?->unit_name ?? $activity->activityUnit?->unit_name ?? '';
                         $source = $option->emissionFactor?->source;
                         $optionName = $option->description;
                     } else {
                         $factor = (float) ($activity->emissionFactor?->ef_value ?? 0);
-                        $unit = $activity->activityUnit?->unit_name ?? '–';
+                        $unit = $activity->activityUnit?->unit_name ?? '';
                         $source = $activity->emissionFactor?->source;
                         $optionName = null;
                     }

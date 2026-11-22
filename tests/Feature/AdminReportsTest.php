@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Models\Activity;
 use App\Models\Process;
 use App\Models\Scheme;
+use App\Models\Subprocess;
 use App\Models\SustainabilityReport;
 use App\Models\SustainabilityReportItem;
 use App\Models\User;
@@ -111,18 +112,23 @@ it('rejects invalid and duplicate report updates', function (): void {
         'is_published' => false,
     ]);
 
-    // Missing title, malformed slug, and a slug already used by another report.
+    // Missing title is rejected. A supplied slug is ignored: the slug
+    // always regenerates from the title instead.
     $this->put(route('admin.reports.update', $report), [
         'title' => '',
         'slug' => 'slug tidak valid!',
         'summary' => 'x',
-    ])->assertSessionHasErrors(['title', 'slug']);
+    ])->assertSessionHasErrors(['title']);
 
-    $this->put(route('admin.reports.update', $report), validReportPayload($scheme, $process, ['slug' => 'laporan-sama']))
-        ->assertSessionHasErrors('slug');
+    $this->put(route('admin.reports.update', $report), array_merge(
+        validReportPayload($scheme, $process),
+        ['slug' => 'slug-diabaikan']
+    ))->assertRedirect(route('admin.reports.show', $report));
+
+    expect($report->refresh()->slug)->toBe('jejak-karbon-batik-tulis');
 
     expect(SustainabilityReport::query()->count())->toBe(2)
-        ->and($report->refresh()->title)->toBe('Laporan saya');
+        ->and($report->refresh()->title)->toBe('Jejak Karbon Batik Tulis');
 });
 
 it('keeps the calculation scope fixed when a report is updated', function (): void {
@@ -154,7 +160,7 @@ it('keeps the calculation scope fixed when a report is updated', function (): vo
         ->and($report->process_id)->toBe($process->id);
 });
 
-it('keeps the existing slug when a report is updated without one', function (): void {
+it('regenerates the slug from the title on every update', function (): void {
     $this->actingAs($this->user);
     [$scheme, $process] = reportSchemeWithProcess();
 
@@ -172,13 +178,75 @@ it('keeps the existing slug when a report is updated without one', function (): 
         'summary' => 'Ringkasan baru.',
     ])->assertRedirect(route('admin.reports.show', $report));
 
-    expect($report->refresh()->slug)->toBe('laporan-lama');
+    expect($report->refresh()->slug)->toBe('laporan-dengan-judul-baru');
+
+    // A clashing title gets a unique suffix, excluding the report itself.
+    SustainabilityReport::query()->create([
+        'scheme_id' => $scheme->id,
+        'process_id' => $process->id,
+        'title' => 'Judul bentrok',
+        'slug' => 'judul-bentrok',
+        'total_emission' => 0,
+        'is_published' => false,
+    ]);
+
+    $this->put(route('admin.reports.update', $report), [
+        'title' => 'Judul bentrok',
+    ])->assertRedirect(route('admin.reports.show', $report));
+
+    expect($report->refresh()->slug)->toBe('judul-bentrok-2');
+});
+
+it('preserves items and totals when editorial fields are updated', function (): void {
+    $this->actingAs($this->user);
+    [$scheme, $process] = reportSchemeWithProcess();
+    $subprocess = Subprocess::factory()->create(['process_id' => $process->id]);
+    $activity = Activity::factory()->create(['subprocess_id' => $subprocess->id]);
+
+    $report = SustainabilityReport::query()->create([
+        'scheme_id' => $scheme->id,
+        'process_id' => $process->id,
+        'title' => 'Laporan awal',
+        'slug' => 'laporan-awal',
+        'summary' => 'Ringkasan awal.',
+        'total_emission' => 12.5,
+        'is_published' => false,
+    ]);
+
+    SustainabilityReportItem::query()->create([
+        'sustainability_report_id' => $report->id,
+        'activity_id' => $activity->id,
+        'option_id' => null,
+        'quantity' => 2,
+        'emission_result' => 5,
+    ]);
+    SustainabilityReportItem::query()->create([
+        'sustainability_report_id' => $report->id,
+        'activity_id' => $activity->id,
+        'option_id' => null,
+        'quantity' => 1,
+        'emission_result' => 7.5,
+    ]);
+
+    $this->put(route('admin.reports.update', $report), [
+        'title' => 'Laporan diperbarui',
+        'summary' => 'Ringkasan diperbarui.',
+    ])->assertRedirect(route('admin.reports.show', $report));
+
+    $report->refresh();
+
+    expect($report->title)->toBe('Laporan diperbarui')
+        ->and($report->slug)->toBe('laporan-diperbarui')
+        ->and($report->summary)->toBe('Ringkasan diperbarui.')
+        ->and((float) $report->total_emission)->toBe(12.5)
+        ->and($report->items()->count())->toBe(2)
+        ->and((float) $report->items()->sum('emission_result'))->toBe(12.5);
 });
 
 it('creates a report through the calculator action and persists items with total', function (): void {
     $this->actingAs($this->user);
     [$scheme, $process] = reportSchemeWithProcess();
-    $subprocess = \App\Models\Subprocess::factory()->create(['process_id' => $process->id]);
+    $subprocess = Subprocess::factory()->create(['process_id' => $process->id]);
     $activity = Activity::factory()->create(['subprocess_id' => $subprocess->id]);
 
     $payload = validReportPayload($scheme, $process);
