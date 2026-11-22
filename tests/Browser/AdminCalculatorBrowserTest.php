@@ -95,8 +95,8 @@ it('walks the full wizard from start to published report', function () {
         ->assertNoJavaScriptErrors();
 
     // Refresh resumes the same step (session persistence).
-    $page->reload()
-        ->assertSee('Proses 2 dari 2')
+    $page = visit('/admin/kalkulator');
+    $page->assertSee('Proses 2 dari 2')
         ->assertNoJavaScriptErrors();
 
     // Second step has an option dropdown; pick it and fill quantity.

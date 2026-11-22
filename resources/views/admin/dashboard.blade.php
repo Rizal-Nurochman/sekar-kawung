@@ -3,12 +3,6 @@
 @endphp
 
 <x-admin.layouts.app title="Dashboard - Admin Sekar Kawung" heading="Dashboard" subheading="Ringkasan laporan keberlanjutan dan data master.">
-    <x-slot:actions>
-        <x-admin.ui.button :href="route('admin.reports.index')">
-            <x-lucide-file-text />
-            Lihat laporan
-        </x-admin.ui.button>
-    </x-slot:actions>
 
     <section aria-label="Ringkasan" class="rounded-panel border border-line bg-white">
         <dl class="grid grid-cols-1 divide-y divide-line sm:grid-cols-3 sm:divide-x sm:divide-y-0">

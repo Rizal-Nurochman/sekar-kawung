@@ -58,6 +58,14 @@
         outline-offset: 2px;
     }
 
+    button:not(:disabled),
+    a[href],
+    select:not(:disabled),
+    input[type='submit']:not(:disabled),
+    [role='button'] {
+        cursor: pointer;
+    }
+
     [x-cloak] {
         display: none !important;
     }
