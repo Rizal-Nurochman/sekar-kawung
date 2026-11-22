@@ -27,17 +27,22 @@
             </x-admin.ui.empty-state>
         </x-admin.ui.panel>
     @elseif ($mode === 'start')
-        <div class="mx-auto w-full max-w-xl">
-            <x-admin.ui.panel>
-                <h2 class="text-xl font-bold leading-7 tracking-tight text-pine-900">Kalkulator Emisi Karbon</h2>
+        <div class="flex min-h-[60dvh] items-center justify-center py-10">
+            <x-admin.ui.panel flush class="w-full max-w-xs">
+                <div class="px-6 py-14 text-center">
+                    <span class="mx-auto flex size-12 items-center justify-center rounded-2xl bg-pine-900 text-white" aria-hidden="true">
+                        <x-lucide-calculator class="size-6" />
+                    </span>
+                    <h2 class="mt-4 text-xl font-bold leading-7 tracking-tight text-pine-900">Kalkulator Emisi Karbon</h2>
 
-                <form method="POST" action="{{ route('admin.calculator.start') }}" class="mt-5">
-                    @csrf
-                    <x-admin.ui.button id="start-calculator" type="submit" variant="primary" size="lg" class="w-full">
-                        Mulai Menghitung
-                        <x-lucide-arrow-right />
-                    </x-admin.ui.button>
-                </form>
+                    <form method="POST" action="{{ route('admin.calculator.start') }}" class="mt-6">
+                        @csrf
+                        <x-admin.ui.button id="start-calculator" type="submit" variant="primary" size="lg" class="w-full">
+                            Mulai Menghitung
+                            <x-lucide-arrow-right />
+                        </x-admin.ui.button>
+                    </form>
+                </div>
             </x-admin.ui.panel>
         </div>
     @elseif ($mode === 'step')
