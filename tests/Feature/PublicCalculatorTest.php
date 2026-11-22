@@ -43,7 +43,7 @@ it('lets guests start the public wizard with no login and no report rows', funct
 });
 
 it('shows process 1 with option dropdown, unit pill, and live-total wiring', function () {
-    [, $process, $subprocess] = publicCalculatorContext();
+    [, , $subprocess] = publicCalculatorContext();
 
     $option = Option::factory()->create();
     $transport = Activity::factory()->create(['subprocess_id' => $subprocess->id]);
@@ -53,7 +53,6 @@ it('shows process 1 with option dropdown, unit pill, and live-total wiring', fun
 
     $this->get(route('calculator'))->assertOk()
         ->assertSee('Proses 1 dari', false)
-        ->assertSee($process->description, false)
         ->assertSee('Pilih opsi', false)
         ->assertSee($option->description, false)
         ->assertSee('data-calculator-row', false)
@@ -84,8 +83,7 @@ it('advances through steps and preserves entries on refresh', function () {
     ])->assertRedirect(route('calculator'));
 
     $this->get(route('calculator'))->assertOk()
-        ->assertSee('Proses 2 dari', false)
-        ->assertSee($second->description, false);
+        ->assertSee('Proses 2 dari', false);
 
     $this->post(route('calculator.step'), [
         'process_id' => $second->id,
@@ -233,8 +231,7 @@ it('redirects to the saved position when posting out of order', function () {
     ])->assertRedirect(route('calculator'))->assertSessionHasErrors('general');
 
     $this->get(route('calculator'))->assertOk()
-        ->assertSee('Proses 1 dari', false)
-        ->assertSee($process->description, false);
+        ->assertSee('Proses 1 dari', false);
 
     expect(SustainabilityReport::query()->count())->toBe(0);
 });

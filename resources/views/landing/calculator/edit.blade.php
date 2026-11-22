@@ -2,7 +2,7 @@
     $mode = $mode ?? 'empty';
 @endphp
 
-<x-landing.layouts.app title="Public Calculator | Sekar Kawung">
+<x-landing.layouts.app title="Public Calculator | Sekar Kawung" hero-background="bg-foam-50">
     <x-slot:hero>
         <section class="mx-auto w-full max-w-[1200px] px-4 pb-20 pt-14 sm:px-6 lg:px-0">
             <p class="text-[13px] font-medium text-ink-muted">Public Calculator</p>
@@ -37,10 +37,9 @@
         @endphp
 
         <section class="mx-auto w-full max-w-[1200px] px-4 pb-20 sm:px-6 lg:px-0">
-            <p class="text-[13px] font-medium text-ink-muted">{{ $process->scheme?->description }}</p>
-            <div class="mt-1 flex flex-wrap items-baseline justify-between gap-2">
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 id="wizard-progress" class="text-lg font-bold leading-7 tracking-tight text-pine-900">
-                    Proses {{ $position }} dari {{ $totalSteps }} : {{ $process->description }}
+                    Proses {{ $position }} dari {{ $totalSteps }}
                 </h2>
                 <p class="text-[13px] tabular-nums text-ink-muted">{{ $percent }}%</p>
             </div>
@@ -241,9 +240,8 @@
                             $boundaryTotal = $boundaries->count();
                         @endphp
                         <section aria-labelledby="review-proses-{{ $boundary['id'] }}" class="mt-2">
-                            <p class="text-[13px] font-medium text-ink-muted">{{ $boundary['scheme'] }}</p>
-                            <h2 id="review-proses-{{ $boundary['id'] }}" class="mt-1 text-lg font-bold leading-7 tracking-tight text-pine-900">
-                                Proses {{ $position }} dari {{ $boundaryTotal }} : {{ $boundary['description'] }}
+                            <h2 id="review-proses-{{ $boundary['id'] }}" class="text-lg font-bold leading-7 tracking-tight text-pine-900">
+                                Proses {{ $position }} dari {{ $boundaryTotal }}
                             </h2>
                             <p class="mt-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 rounded-panel bg-pine-900 px-4 py-3">
                                 <span class="text-[13px] font-semibold text-white">Subtotal proses</span>
@@ -258,7 +256,7 @@
                             @else
                                 <div class="rounded-panel border border-line bg-white px-5 py-4">
                                     <h3 class="text-sm font-semibold text-pine-900">Rincian per tahap</h3>
-                                    <p class="mt-0.5 text-[13px] leading-5 text-ink-muted">Kontribusi emisi tiap subproses pada {{ $boundary['description'] }}.</p>
+                                    <p class="mt-0.5 text-[13px] leading-5 text-ink-muted">Kontribusi emisi tiap subproses pada proses ini.</p>
                                     <table class="data-table mt-3">
                                         <thead>
                                             <tr>
