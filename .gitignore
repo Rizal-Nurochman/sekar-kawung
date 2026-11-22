@@ -10,6 +10,7 @@
 /.idea
 /.nova
 /.phpunit.cache
+/.playwright-mcp/
 /tests/Browser/Screenshots
 /tests/Browser/Traces
 /.vscode
