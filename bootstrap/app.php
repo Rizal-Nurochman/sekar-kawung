@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // TLS diterminasi di edge Vercel; tanpa ini URL aset dan redirect jadi http://
         $middleware->trustProxies(at: '*');
         $middleware->redirectGuestsTo('/admin/login');
+        $middleware->redirectUsersTo('/admin');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
