@@ -24,7 +24,7 @@ Route::get('/old', OldHomeController::class)->name('oldHome');
 Route::redirect('/v2', '/');
 
 Route::view('/calculator', 'landing.coming-soon', ['section' => 'Public Calculator'])->name('calculator');
-Route::view('/methodology', 'landing.coming-soon', ['section' => 'Methodology'])->name('methodology');
+Route::view('/methodology', 'landing.methodology')->name('methodology');
 Route::view('/about', 'landing.about')->name('about');
 
 Route::get('/health', function () {
