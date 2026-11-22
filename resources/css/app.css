@@ -143,4 +143,16 @@
     .data-table .cell-num {
         @apply text-right font-medium tabular-nums text-pine-900;
     }
+
+    .btn {
+        @apply inline-flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-control px-3.5 text-[13.5px] font-semibold transition-colors disabled:pointer-events-none disabled:opacity-50;
+    }
+
+    .btn-primary {
+        @apply bg-pine-900 text-white hover:bg-pine-950;
+    }
+
+    .btn-secondary {
+        @apply border border-line-strong bg-white text-pine-900 hover:border-pine-900/30 hover:bg-sage-50;
+    }
 }
