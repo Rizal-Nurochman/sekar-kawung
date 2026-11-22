@@ -16,6 +16,15 @@ it('redirects guests away from the dashboard to login', function () {
     $this->get(route('admin.dashboard'))->assertRedirect('/admin/login');
 });
 
+it('redirects authenticated admins away from login to the dashboard', function () {
+    $this->seed();
+    $user = User::query()->where('email', 'test@example.com')->firstOrFail();
+
+    $this->actingAs($user)
+        ->get(route('admin.login'))
+        ->assertRedirect(route('admin.dashboard'));
+});
+
 it('rejects login with invalid credentials', function () {
     User::factory()->create([
         'email' => 'admin@example.com',

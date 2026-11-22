@@ -60,10 +60,10 @@ ENV PORT=80 \
     APP_DEBUG=false \
     LOG_CHANNEL=stderr \
     LOG_LEVEL=warning \
-    CACHE_STORE=array \
-    SESSION_DRIVER=array \
+    CACHE_STORE=database \
+    SESSION_DRIVER=database \
     SESSION_SECURE_COOKIE=true \
-    QUEUE_CONNECTION=sync
+    QUEUE_CONNECTION=database
 
 USER www-data
 
