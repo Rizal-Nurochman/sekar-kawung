@@ -139,7 +139,7 @@
             </div>
 
             <div class="mt-12 border-t border-white/25 pt-6 text-center text-xs font-medium leading-5 tracking-normal text-sage-muted">
-                <p>&copy; {{ date('Y') }} Sekar Kawung - Sustainable Materials. Hak Cipta Dilindungi Undang-Undang. Prototipe Web Industri Tekstil.</p>
+                <p>&copy; {{ date('Y') }} Sekar Kawung - Sustainable Materials. Hak Cipta Dilindungi Undang-Undang.</p>
             </div>
         </div>
     </footer>
