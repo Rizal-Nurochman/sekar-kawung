@@ -24,9 +24,7 @@ class AuthController extends Controller
             return redirect()->intended(route('admin.dashboard'));
         }
 
-        return back()->withErrors([
-            'email' => 'Kredensial tidak cocok dengan data kami.',
-        ])->onlyInput('email');
+        return back()->onlyInput('email');
     }
 
     public function logout(Request $request): RedirectResponse

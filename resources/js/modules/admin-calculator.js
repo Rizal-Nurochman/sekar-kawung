@@ -100,6 +100,7 @@ export const adminCalculator = (params = {}) => ({
             const unit = selected?.dataset.unit || fallback || '';
 
             pill.textContent = unit;
+            pill.title = unit;
         }
 
         this.recalculate();

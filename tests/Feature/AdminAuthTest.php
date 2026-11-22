@@ -25,16 +25,19 @@ it('redirects authenticated admins away from login to the dashboard', function (
         ->assertRedirect(route('admin.dashboard'));
 });
 
-it('rejects login with invalid credentials', function () {
+it('rejects login with invalid credentials without revealing why', function () {
     User::factory()->create([
         'email' => 'admin@example.com',
         'password' => 'password123',
     ]);
 
-    $this->post(route('admin.login'), [
+    $response = $this->post(route('admin.login'), [
         'email' => 'admin@example.com',
         'password' => 'wrong-password',
-    ])->assertSessionHasErrors('email');
+    ]);
+
+    // No error bag: a guest learns nothing about whether the email exists.
+    $response->assertSessionHasNoErrors()->assertRedirect();
 
     $this->assertGuest();
 });

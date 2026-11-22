@@ -118,7 +118,7 @@
                                         <div data-calculator-row class="min-w-0">
                                             <input type="hidden" name="items[{{ $rowIndex }}][activity_id]" value="{{ $activity->id }}">
 
-                                            <label for="items-{{ $rowIndex }}-quantity" class="block text-[14px] font-medium leading-5 text-slate-900">{{ $activity->description }}</label>
+                                            <label for="items-{{ $rowIndex }}-quantity" class="flex min-h-10 items-end text-[14px] font-medium leading-5 text-slate-900"><span>{{ $activity->description }}</span></label>
 
                                             @if ($hasOptions)
                                                 <select
@@ -159,7 +159,7 @@
                                                     data-base-ef="{{ (float) ($activity->emissionFactor?->ef_value ?? 0) }}"
                                                     x-on:focus="selectOnFocus($event)"
                                                 >
-                                                <span data-unit-pill class="flex w-24 shrink-0 items-center justify-center truncate bg-mist-100 px-3 text-center text-[14px] font-medium leading-5 text-pine-900">{{ $defaultUnit }}</span>
+                                                <span data-unit-pill title="{{ $defaultUnit }}" class="flex w-28 shrink-0 items-center justify-center truncate bg-mist-100 px-3 text-center text-[14px] font-medium leading-5 text-pine-900">{{ $defaultUnit }}</span>
                                             </div>
 
                                         </div>
