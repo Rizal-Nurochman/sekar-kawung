@@ -6,10 +6,14 @@ const trimNumber = (value, precision) => {
 
 const formatEmission = (value) => trimNumber(Number(value) || 0, 4);
 
-export const adminCalculator = () => ({
-    collapsed: [],
-    total: 0,
-    filled: 0,
+export const adminCalculator = (params = {}) => ({
+    baseTotal: Number(params.baseTotal ?? 0) || 0,
+    baseFilled: Number(params.baseFilled ?? 0) || 0,
+    totalActivities: Number(params.totalActivities ?? 0) || 0,
+    stepTotal: 0,
+    stepFilled: 0,
+    total: Number(params.baseTotal ?? 0) || 0,
+    filled: Number(params.baseFilled ?? 0) || 0,
     rowCount: 0,
 
     init() {
@@ -50,21 +54,23 @@ export const adminCalculator = () => ({
     },
 
     recalculate() {
-        let total = 0;
-        let filled = 0;
+        let stepTotal = 0;
+        let stepFilled = 0;
 
         for (const row of this.rows()) {
-            total += this.rowTotal(row);
+            stepTotal += this.rowTotal(row);
 
             const quantity = Number.parseFloat(row.querySelector('[data-quantity-input]')?.value ?? '0') || 0;
 
             if (quantity > 0) {
-                filled++;
+                stepFilled++;
             }
         }
 
-        this.total = total;
-        this.filled = filled;
+        this.stepTotal = stepTotal;
+        this.stepFilled = stepFilled;
+        this.total = this.baseTotal + stepTotal;
+        this.filled = this.baseFilled + stepFilled;
     },
 
     get formattedTotal() {
@@ -72,35 +78,29 @@ export const adminCalculator = () => ({
     },
 
     get progress() {
-        if (this.rowCount === 0) {
+        if (this.totalActivities === 0) {
             return 0;
         }
 
-        return Math.min(100, Math.round((this.filled / this.rowCount) * 100));
+        return Math.min(100, Math.round((this.filled / this.totalActivities) * 100));
     },
 
-    toggleStage(key) {
-        this.collapsed = this.collapsed.includes(key)
-            ? this.collapsed.filter((item) => item !== key)
-            : [...this.collapsed, key];
-    },
+    /**
+     * Keep the read-only unit pill in sync with the chosen option. Falls back
+     * to the activity unit (or an em dash) when the option has no unit.
+     */
+    syncUnit(event, fallback = '–') {
+        const row = event.target?.closest('[data-calculator-row]');
+        const pill = row?.querySelector('[data-unit-pill]');
 
-    isCollapsed(key) {
-        return this.collapsed.includes(key);
-    },
+        if (pill) {
+            const selected = event.target.options?.[event.target.selectedIndex];
+            const unit = selected?.dataset.unit || fallback || '–';
 
-    collapseAll() {
-        this.collapsed = Array.from(this.$el.querySelectorAll('[data-calculator-stage]')).map((stage) => stage.dataset.stageKey);
-    },
+            pill.textContent = unit;
+        }
 
-    expandAll() {
-        this.collapsed = [];
-    },
-
-    get allCollapsed() {
-        const stages = Array.from(this.$el.querySelectorAll('[data-calculator-stage]'));
-
-        return stages.length > 0 && stages.every((stage) => this.collapsed.includes(stage.dataset.stageKey));
+        this.recalculate();
     },
 
     /**

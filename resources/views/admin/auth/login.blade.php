@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="light">
     <meta name="robots" content="noindex, nofollow">
 
-    <title>Masuk Admin - Sekar Kawung</title>
+    <title>Login</title>
 
     <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
 
@@ -16,15 +16,9 @@
 </head>
 <body class="flex min-h-screen items-center justify-center bg-pine-900 px-4 py-12 font-sans antialiased">
     <main class="w-full max-w-md rounded-3xl bg-foam-50 p-8 shadow-2xl">
-        <div class="flex items-center gap-3">
-            <img src="{{ asset('images/landing/nav-logo.png') }}" alt="Sekar Kawung" class="h-10 w-auto object-contain">
-            <div>
-                <h1 class="text-lg font-bold leading-6 text-pine-900">Admin Sekar Kawung</h1>
-                <p class="text-sm leading-5 text-ink-soft">Masuk untuk mengelola laporan dan faktor emisi.</p>
-            </div>
-        </div>
+        <h1 class="text-center text-lg font-bold leading-6 text-pine-900">Login</h1>
 
-        <form method="POST" action="{{ route('admin.login') }}" class="mt-8 space-y-5">
+        <form method="POST" action="{{ route('admin.login') }}" class="mt-4 space-y-5">
             @csrf
 
             <div>
@@ -42,11 +36,6 @@
                     <p class="mt-1 text-sm leading-5 text-red-700">{{ $message }}</p>
                 @enderror
             </div>
-
-            <label class="flex items-center gap-2 text-sm text-ink-soft">
-                <input type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }} class="size-4 rounded border-pine-900/20">
-                Ingat saya
-            </label>
 
             <button type="submit" class="inline-flex w-full items-center justify-center rounded-full bg-pine-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-pine-950">
                 Masuk

@@ -43,7 +43,10 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
     Route::middleware('auth')->group(function (): void {
         Route::get('/', DashboardController::class)->name('dashboard');
         Route::get('/kalkulator', [CalculatorController::class, 'edit'])->name('calculator.edit');
-        Route::post('/kalkulator/preview', [CalculatorController::class, 'preview'])->name('calculator.preview');
+        Route::post('/kalkulator/mulai', [CalculatorController::class, 'start'])->name('calculator.start');
+        Route::post('/kalkulator/langkah', [CalculatorController::class, 'step'])->name('calculator.step');
+        Route::post('/kalkulator/ulasan/kembali', [CalculatorController::class, 'backFromReview'])->name('calculator.backFromReview');
+        Route::post('/kalkulator/ulang', [CalculatorController::class, 'reset'])->name('calculator.reset');
         Route::post('/kalkulator', [CalculatorController::class, 'store'])->name('calculator.store');
         Route::resource('reports', ReportController::class)->except(['create', 'store']);
         Route::post('reports/{report}/publish', [PublishedReportController::class, 'store'])->name('reports.publish');
