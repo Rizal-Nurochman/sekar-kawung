@@ -87,6 +87,11 @@
                 <p class="mt-6 max-w-[65ch] text-lg leading-8 text-ink-soft">
                     We apply a shared life cycle inventory across seed to fabric and seed to batik boundaries, using published emission factors and field data from Tuban. Totals are expressed in carbon dioxide equivalents (CO₂e) so hotspots can be compared across stages.
                 </p>
+                <div class="mt-4 rounded-xl border border-pine-900 bg-mist-100 px-4 py-4 text-pine-900">
+                    <p class="text-center text-xl font-bold leading-8">PCF = Σ (ADᵢ × EFᵢ)</p>
+                    <p class="mt-2 text-center text-base font-bold leading-7">Product Carbon Footprint = Activity Data × Emission Factor</p>
+                    <p class="mt-3 text-sm leading-6">Activity units must match the units used by the emission factor. Total emissions are calculated by adding the included contributions without double counting.</p>
+                </div>
                 <p class="mt-6">
                     <a href="{{ route('methodology') }}" class="inline-flex items-center gap-1 text-[15px] font-semibold leading-5 text-sage-600 transition-colors hover:text-pine-900">Read More <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4 translate-y-px" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12l-7.5 7.5M21 12H3" /></svg></a>
                 </p>

@@ -1,6 +1,7 @@
 @props([
     'title' => 'Sekar Kawung - Sustainable Materials',
     'description' => 'Merawat biodiversitas melalui budaya untuk mencapai ekonomi lestari.',
+    'heroBackground' => 'bg-mist-100',
 ])
 
 <!DOCTYPE html>
@@ -72,7 +73,7 @@
         </header>
     </div>
 
-    <div class="bg-mist-100 -mt-[84px] pt-[84px] sm:-mt-[92px] sm:pt-[92px]">
+    <div class="{{ $heroBackground }} -mt-[84px] pt-[84px] sm:-mt-[92px] sm:pt-[92px]">
         {{ $hero ?? '' }}
     </div>
 

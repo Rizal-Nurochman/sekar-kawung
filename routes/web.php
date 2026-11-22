@@ -25,7 +25,7 @@ Route::redirect('/v2', '/');
 
 Route::view('/calculator', 'landing.coming-soon', ['section' => 'Public Calculator'])->name('calculator');
 Route::view('/methodology', 'landing.coming-soon', ['section' => 'Methodology'])->name('methodology');
-Route::view('/about', 'landing.coming-soon', ['section' => 'About'])->name('about');
+Route::view('/about', 'landing.about')->name('about');
 
 Route::get('/health', function () {
     return response()->json([
