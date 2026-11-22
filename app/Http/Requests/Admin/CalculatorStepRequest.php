@@ -2,37 +2,28 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\Activity;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
-class CalculatorSaveRequest extends FormRequest
+class CalculatorStepRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'scheme_id' => ['required', 'integer', 'exists:schemes,id'],
             'process_id' => ['required', 'integer', 'exists:processes,id'],
-            'title' => ['required', 'string', 'max:255'],
-            'slug' => ['nullable', 'string', 'alpha_dash', 'max:255', Rule::unique('sustainability_reports', 'slug')->ignore($this->route('report'))],
-            'summary' => ['nullable', 'string'],
-            'is_published' => ['nullable', 'boolean'],
-            'items' => ['required', 'array'],
+            'direction' => ['required', 'string', 'in:next,back'],
+            'items' => ['present', 'array'],
             'items.*.activity_id' => ['required', 'integer', 'exists:activities,id'],
             'items.*.option_id' => ['nullable', 'integer', 'exists:options,id'],
             'items.*.quantity' => ['nullable', 'numeric', 'min:0'],
@@ -40,34 +31,57 @@ class CalculatorSaveRequest extends FormRequest
     }
 
     /**
-     * Validate that options belong to their activity and the process belongs to the scheme.
-     *
-     * @param  array<string, mixed>  $data
+     * @return array<int, callable(Validator): void>
      */
     public function after(): array
     {
         return [
             function (Validator $validator): void {
-                $data = $validator->getData();
-
-                $schemeId = $data['scheme_id'] ?? null;
-                $processId = $data['process_id'] ?? null;
-
-                if ($schemeId !== null && $processId !== null) {
-                    $belongs = DB::table('processes')
-                        ->where('id', $processId)
-                        ->where('scheme_id', $schemeId)
-                        ->exists();
-
-                    if (! $belongs) {
-                        $validator->errors()->add('process_id', 'Proses yang dipilih tidak termasuk dalam skema yang dipilih.');
-                    }
+                if ($validator->errors()->has('process_id')) {
+                    return;
                 }
 
+                $data = $validator->getData();
+                $processId = (int) ($data['process_id'] ?? 0);
                 $items = $data['items'] ?? [];
 
                 if (! is_array($items) || $items === []) {
                     return;
+                }
+
+                $activityIds = collect($items)
+                    ->pluck('activity_id')
+                    ->filter(fn ($value): bool => $value !== null && $value !== '')
+                    ->map(fn ($value): int => (int) $value)
+                    ->unique()
+                    ->values();
+
+                if ($activityIds->isEmpty()) {
+                    return;
+                }
+
+                $scoped = Activity::query()
+                    ->whereIn('id', $activityIds)
+                    ->whereHas('subprocess', fn ($query) => $query->where('process_id', $processId))
+                    ->pluck('id')
+                    ->map(fn ($id): int => (int) $id)
+                    ->all();
+
+                $allowed = array_flip($scoped);
+
+                foreach ($items as $index => $item) {
+                    if (! is_array($item) || ! isset($item['activity_id']) || $item['activity_id'] === '') {
+                        continue;
+                    }
+
+                    $activityId = (int) $item['activity_id'];
+
+                    if (! isset($allowed[$activityId])) {
+                        $validator->errors()->add(
+                            "items.{$index}.activity_id",
+                            'Aktivitas tidak termasuk dalam proses ini.'
+                        );
+                    }
                 }
 
                 $pairs = [];

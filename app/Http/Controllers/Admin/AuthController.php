@@ -19,15 +19,14 @@ class AuthController extends Controller
     public function login(LoginRequest $request, AuthenticateAdmin $authenticate): RedirectResponse
     {
         $validated = $request->safe()->only(['email', 'password']);
-        $remember = $request->boolean('remember');
 
-        if ($authenticate->handle($validated, $remember)) {
+        if ($authenticate->handle($validated, true)) {
             return redirect()->intended(route('admin.dashboard'));
         }
 
         return back()->withErrors([
             'email' => 'Kredensial tidak cocok dengan data kami.',
-        ])->onlyInput('email', 'remember');
+        ])->onlyInput('email');
     }
 
     public function logout(Request $request): RedirectResponse

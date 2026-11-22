@@ -6,7 +6,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 it('renders the admin login page for guests', function () {
-    $this->get(route('admin.login'))->assertOk()->assertSee('Admin Sekar Kawung', false);
+    $this->get(route('admin.login'))
+        ->assertOk()
+        ->assertSee('Login', false)
+        ->assertDontSee('Sekar Kawung', false);
 });
 
 it('redirects guests away from the dashboard to login', function () {

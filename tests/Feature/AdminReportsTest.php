@@ -178,7 +178,8 @@ it('keeps the existing slug when a report is updated without one', function (): 
 it('creates a report through the calculator action and persists items with total', function (): void {
     $this->actingAs($this->user);
     [$scheme, $process] = reportSchemeWithProcess();
-    $activity = Activity::factory()->create();
+    $subprocess = \App\Models\Subprocess::factory()->create(['process_id' => $process->id]);
+    $activity = Activity::factory()->create(['subprocess_id' => $subprocess->id]);
 
     $payload = validReportPayload($scheme, $process);
 
@@ -188,18 +189,18 @@ it('creates a report through the calculator action and persists items with total
         expect($report)->toBeInstanceOf(SustainabilityReport::class);
         expect($report->getKey())->not->toBeNull();
 
-        // The calculator is the only entry point that saves a report.
-        $this->post(route('admin.calculator.store'), [
-            'scheme_id' => $scheme->id,
+        // The calculator wizard is the only entry point that saves a report.
+        $this->post(route('admin.calculator.start'))->assertRedirect();
+        $this->post(route('admin.calculator.step'), [
             'process_id' => $process->id,
-            'title' => 'Laporan Kedua',
-            'slug' => 'laporan-kedua',
+            'direction' => 'next',
             'items' => [
                 ['activity_id' => $activity->id, 'option_id' => null, 'quantity' => 1],
             ],
         ])->assertRedirect();
+        $this->post(route('admin.calculator.store'))->assertRedirect();
 
-        $second = SustainabilityReport::query()->where('slug', 'laporan-kedua')->firstOrFail();
+        $second = SustainabilityReport::query()->where('id', '!=', $report->id)->firstOrFail();
 
         $this->get(route('admin.reports.show', $second))->assertOk();
     } else {

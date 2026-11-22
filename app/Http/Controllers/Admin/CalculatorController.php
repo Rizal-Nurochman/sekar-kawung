@@ -2,129 +2,176 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\Admin\CalculateEmissions;
+use App\Actions\Admin\CalculatorWizard;
 use App\Actions\Admin\UpsertReport;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\CalculatorSaveRequest;
-use App\Models\Process;
-use App\Models\Scheme;
-use App\Models\Subprocess;
-use Illuminate\Http\JsonResponse;
+use App\Http\Requests\Admin\CalculatorStepRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
 
 class CalculatorController extends Controller
 {
-    public function edit(Request $request): View
+    public function edit(CalculatorWizard $wizard): View
     {
-        $schemes = Scheme::query()
-            ->with(['processes' => fn ($query) => $query->orderBy('sort_order')->orderBy('id')])
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->get();
+        $ordered = $wizard->orderedProcesses();
+        $totalSteps = $ordered->count();
 
-        $selectedScheme = $schemes->firstWhere('id', (int) $request->query('scheme_id', 0))
-            ?? $schemes->first();
+        if ($totalSteps === 0) {
+            return view('admin.calculator.edit', [
+                'mode' => 'empty',
+                'totalSteps' => 0,
+            ]);
+        }
 
-        $schemeProcesses = $selectedScheme
-            ? $selectedScheme->processes->sortBy([['sort_order', 'asc'], ['id', 'asc']])->values()
-            : collect();
+        $state = $wizard->state();
 
-        $selectedProcess = $schemeProcesses->firstWhere('id', (int) $request->query('process_id', 0))
-            ?? $schemeProcesses->first();
+        if ($state === null) {
+            $schemes = $ordered->pluck('scheme')->filter()->unique('id')->values();
 
-        $subprocesses = collect();
+            return view('admin.calculator.edit', [
+                'mode' => 'start',
+                'totalSteps' => $totalSteps,
+                'schemes' => $schemes,
+                'ordered' => $ordered,
+            ]);
+        }
 
-        if ($selectedScheme !== null && $selectedProcess !== null) {
-            $processIds = Process::query()
-                ->where('scheme_id', $selectedScheme->id)
-                ->where('sort_order', '<=', $selectedProcess->sort_order)
-                ->orderBy('sort_order')
-                ->orderBy('id')
-                ->pluck('id');
+        $current = (int) $state['current'];
 
-            $subprocesses = Subprocess::query()
-                ->with([
-                    'activities' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
-                    'activities.activityUnit',
-                    'activities.emissionFactor.source',
-                    'activities.options' => fn ($query) => $query->orderBy('options.id'),
-                    'activities.options.activityUnit',
-                    'activities.options.emissionFactor.source',
-                ])
-                ->whereIn('process_id', $processIds)
-                ->orderBy('process_id')
-                ->orderBy('sort_order')
-                ->orderBy('id')
-                ->get();
+        if ($current >= $totalSteps) {
+            $review = $wizard->reviewData();
+
+            return view('admin.calculator.edit', [
+                'mode' => 'review',
+                'totalSteps' => $totalSteps,
+                'review' => $review,
+                'ordered' => $ordered,
+            ]);
+        }
+
+        $currentProcess = $ordered->values()->get($current);
+
+        if ($currentProcess === null) {
+            $wizard->reset();
+
+            return view('admin.calculator.edit', [
+                'mode' => 'empty',
+                'totalSteps' => 0,
+            ]);
+        }
+
+        $process = $wizard->processWithInventory($currentProcess);
+        $entries = $state['entries'] ?? [];
+        $base = $wizard->baseTotals($process, $entries);
+
+        $currentIds = $process->subprocesses
+            ->flatMap(fn ($subprocess) => $subprocess->activities->pluck('id'))
+            ->map(fn ($id): string => (string) (int) $id)
+            ->all();
+        $currentSet = array_flip($currentIds);
+
+        $currentFilled = 0;
+        foreach ($entries as $activityId => $entry) {
+            if (isset($currentSet[(string) $activityId]) && (float) ($entry['quantity'] ?? 0) > 0) {
+                $currentFilled++;
+            }
         }
 
         return view('admin.calculator.edit', [
-            'schemes' => $schemes,
-            'schemeProcesses' => $schemeProcesses,
-            'selectedScheme' => $selectedScheme,
-            'selectedProcess' => $selectedProcess,
-            'subprocesses' => $subprocesses,
+            'mode' => 'step',
+            'totalSteps' => $totalSteps,
+            'currentIndex' => $current,
+            'process' => $process,
+            'entries' => $entries,
+            'baseTotal' => (float) $base['total'],
+            'baseFilled' => (int) $base['filled'],
+            'currentFilled' => $currentFilled,
+            'totalActivities' => $wizard->totalActivityCount(),
+            'ordered' => $ordered,
         ]);
     }
 
-    public function preview(CalculatorSaveRequest $request, CalculateEmissions $calculator): JsonResponse|RedirectResponse
+    public function start(CalculatorWizard $wizard): RedirectResponse
     {
-        $validated = $request->safe()->only([
-            'scheme_id',
-            'process_id',
-            'title',
-            'slug',
-            'summary',
-            'is_published',
-            'items',
-        ]);
+        $wizard->start();
 
-        $result = $calculator->handle($validated);
-
-        if ($request->wantsJson() || $request->expectsJson()) {
-            return response()->json($result);
-        }
-
-        return redirect()
-            ->route('admin.calculator.edit', [
-                'scheme_id' => $validated['scheme_id'],
-                'process_id' => $validated['process_id'],
-            ])
-            ->withInput()
-            ->with('previewResult', $result);
+        return redirect()->route('admin.calculator.edit');
     }
 
-    public function store(CalculatorSaveRequest $request, UpsertReport $upsert): RedirectResponse
+    public function step(CalculatorStepRequest $request, CalculatorWizard $wizard): RedirectResponse
     {
-        $validated = $request->safe()->only([
-            'scheme_id',
-            'process_id',
-            'title',
-            'slug',
-            'summary',
-            'is_published',
-            'items',
-        ]);
+        $validated = $request->validated();
+        $ordered = $wizard->orderedProcesses();
+        $totalSteps = $ordered->count();
 
-        $validated['is_published'] = $request->boolean('is_published');
-        $validated['items'] = $validated['items'] ?? [];
+        $state = $wizard->state();
 
-        $report = $upsert->handle($validated);
-
-        if (Route::has('admin.reports.show')) {
-            return redirect()
-                ->route('admin.reports.show', $report)
-                ->with('status', 'Laporan keberlanjutan berhasil disimpan.');
+        if ($state === null || $totalSteps === 0) {
+            return redirect()->route('admin.calculator.edit');
         }
 
+        $current = (int) $state['current'];
+        $currentProcess = $ordered->values()->get($current);
+
+        if ($currentProcess === null) {
+            $wizard->reset();
+
+            return redirect()->route('admin.calculator.edit');
+        }
+
+        if ((int) $validated['process_id'] !== (int) $currentProcess->getKey()) {
+            return redirect()->route('admin.calculator.edit')->withErrors([
+                'general' => 'Langkah tidak sesuai urutan. Lanjutkan dari posisi tersimpan.',
+            ]);
+        }
+
+        $fullProcess = $wizard->processWithInventory($currentProcess);
+        $wizard->saveStep($fullProcess, $validated['items'] ?? []);
+
+        $direction = $validated['direction'] === 'back' ? -1 : 1;
+        $wizard->moveTo($current + $direction, $totalSteps);
+
+        return redirect()->route('admin.calculator.edit');
+    }
+
+    public function backFromReview(CalculatorWizard $wizard): RedirectResponse
+    {
+        $ordered = $wizard->orderedProcesses();
+        $state = $wizard->state();
+
+        if ($state === null || $ordered->isEmpty()) {
+            return redirect()->route('admin.calculator.edit');
+        }
+
+        $wizard->moveTo($ordered->count() - 1, $ordered->count());
+
+        return redirect()->route('admin.calculator.edit');
+    }
+
+    public function reset(CalculatorWizard $wizard): RedirectResponse
+    {
+        $wizard->reset();
+
+        return redirect()->route('admin.calculator.edit');
+    }
+
+    public function store(CalculatorWizard $wizard, UpsertReport $upsert): RedirectResponse
+    {
+        $ordered = $wizard->orderedProcesses();
+        $state = $wizard->state();
+
+        if ($ordered->isEmpty() || $state === null || (int) $state['current'] < $ordered->count()) {
+            return redirect()->route('admin.calculator.edit')->withErrors([
+                'general' => 'Selesaikan seluruh proses sebelum menyimpan.',
+            ]);
+        }
+
+        $payload = $wizard->buildStorePayload();
+        $report = $upsert->handle($payload);
+        $wizard->reset();
+
         return redirect()
-            ->route('admin.calculator.edit', [
-                'scheme_id' => $report->scheme_id,
-                'process_id' => $report->process_id,
-            ])
+            ->route('admin.reports.show', $report)
             ->with('status', 'Laporan keberlanjutan berhasil disimpan.');
     }
 }

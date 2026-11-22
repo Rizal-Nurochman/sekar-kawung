@@ -101,7 +101,7 @@
                     <x-lucide-list-tree />
                 </x-slot:icon>
                 <x-slot:action>
-                    <x-admin.ui.button :href="route('admin.calculator.edit', ['scheme_id' => $report->scheme_id, 'process_id' => $report->process_id])" size="sm">
+                    <x-admin.ui.button :href="route('admin.calculator.edit')" size="sm">
                         <x-lucide-calculator />
                         Hitung di kalkulator
                     </x-admin.ui.button>
