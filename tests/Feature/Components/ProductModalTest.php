@@ -1,7 +1,7 @@
 <?php
 
 it('renders an accessible product dialog with two tabbed sections', function () {
-    $this->blade('<x-product.modal />')
+    $this->blade('<x-old.product.modal />')
         ->assertSee('role="dialog"', false)
         ->assertSee('aria-modal="true"', false)
         ->assertSee('aria-labelledby="modal-title"', false)
