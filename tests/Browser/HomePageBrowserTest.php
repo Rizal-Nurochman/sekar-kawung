@@ -1,7 +1,7 @@
 <?php
 
 it('filters the catalog by material category', function () {
-    $page = visit('/');
+    $page = visit('/old');
 
     $page->assertSee('Koleksi Material Tekstil')
         ->assertVisible('#product-grid article:has-text("Tenun Intipiyan")');
@@ -14,7 +14,7 @@ it('filters the catalog by material category', function () {
 });
 
 it('updates the emission total when the production quantity changes', function () {
-    $page = visit('/');
+    $page = visit('/old');
 
     $page->assertSee('5.025')
         ->fill('#calc-quantity', '2000')
@@ -22,7 +22,7 @@ it('updates the emission total when the production quantity changes', function (
 });
 
 it('updates the material emission when the material changes', function () {
-    $page = visit('/');
+    $page = visit('/old');
 
     $page->select('#calc-material', '9.8')
         ->assertSee('9.800')
@@ -30,7 +30,7 @@ it('updates the material emission when the material changes', function () {
 });
 
 it('opens the product detail modal from a catalog card', function () {
-    $page = visit('/');
+    $page = visit('/old');
 
     $page->click('#product-grid article[aria-label="Lihat detail Tenun Intipiyan"]')
         ->assertVisible('#product-modal')
@@ -38,7 +38,7 @@ it('opens the product detail modal from a catalog card', function () {
 });
 
 it('defaults to the product tab and shows the product details', function () {
-    $page = visit('/');
+    $page = visit('/old');
 
     $page->click('#product-grid article[aria-label="Lihat detail Tenun Intipiyan"]')
         ->assertVisible('#product-modal')
@@ -50,7 +50,7 @@ it('defaults to the product tab and shows the product details', function () {
 });
 
 it('switches to the environmental impact tab', function () {
-    $page = visit('/');
+    $page = visit('/old');
 
     $page->click('#product-grid article[aria-label="Lihat detail Tenun Intipiyan"]')
         ->assertVisible('#product-modal')
@@ -63,7 +63,7 @@ it('switches to the environmental impact tab', function () {
 });
 
 it('supports arrow-key navigation between the two tabs', function () {
-    $page = visit('/');
+    $page = visit('/old');
 
     $page->click('#product-grid article[aria-label="Lihat detail Tenun Intipiyan"]')
         ->assertVisible('#product-modal')
@@ -76,7 +76,7 @@ it('supports arrow-key navigation between the two tabs', function () {
 });
 
 it('resets to the product tab when another product opens', function () {
-    $page = visit('/');
+    $page = visit('/old');
 
     $page->click('#product-grid article[aria-label="Lihat detail Tenun Intipiyan"]')
         ->assertVisible('#product-modal')
@@ -92,7 +92,7 @@ it('resets to the product tab when another product opens', function () {
 });
 
 it('closes the product detail modal with Escape', function () {
-    $page = visit('/');
+    $page = visit('/old');
 
     $page->click('#product-grid article[aria-label="Lihat detail Tenun Intipiyan"]')
         ->assertVisible('#product-modal')
@@ -101,7 +101,7 @@ it('closes the product detail modal with Escape', function () {
 });
 
 it('sends the product emission to the calculator', function () {
-    $page = visit('/');
+    $page = visit('/old');
 
     $page->click('#product-grid article[aria-label="Lihat detail Tenun Seser Lowo"]')
         ->assertVisible('#product-modal')

@@ -7,7 +7,7 @@ uses(RefreshDatabase::class);
 it('uses Alpine for the mobile navigation', function () {
     $this->seed();
 
-    $this->get('/')->assertOk()
+    $this->get('/old')->assertOk()
         ->assertSee('x-data="navigation"', false)
         ->assertSee('x-on:click="toggleNav()"', false)
         ->assertSee('x-bind:aria-expanded="navOpen"', false);
@@ -16,7 +16,7 @@ it('uses Alpine for the mobile navigation', function () {
 it('server-renders catalog products and calculator options from the database', function () {
     $this->seed();
 
-    $this->get('/')->assertOk()
+    $this->get('/old')->assertOk()
         ->assertSee('Tenun Intipiyan')
         ->assertSee('Semua Jenis')
         ->assertSee('Kapas Cokelat')
@@ -29,7 +29,7 @@ it('server-renders catalog products and calculator options from the database', f
 it('initializes the Alpine catalog, modal, and calculator', function () {
     $this->seed();
 
-    $this->get('/')->assertOk()
+    $this->get('/old')->assertOk()
         ->assertSee('x-data="catalog(', false)
         ->assertSee('x-data="productModal"', false)
         ->assertSee('x-data="calculator(', false);
@@ -38,12 +38,17 @@ it('initializes the Alpine catalog, modal, and calculator', function () {
 it('passes the database-backed page data to the home view', function () {
     $this->seed();
 
-    $response = $this->get('/');
+    $response = $this->get('/old');
 
     $response->assertOk()
+        ->assertViewIs('old.home')
         ->assertViewHas('products')
         ->assertViewHas('categories')
         ->assertViewHas('materials')
         ->assertViewHas('energySources')
         ->assertViewHas('calculatorDefaults');
+});
+
+it('redirects the legacy v2 placeholder to the new landing', function () {
+    $this->get('/v2')->assertRedirect('/');
 });
