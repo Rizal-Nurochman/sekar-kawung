@@ -3,12 +3,8 @@
 @endphp
 
 <x-admin.layouts.app title="Kalkulator - Admin Sekar Kawung" heading="Kalkulator Emisi Karbon" subheading="Alur pengisian berurutan dari proses pertama hingga ulasan akhir.">
-    <x-slot:actions>
-        <x-admin.ui.button :href="route('admin.reports.index')" variant="ghost">
-            <x-lucide-file-text />
-            Lihat laporan
-        </x-admin.ui.button>
-        @if (in_array($mode, ['step', 'review'], true))
+    @if (in_array($mode, ['step', 'review'], true))
+        <x-slot:actions>
             <form method="POST" action="{{ route('admin.calculator.reset') }}">
                 @csrf
                 <x-admin.ui.button type="submit" variant="ghost" onclick="return confirm('Ulangi dari awal? Isian tersimpan akan dihapus.')">
@@ -16,8 +12,8 @@
                     Ulangi
                 </x-admin.ui.button>
             </form>
-        @endif
-    </x-slot:actions>
+        </x-slot:actions>
+    @endif
 
     @if ($mode === 'empty')
         <x-admin.ui.panel flush>
@@ -33,25 +29,7 @@
     @elseif ($mode === 'start')
         <div class="mx-auto w-full max-w-xl">
             <x-admin.ui.panel>
-                <p class="text-[13px] font-medium text-ink-muted">Persiapan perhitungan</p>
-                <h2 class="mt-1 text-xl font-bold leading-7 tracking-tight text-pine-900">Kalkulator Emisi Karbon</h2>
-                <p class="mt-2 max-w-[60ch] text-[13.5px] leading-6 text-ink-soft">
-                    Isi kuantitas tiap aktivitas mengikuti urutan proses di bawah. Kosong dianggap 0.
-                    Anda dapat menyegarkan halaman kapan saja, isian tersimpan otomatis.
-                </p>
-
-                <dl class="mt-4 space-y-1.5 border-t border-line pt-4 text-[13px] leading-5">
-                    <div class="flex items-baseline justify-between gap-3">
-                        <dt class="text-ink-muted">Jumlah proses</dt>
-                        <dd class="font-semibold tabular-nums text-pine-900">{{ $totalSteps }} proses</dd>
-                    </div>
-                    @foreach ($ordered as $item)
-                        <div class="flex items-baseline justify-between gap-3">
-                            <dt class="min-w-0 truncate text-ink-muted">{{ $item->scheme?->description }}</dt>
-                            <dd class="shrink-0 text-right text-ink-soft">{{ $item->description }}</dd>
-                        </div>
-                    @endforeach
-                </dl>
+                <h2 class="text-xl font-bold leading-7 tracking-tight text-pine-900">Kalkulator Emisi Karbon</h2>
 
                 <form method="POST" action="{{ route('admin.calculator.start') }}" class="mt-5">
                     @csrf
@@ -86,6 +64,8 @@
             method="POST"
             action="{{ route('admin.calculator.step') }}"
             x-data="adminCalculator({ baseTotal: {{ json_encode((float) $baseTotal) }}, baseFilled: {{ (int) $baseFilled }}, totalActivities: {{ (int) $totalActivities }} })"
+            x-on:input="recalculate()"
+            x-on:change="recalculate()"
             class="mt-6 pb-24 lg:pb-0"
         >
             @csrf
@@ -172,8 +152,6 @@
                                                     class="min-w-0 flex-1 bg-transparent px-3.5 text-[16px] tabular-nums text-slate-800 outline-none placeholder:text-slate-300"
                                                     data-quantity-input
                                                     data-base-ef="{{ (float) ($activity->emissionFactor?->ef_value ?? 0) }}"
-                                                    x-on:input="recalculate()"
-                                                    x-on:change="recalculate()"
                                                     x-on:focus="selectOnFocus($event)"
                                                 >
                                                 <span data-unit-pill class="flex w-24 shrink-0 items-center justify-center truncate bg-mist-100 px-3 text-center text-[14px] font-medium leading-5 text-pine-900">{{ $defaultUnit }}</span>

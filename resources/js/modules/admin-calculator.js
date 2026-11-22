@@ -19,6 +19,8 @@ export const adminCalculator = (params = {}) => ({
     init() {
         this.rowCount = this.rows().length;
         this.recalculate();
+        this.$el.addEventListener('input', () => this.recalculate());
+        this.$el.addEventListener('change', () => this.recalculate());
     },
 
     rows() {
