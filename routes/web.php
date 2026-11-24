@@ -9,9 +9,9 @@ use App\Http\Controllers\Admin\Config\ConfigController;
 use App\Http\Controllers\Admin\Config\EmissionFactorController;
 use App\Http\Controllers\Admin\Config\OptionController;
 use App\Http\Controllers\Admin\Config\ProcessController;
+use App\Http\Controllers\Admin\Config\ProductController;
 use App\Http\Controllers\Admin\Config\SchemeController;
 use App\Http\Controllers\Admin\Config\SourceController;
-use App\Http\Controllers\Admin\Config\SubprocessController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PublishedReportController;
 use App\Http\Controllers\Admin\ReportController;
@@ -59,8 +59,8 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::prefix('config')->name('config.')->group(function (): void {
             Route::get('/', [ConfigController::class, 'index'])->name('index');
             Route::resource('schemes', SchemeController::class)->except(['show']);
+            Route::resource('products', ProductController::class)->except(['show']);
             Route::resource('processes', ProcessController::class)->except(['show']);
-            Route::resource('subprocesses', SubprocessController::class)->except(['show']);
             Route::resource('activities', ActivityController::class)->except(['show']);
             Route::resource('activity-units', ActivityUnitController::class)->except(['show'])->parameters(['activity-units' => 'activityUnit']);
             Route::resource('sources', SourceController::class)->except(['show']);

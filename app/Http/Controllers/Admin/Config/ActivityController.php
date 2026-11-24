@@ -9,7 +9,7 @@ use App\Http\Requests\Admin\ActivityRequest;
 use App\Models\Activity;
 use App\Models\ActivityUnit;
 use App\Models\EmissionFactor;
-use App\Models\Subprocess;
+use App\Models\Process;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use RuntimeException;
@@ -19,7 +19,7 @@ class ActivityController extends Controller
     public function index(): View
     {
         $activities = Activity::query()
-            ->with(['subprocess', 'activityUnit', 'emissionFactor'])
+            ->with(['process', 'activityUnit', 'emissionFactor'])
             ->withCount('options')
             ->orderBy('sort_order')
             ->orderBy('id')
@@ -30,16 +30,16 @@ class ActivityController extends Controller
 
     public function create(): View
     {
-        $subprocesses = Subprocess::query()->orderBy('sort_order')->orderBy('id')->get();
+        $processes = Process::query()->orderBy('sort_order')->orderBy('id')->get();
         $units = ActivityUnit::query()->orderBy('id')->get();
         $factors = EmissionFactor::query()->orderBy('id')->get();
 
-        return view('admin.config.activities.create', compact('subprocesses', 'units', 'factors'));
+        return view('admin.config.activities.create', compact('processes', 'units', 'factors'));
     }
 
     public function store(ActivityRequest $request, UpsertMasterRecord $upsert): RedirectResponse
     {
-        $data = $request->safe()->only(['subprocess_id', 'activity_unit_id', 'emission_factor_id', 'description', 'sort_order']);
+        $data = $request->safe()->only(['process_id', 'activity_unit_id', 'emission_factor_id', 'description', 'sort_order']);
 
         $upsert->handle(Activity::class, $data);
 
@@ -48,16 +48,16 @@ class ActivityController extends Controller
 
     public function edit(Activity $activity): View
     {
-        $subprocesses = Subprocess::query()->orderBy('sort_order')->orderBy('id')->get();
+        $processes = Process::query()->orderBy('sort_order')->orderBy('id')->get();
         $units = ActivityUnit::query()->orderBy('id')->get();
         $factors = EmissionFactor::query()->orderBy('id')->get();
 
-        return view('admin.config.activities.edit', compact('activity', 'subprocesses', 'units', 'factors'));
+        return view('admin.config.activities.edit', compact('activity', 'processes', 'units', 'factors'));
     }
 
     public function update(ActivityRequest $request, Activity $activity, UpsertMasterRecord $upsert): RedirectResponse
     {
-        $data = $request->safe()->only(['subprocess_id', 'activity_unit_id', 'emission_factor_id', 'description', 'sort_order']);
+        $data = $request->safe()->only(['process_id', 'activity_unit_id', 'emission_factor_id', 'description', 'sort_order']);
 
         $upsert->handle(Activity::class, $data, $activity);
 

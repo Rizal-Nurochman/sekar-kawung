@@ -5,7 +5,7 @@ namespace Database\Factories;
 use App\Models\Activity;
 use App\Models\ActivityUnit;
 use App\Models\EmissionFactor;
-use App\Models\Subprocess;
+use App\Models\Process;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,7 +21,7 @@ class ActivityFactory extends Factory
     public function definition(): array
     {
         return [
-            'subprocess_id' => Subprocess::factory(),
+            'process_id' => Process::factory(),
             'activity_unit_id' => ActivityUnit::factory(),
             'emission_factor_id' => EmissionFactor::factory(),
             'sort_order' => 0,

@@ -12,8 +12,8 @@ class LcaMasterDataSeeder extends Seeder
         DB::transaction(function (): void {
             $this->call([
                 LcaSchemeSeeder::class,
+                LcaProductSeeder::class,
                 LcaProcessSeeder::class,
-                LcaSubprocessSeeder::class,
                 LcaActivityUnitSeeder::class,
                 LcaSourceSeeder::class,
                 LcaEmissionFactorSeeder::class,

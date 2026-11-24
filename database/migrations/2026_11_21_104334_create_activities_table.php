@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('activities', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('subprocess_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('process_id')->constrained()->cascadeOnDelete();
             $table->foreignId('activity_unit_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('emission_factor_id')->nullable()->constrained()->nullOnDelete();
             $table->unsignedInteger('sort_order')->default(0);
             $table->text('description');
             $table->timestamps();
 
-            $table->index(['subprocess_id', 'sort_order']);
+            $table->index(['process_id', 'sort_order']);
         });
     }
 

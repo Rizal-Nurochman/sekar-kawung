@@ -7,7 +7,7 @@ use App\Actions\Admin\UpsertMasterRecord;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ProcessRequest;
 use App\Models\Process;
-use App\Models\Scheme;
+use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use RuntimeException;
@@ -16,21 +16,21 @@ class ProcessController extends Controller
 {
     public function index(): View
     {
-        $processes = Process::query()->with('scheme')->orderBy('sort_order')->orderBy('id')->paginate(20);
+        $processes = Process::query()->with('product')->orderBy('sort_order')->orderBy('id')->paginate(20);
 
         return view('admin.config.processes.index', compact('processes'));
     }
 
     public function create(): View
     {
-        $schemes = Scheme::query()->orderBy('sort_order')->orderBy('id')->get();
+        $products = Product::query()->orderBy('sort_order')->orderBy('id')->get();
 
-        return view('admin.config.processes.create', compact('schemes'));
+        return view('admin.config.processes.create', compact('products'));
     }
 
     public function store(ProcessRequest $request, UpsertMasterRecord $upsert): RedirectResponse
     {
-        $data = $request->safe()->only(['scheme_id', 'description', 'sort_order']);
+        $data = $request->safe()->only(['product_id', 'description', 'sort_order']);
 
         $upsert->handle(Process::class, $data);
 
@@ -39,14 +39,14 @@ class ProcessController extends Controller
 
     public function edit(Process $process): View
     {
-        $schemes = Scheme::query()->orderBy('sort_order')->orderBy('id')->get();
+        $products = Product::query()->orderBy('sort_order')->orderBy('id')->get();
 
-        return view('admin.config.processes.edit', compact('process', 'schemes'));
+        return view('admin.config.processes.edit', compact('process', 'products'));
     }
 
     public function update(ProcessRequest $request, Process $process, UpsertMasterRecord $upsert): RedirectResponse
     {
-        $data = $request->safe()->only(['scheme_id', 'description', 'sort_order']);
+        $data = $request->safe()->only(['product_id', 'description', 'sort_order']);
 
         $upsert->handle(Process::class, $data, $process);
 

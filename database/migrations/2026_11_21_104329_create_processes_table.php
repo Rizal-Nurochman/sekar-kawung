@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('subprocesses', function (Blueprint $table) {
+        Schema::create('processes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('process_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->text('description');
             $table->unsignedInteger('sort_order')->default(0);
             $table->timestamps();
 
-            $table->index(['process_id', 'sort_order']);
+            $table->index(['product_id', 'sort_order']);
         });
     }
 
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('subprocesses');
+        Schema::dropIfExists('processes');
     }
 };

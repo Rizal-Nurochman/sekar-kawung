@@ -11,7 +11,7 @@ it('renders the new landing view with schemes and process cards', function () {
     $this->get('/')->assertOk()
         ->assertViewIs('landing')
         ->assertViewHas('schemes')
-        ->assertViewHas('processCards');
+        ->assertViewHas('productCards');
 });
 
 it('shows the hero copy, navigation, and calculator call to action', function () {
@@ -39,7 +39,7 @@ it('renders four process cards from the database', function () {
 
     $response = $this->get('/')->assertOk();
 
-    $cards = $response->viewData('processCards');
+    $cards = $response->viewData('productCards');
 
     expect($cards)->toHaveCount(4);
 
@@ -58,7 +58,7 @@ it('falls back to static cards when the database is empty', function () {
 });
 
 it('exposes the fallback card definition', function () {
-    expect(HomeController::processCards())->toHaveCount(4);
+    expect(HomeController::productCards())->toHaveCount(4);
 });
 
 it('serves the methodology page with calculation examples', function () {

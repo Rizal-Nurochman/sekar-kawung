@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['scheme_id', 'description', 'sort_order'])]
+#[Fillable(['product_id', 'description', 'sort_order'])]
 class Process extends Model
 {
     use HasFactory;
@@ -16,18 +16,18 @@ class Process extends Model
     protected function casts(): array
     {
         return [
-            'scheme_id' => 'integer',
+            'product_id' => 'integer',
             'sort_order' => 'integer',
         ];
     }
 
-    public function scheme(): BelongsTo
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(Scheme::class);
+        return $this->belongsTo(Product::class);
     }
 
-    public function subprocesses(): HasMany
+    public function activities(): HasMany
     {
-        return $this->hasMany(Subprocess::class)->orderBy('sort_order');
+        return $this->hasMany(Activity::class)->orderBy('sort_order');
     }
 }

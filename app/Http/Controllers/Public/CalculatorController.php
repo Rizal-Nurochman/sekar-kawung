@@ -12,7 +12,7 @@ class CalculatorController extends Controller
 {
     public function edit(CalculatorWizard $wizard): View
     {
-        $ordered = $wizard->orderedProcesses();
+        $ordered = $wizard->orderedProducts();
         $totalSteps = $ordered->count();
 
         if ($totalSteps === 0) {
@@ -48,9 +48,9 @@ class CalculatorController extends Controller
             ]);
         }
 
-        $currentProcess = $ordered->values()->get($current);
+        $currentProduct = $ordered->values()->get($current);
 
-        if ($currentProcess === null) {
+        if ($currentProduct === null) {
             $wizard->reset();
 
             return view('landing.calculator.edit', [
@@ -59,12 +59,12 @@ class CalculatorController extends Controller
             ]);
         }
 
-        $process = $wizard->processWithInventory($currentProcess);
+        $product = $wizard->productWithInventory($currentProduct);
         $entries = $state['entries'] ?? [];
-        $base = $wizard->baseTotals($process, $entries);
+        $base = $wizard->baseTotals($product, $entries);
 
-        $currentIds = $process->subprocesses
-            ->flatMap(fn ($subprocess) => $subprocess->activities->pluck('id'))
+        $currentIds = $product->processes
+            ->flatMap(fn ($process) => $process->activities->pluck('id'))
             ->map(fn ($id): string => (string) (int) $id)
             ->all();
         $currentSet = array_flip($currentIds);
@@ -80,7 +80,7 @@ class CalculatorController extends Controller
             'mode' => 'step',
             'totalSteps' => $totalSteps,
             'currentIndex' => $current,
-            'process' => $process,
+            'product' => $product,
             'entries' => $entries,
             'baseTotal' => (float) $base['total'],
             'baseFilled' => (int) $base['filled'],
@@ -100,7 +100,7 @@ class CalculatorController extends Controller
     public function step(CalculatorStepRequest $request, CalculatorWizard $wizard): RedirectResponse
     {
         $validated = $request->validated();
-        $ordered = $wizard->orderedProcesses();
+        $ordered = $wizard->orderedProducts();
         $totalSteps = $ordered->count();
 
         $state = $wizard->state();
@@ -110,22 +110,22 @@ class CalculatorController extends Controller
         }
 
         $current = (int) $state['current'];
-        $currentProcess = $ordered->values()->get($current);
+        $currentProduct = $ordered->values()->get($current);
 
-        if ($currentProcess === null) {
+        if ($currentProduct === null) {
             $wizard->reset();
 
             return redirect()->route('calculator');
         }
 
-        if ((int) $validated['process_id'] !== (int) $currentProcess->getKey()) {
+        if ((int) $validated['product_id'] !== (int) $currentProduct->getKey()) {
             return redirect()->route('calculator')->withErrors([
                 'general' => 'Langkah tidak sesuai urutan. Lanjutkan dari posisi tersimpan.',
             ]);
         }
 
-        $fullProcess = $wizard->processWithInventory($currentProcess);
-        $wizard->saveStep($fullProcess, $validated['items'] ?? []);
+        $fullProduct = $wizard->productWithInventory($currentProduct);
+        $wizard->saveStep($fullProduct, $validated['items'] ?? []);
 
         $direction = $validated['direction'] === 'back' ? -1 : 1;
         $wizard->moveTo($current + $direction, $totalSteps);
@@ -135,7 +135,7 @@ class CalculatorController extends Controller
 
     public function backFromReview(CalculatorWizard $wizard): RedirectResponse
     {
-        $ordered = $wizard->orderedProcesses();
+        $ordered = $wizard->orderedProducts();
         $state = $wizard->state();
 
         if ($state === null || $ordered->isEmpty()) {

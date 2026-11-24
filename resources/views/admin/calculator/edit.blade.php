@@ -53,10 +53,10 @@
             $rowIndex = 0;
         @endphp
 
-        <p class="text-[13px] font-medium text-ink-muted">{{ $process->scheme?->description }}</p>
+        <p class="text-[13px] font-medium text-ink-muted">{{ $product->scheme?->description }}</p>
         <div class="mt-1 flex flex-wrap items-baseline justify-between gap-2">
             <h2 id="wizard-progress" class="text-lg font-bold leading-7 tracking-tight text-pine-900">
-                Proses {{ $position }} dari {{ $totalSteps }} : {{ $process->description }}
+                Produk {{ $position }} dari {{ $totalSteps }} : {{ $product->description }}
             </h2>
             <p class="text-[13px] tabular-nums text-ink-muted">{{ $percent }}%</p>
         </div>
@@ -74,17 +74,17 @@
             class="mt-6 pb-24 lg:pb-0"
         >
             @csrf
-            <input type="hidden" name="process_id" value="{{ $process->id }}">
+            <input type="hidden" name="product_id" value="{{ $product->id }}">
 
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_17.5rem]">
                 <div class="min-w-0 space-y-6">
                     <x-admin.ui.errors />
 
-                    @if ($process->subprocesses->isEmpty())
+                    @if ($product->processes->isEmpty())
                         <x-admin.ui.panel flush>
                             <x-admin.ui.empty-state
-                                title="Proses ini belum punya tahap"
-                                description="Proses ini belum punya subproses atau aktivitas. Lanjut ke proses berikutnya untuk tetap menyimpan posisi."
+                                title="Produk ini belum punya tahap"
+                                description="Produk ini belum punya proses atau aktivitas. Lanjut ke produk berikutnya untuk tetap menyimpan posisi."
                             >
                                 <x-slot:icon>
                                     <x-lucide-list-tree />
@@ -92,14 +92,14 @@
                             </x-admin.ui.empty-state>
                         </x-admin.ui.panel>
                     @else
-                        @foreach ($process->subprocesses as $subprocess)
-                            <section aria-labelledby="subprocess-{{ $subprocess->id }}" class="overflow-hidden rounded-2xl border border-line bg-white">
+                        @foreach ($product->processes as $process)
+                            <section aria-labelledby="process-{{ $process->id }}" class="overflow-hidden rounded-2xl border border-line bg-white">
                                 <div class="border-b border-line px-4 py-3 sm:px-5">
-                                    <h3 id="subprocess-{{ $subprocess->id }}" class="text-[15px] font-semibold leading-6 text-pine-900">{{ $subprocess->description }}</h3>
-                                    <p class="mt-0.5 text-xs tabular-nums text-ink-muted">{{ $subprocess->activities->count() }} aktivitas</p>
+                                    <h3 id="process-{{ $process->id }}" class="text-[15px] font-semibold leading-6 text-pine-900">{{ $process->description }}</h3>
+                                    <p class="mt-0.5 text-xs tabular-nums text-ink-muted">{{ $process->activities->count() }} aktivitas</p>
                                 </div>
                                 <div class="grid grid-cols-1 gap-x-6 gap-y-5 px-4 py-4 sm:grid-cols-2 sm:px-5">
-                                    @foreach ($subprocess->activities as $activity)
+                                    @foreach ($process->activities as $activity)
                                         @php
                                             $hasOptions = $activity->options->isNotEmpty();
                                             $fallbackUnit = $activity->activityUnit?->unit_name ?? '';
@@ -183,7 +183,7 @@
                             @if ($position >= $totalSteps)
                                 Lihat ulasan
                             @else
-                                Lanjut ke Proses {{ $position + 1 }}
+                                Lanjut ke Produk {{ $position + 1 }}
                             @endif
                             <x-lucide-arrow-right />
                         </x-admin.ui.button>
@@ -266,10 +266,10 @@
                     <section aria-labelledby="review-proses-{{ $boundary['id'] }}" class="mt-2">
                         <p class="text-[13px] font-medium text-ink-muted">{{ $boundary['scheme'] }}</p>
                         <h2 id="review-proses-{{ $boundary['id'] }}" class="mt-1 text-lg font-bold leading-7 tracking-tight text-pine-900">
-                            Proses {{ $position }} dari {{ $boundaryTotal }} : {{ $boundary['description'] }}
+                            Produk {{ $position }} dari {{ $boundaryTotal }} : {{ $boundary['description'] }}
                         </h2>
                         <p class="mt-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 rounded-panel bg-pine-900 px-4 py-3">
-                            <span class="text-[13px] font-semibold text-white">Subtotal proses</span>
+                            <span class="text-[13px] font-semibold text-white">Subtotal produk</span>
                             <span class="text-xl font-bold tabular-nums tracking-tight text-white">{{ \App\Support\Number::emissionId($boundary['total']) }} <span class="text-[12px] font-medium text-sage-pale">kg CO2e</span></span>
                         </p>
 
@@ -277,7 +277,7 @@
                             <x-admin.ui.panel class="mt-4" flush>
                                 <x-admin.ui.empty-state
                                     title="Belum ada isian pada proses ini"
-                                    description="Proses ini belum punya kuantitas tersimpan."
+                                    description="Produk ini belum punya kuantitas tersimpan."
                                 >
                                     <x-slot:icon>
                                         <x-lucide-list-tree />
@@ -285,7 +285,7 @@
                                 </x-admin.ui.empty-state>
                             </x-admin.ui.panel>
                         @else
-                            <x-admin.ui.panel class="mt-4" title="Rincian per tahap" :description="'Kontribusi emisi tiap subproses pada '.$boundary['description'].'.'" flush>
+                            <x-admin.ui.panel class="mt-4" title="Rincian per tahap" :description="'Kontribusi emisi tiap proses pada '.$boundary['description'].'.'" flush>
                                 <table class="data-table">
                                     <thead>
                                         <tr>
@@ -322,7 +322,7 @@
                                                 <tr>
                                                     <td>
                                                         <p class="text-[13.5px] font-medium text-pine-900">{{ $row['activity'] }}</p>
-                                                        <p class="mt-0.5 text-xs leading-4 text-ink-muted">{{ $row['subprocess'] }}</p>
+                                                        <p class="mt-0.5 text-xs leading-4 text-ink-muted">{{ $row['process'] }}</p>
                                                         @if ($row['option'])
                                                             <p class="mt-0.5 text-xs leading-4 text-ink-muted">Opsi: {{ $row['option'] }}</p>
                                                         @elseif ($row['is_heritage'])
@@ -376,7 +376,7 @@
                         @csrf
                         <x-admin.ui.button id="wizard-back-review" type="submit" size="md">
                             <x-lucide-arrow-left />
-                            Kembali ke {{ $lastProcess?->description ? 'Proses '.$totalSteps : 'proses' }}
+                            Kembali ke {{ $lastProcess?->description ? 'Produk '.$totalSteps : 'produk' }}
                         </x-admin.ui.button>
                     </form>
                     <form method="POST" action="{{ route('admin.calculator.store') }}">

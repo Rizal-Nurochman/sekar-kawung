@@ -2,14 +2,14 @@
 
 namespace Database\Factories;
 
-use App\Models\Process;
-use App\Models\Subprocess;
+use App\Models\Product;
+use App\Models\Scheme;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Subprocess>
+ * @extends Factory<Product>
  */
-class SubprocessFactory extends Factory
+class ProductFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -19,7 +19,7 @@ class SubprocessFactory extends Factory
     public function definition(): array
     {
         return [
-            'process_id' => Process::factory(),
+            'scheme_id' => Scheme::factory(),
             'description' => fake()->words(3, true),
             'sort_order' => 0,
         ];

@@ -23,7 +23,7 @@ class ActivityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'subprocess_id' => ['required', 'integer', 'exists:subprocesses,id'],
+            'process_id' => ['required', 'integer', 'exists:processes,id'],
             'activity_unit_id' => ['nullable', 'integer', 'exists:activity_units,id'],
             'emission_factor_id' => ['nullable', 'integer', 'exists:emission_factors,id'],
             'description' => ['required', 'string', 'max:255'],

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateReportRequest;
-use App\Models\Process;
+use App\Models\Product;
 use App\Models\Scheme;
 use App\Models\SustainabilityReport;
 use Illuminate\Database\Eloquent\Collection;
@@ -27,7 +27,7 @@ class ReportController extends Controller
         $search = trim((string) $request->query('q', ''));
 
         $reports = SustainabilityReport::query()
-            ->with(['scheme', 'process'])
+            ->with(['scheme', 'product'])
             ->when($status === 'published', fn ($query) => $query->where('is_published', true))
             ->when($status === 'draft', fn ($query) => $query->where('is_published', false))
             ->when($search !== '', fn ($query) => $query->where('title', 'like', '%'.$search.'%'))
@@ -55,9 +55,9 @@ class ReportController extends Controller
     public function edit(SustainabilityReport $report): View
     {
         return view('admin.reports.edit', [
-            'report' => $report->load(['scheme', 'process']),
+            'report' => $report->load(['scheme', 'product']),
             'schemes' => $this->schemes(),
-            'processes' => $this->processes(),
+            'products' => $this->products(),
         ]);
     }
 
@@ -90,35 +90,35 @@ class ReportController extends Controller
     {
         $report->load([
             'scheme',
-            'process',
-            'items.activity.subprocess.process.scheme',
+            'product',
+            'items.activity.process.product.scheme',
             'items.activity.activityUnit',
             'items.activity.emissionFactor.source',
             'items.option.activityUnit',
             'items.option.emissionFactor.source',
         ]);
 
-        $orderedProcesses = Process::query()
+        $orderedProducts = Product::query()
             ->with('scheme')
-            ->join('schemes', 'schemes.id', '=', 'processes.scheme_id')
+            ->join('schemes', 'schemes.id', '=', 'products.scheme_id')
             ->orderBy('schemes.sort_order')
             ->orderBy('schemes.id')
-            ->orderBy('processes.sort_order')
-            ->orderBy('processes.id')
-            ->select('processes.*')
+            ->orderBy('products.sort_order')
+            ->orderBy('products.id')
+            ->select('products.*')
             ->get();
 
         $grandTotal = (float) $report->items->sum(fn ($item) => (float) $item->emission_result);
 
-        $boundaries = $orderedProcesses->map(function (Process $process) use ($report): array {
+        $boundaries = $orderedProducts->map(function (Product $product) use ($report): array {
             $rows = $report->items
-                ->filter(fn ($item) => (int) ($item->activity?->subprocess?->process_id) === (int) $process->getKey())
+                ->filter(fn ($item) => (int) ($item->activity?->process?->product_id) === (int) $product->getKey())
                 ->values();
 
-            $processTotal = (float) $rows->sum(fn ($item) => (float) $item->emission_result);
+            $productTotal = (float) $rows->sum(fn ($item) => (float) $item->emission_result);
 
             $stages = $rows
-                ->groupBy(fn ($item) => $item->activity?->subprocess?->description ?? 'Tahap lain')
+                ->groupBy(fn ($item) => $item->activity?->process?->description ?? 'Tahap lain')
                 ->map(fn ($items, $name) => [
                     'name' => $name,
                     'total' => (float) $items->sum(fn ($item) => (float) $item->emission_result),
@@ -128,11 +128,11 @@ class ReportController extends Controller
                 ->values();
 
             return [
-                'id' => $process->getKey(),
-                'scheme_id' => $process->scheme_id,
-                'scheme' => $process->scheme?->description,
-                'description' => $process->description,
-                'total' => $processTotal,
+                'id' => $product->getKey(),
+                'scheme_id' => $product->scheme_id,
+                'scheme' => $product->scheme?->description,
+                'description' => $product->description,
+                'total' => $productTotal,
                 'count' => $rows->count(),
                 'filled' => $rows->where(fn ($item): bool => (float) $item->quantity > 0)->count(),
                 'stages' => $stages,
@@ -142,18 +142,18 @@ class ReportController extends Controller
 
         $schemes = $boundaries
             ->groupBy('scheme_id')
-            ->map(fn ($processes, $schemeId) => [
+            ->map(fn ($products, $schemeId) => [
                 'id' => (int) $schemeId,
-                'name' => $processes->first()['scheme'],
-                'total' => (float) $processes->sum('total'),
-                'count' => (int) $processes->sum('count'),
-                'filled' => (int) $processes->sum('filled'),
-                'processes' => $processes->values(),
+                'name' => $products->first()['scheme'],
+                'total' => (float) $products->sum('total'),
+                'count' => (int) $products->sum('count'),
+                'filled' => (int) $products->sum('filled'),
+                'products' => $products->values(),
             ])
             ->values();
 
         $stages = $report->items
-            ->groupBy(fn ($item) => $item->activity?->subprocess?->description ?? 'Tahap lain')
+            ->groupBy(fn ($item) => $item->activity?->process?->description ?? 'Tahap lain')
             ->map(fn ($items, $name) => [
                 'name' => $name,
                 'total' => (float) $items->sum(fn ($item) => (float) $item->emission_result),
@@ -204,11 +204,11 @@ class ReportController extends Controller
     }
 
     /**
-     * @return Collection<int, Process>
+     * @return Collection<int, Product>
      */
-    protected function processes()
+    protected function products()
     {
-        return Process::query()->with('scheme')->orderBy('scheme_id')->orderBy('sort_order')->orderBy('id')->get();
+        return Product::query()->with('scheme')->orderBy('scheme_id')->orderBy('sort_order')->orderBy('id')->get();
     }
 
     protected function resolveSlug(?string $slug, string $title, mixed $ignoreId = null): string

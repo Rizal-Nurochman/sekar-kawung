@@ -39,7 +39,7 @@
         <section class="mx-auto w-full max-w-[1200px] px-4 pb-20 sm:px-6 lg:px-0">
             <div class="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 id="wizard-progress" class="text-lg font-bold leading-7 tracking-tight text-pine-900">
-                    Proses {{ $position }} dari {{ $totalSteps }}
+                    Produk {{ $position }} dari {{ $totalSteps }}
                 </h2>
                 <p class="text-[13px] tabular-nums text-ink-muted">{{ $percent }}%</p>
             </div>
@@ -57,26 +57,26 @@
                 class="mt-6 pb-24 lg:pb-0"
             >
                 @csrf
-                <input type="hidden" name="process_id" value="{{ $process->id }}">
+                <input type="hidden" name="product_id" value="{{ $product->id }}">
 
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_17.5rem]">
                     <div class="min-w-0 space-y-6">
                         <x-admin.ui.errors />
 
-                        @if ($process->subprocesses->isEmpty())
+                        @if ($product->processes->isEmpty())
                             <div class="rounded-panel border border-line bg-white px-5 py-4">
-                                <p class="text-[13px] font-semibold text-pine-900">Proses ini belum punya tahap</p>
-                                <p class="mt-0.5 text-[13px] leading-5 text-ink-muted">Proses ini belum punya subproses atau aktivitas. Lanjut ke proses berikutnya untuk tetap menyimpan posisi.</p>
+                                <p class="text-[13px] font-semibold text-pine-900">Produk ini belum punya tahap</p>
+                                <p class="mt-0.5 text-[13px] leading-5 text-ink-muted">Produk ini belum punya proses atau aktivitas. Lanjut ke produk berikutnya untuk tetap menyimpan posisi.</p>
                             </div>
                         @else
-                            @foreach ($process->subprocesses as $subprocess)
-                                <section aria-labelledby="subprocess-{{ $subprocess->id }}" class="overflow-hidden rounded-2xl border border-line bg-white">
+                            @foreach ($product->processes as $process)
+                                <section aria-labelledby="process-{{ $process->id }}" class="overflow-hidden rounded-2xl border border-line bg-white">
                                     <div class="border-b border-line px-4 py-3 sm:px-5">
-                                        <h3 id="subprocess-{{ $subprocess->id }}" class="text-[15px] font-semibold leading-6 text-pine-900">{{ $subprocess->description }}</h3>
-                                        <p class="mt-0.5 text-xs tabular-nums text-ink-muted">{{ $subprocess->activities->count() }} aktivitas</p>
+                                        <h3 id="process-{{ $process->id }}" class="text-[15px] font-semibold leading-6 text-pine-900">{{ $process->description }}</h3>
+                                        <p class="mt-0.5 text-xs tabular-nums text-ink-muted">{{ $process->activities->count() }} aktivitas</p>
                                     </div>
                                     <div class="grid grid-cols-1 gap-x-6 gap-y-5 px-4 py-4 sm:grid-cols-2 sm:px-5">
-                                        @foreach ($subprocess->activities as $activity)
+                                        @foreach ($process->activities as $activity)
                                             @php
                                                 $hasOptions = $activity->options->isNotEmpty();
                                                 $fallbackUnit = $activity->activityUnit?->unit_name ?? '';
@@ -157,7 +157,7 @@
                                 @if ($position >= $totalSteps)
                                     Lihat ulasan
                                 @else
-                                    Lanjut ke Proses {{ $position + 1 }}
+                                    Lanjut ke Produk {{ $position + 1 }}
                                 @endif
                             </button>
                         </nav>
@@ -241,22 +241,22 @@
                         @endphp
                         <section aria-labelledby="review-proses-{{ $boundary['id'] }}" class="mt-2">
                             <h2 id="review-proses-{{ $boundary['id'] }}" class="text-lg font-bold leading-7 tracking-tight text-pine-900">
-                                Proses {{ $position }} dari {{ $boundaryTotal }}
+                                Produk {{ $position }} dari {{ $boundaryTotal }}
                             </h2>
                             <p class="mt-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 rounded-panel bg-pine-900 px-4 py-3">
-                                <span class="text-[13px] font-semibold text-white">Subtotal proses</span>
+                                <span class="text-[13px] font-semibold text-white">Subtotal produk</span>
                                 <span class="text-xl font-bold tabular-nums tracking-tight text-white">{{ \App\Support\Number::emissionId($boundary['total']) }} <span class="text-[12px] font-medium text-sage-pale">kg CO2e</span></span>
                             </p>
 
                             @if ($boundary['items']->isEmpty())
                                 <div class="rounded-panel border border-line bg-white px-5 py-4">
                                     <p class="text-[13px] font-semibold text-pine-900">Belum ada isian pada proses ini</p>
-                                    <p class="mt-0.5 text-[13px] leading-5 text-ink-muted">Proses ini belum punya kuantitas tersimpan.</p>
+                                    <p class="mt-0.5 text-[13px] leading-5 text-ink-muted">Produk ini belum punya kuantitas tersimpan.</p>
                                 </div>
                             @else
                                 <div class="rounded-panel border border-line bg-white px-5 py-4">
                                     <h3 class="text-sm font-semibold text-pine-900">Rincian per tahap</h3>
-                                    <p class="mt-0.5 text-[13px] leading-5 text-ink-muted">Kontribusi emisi tiap subproses pada proses ini.</p>
+                                    <p class="mt-0.5 text-[13px] leading-5 text-ink-muted">Kontribusi emisi tiap proses pada proses ini.</p>
                                     <table class="data-table mt-3">
                                         <thead>
                                             <tr>
@@ -295,7 +295,7 @@
                                                     <tr>
                                                         <td>
                                                             <p class="text-[13.5px] font-medium text-pine-900">{{ $row['activity'] }}</p>
-                                                            <p class="mt-0.5 text-xs leading-4 text-ink-muted">{{ $row['subprocess'] }}</p>
+                                                            <p class="mt-0.5 text-xs leading-4 text-ink-muted">{{ $row['process'] }}</p>
                                                             @if ($row['option'])
                                                                 <p class="mt-0.5 text-xs leading-4 text-ink-muted">Opsi: {{ $row['option'] }}</p>
                                                             @elseif ($row['is_heritage'])
@@ -350,7 +350,7 @@
                         <form method="POST" action="{{ route('calculator.backFromReview') }}">
                             @csrf
                             <button id="wizard-back-review" type="submit" class="btn btn-secondary">
-                                Kembali ke {{ $lastProcess?->description ? 'Proses '.$totalSteps : 'proses' }}
+                                Kembali ke {{ $lastProcess?->description ? 'Produk '.$totalSteps : 'produk' }}
                             </button>
                         </form>
                         <div class="flex items-center gap-3">

@@ -4,8 +4,8 @@ use App\Models\Activity;
 use App\Models\EmissionFactor;
 use App\Models\Option;
 use App\Models\Process;
+use App\Models\Product;
 use App\Models\Scheme;
-use App\Models\Subprocess;
 use App\Models\SustainabilityReport;
 use App\Models\SustainabilityReportItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,16 +15,16 @@ uses(RefreshDatabase::class);
 function publicCalculatorContext(): array
 {
     $scheme = Scheme::factory()->create(['sort_order' => 1]);
-    $process = Process::factory()->create([
+    $product = Product::factory()->create([
         'scheme_id' => $scheme->id,
         'sort_order' => 1,
     ]);
-    $subprocess = Subprocess::factory()->create([
-        'process_id' => $process->id,
+    $process = Process::factory()->create([
+        'product_id' => $product->id,
         'sort_order' => 1,
     ]);
 
-    return [$scheme, $process, $subprocess];
+    return [$scheme, $product, $process];
 }
 
 it('lets guests start the public wizard with no login and no report rows', function () {
@@ -43,16 +43,16 @@ it('lets guests start the public wizard with no login and no report rows', funct
 });
 
 it('shows process 1 with option dropdown, unit pill, and live-total wiring', function () {
-    [, , $subprocess] = publicCalculatorContext();
+    [, , $process] = publicCalculatorContext();
 
     $option = Option::factory()->create();
-    $transport = Activity::factory()->create(['subprocess_id' => $subprocess->id]);
+    $transport = Activity::factory()->create(['process_id' => $process->id]);
     $transport->options()->attach($option->id);
 
     $this->post(route('calculator.start'))->assertRedirect(route('calculator'));
 
     $this->get(route('calculator'))->assertOk()
-        ->assertSee('Proses 1 dari', false)
+        ->assertSee('Produk 1 dari', false)
         ->assertSee('Pilih opsi', false)
         ->assertSee($option->description, false)
         ->assertSee('data-calculator-row', false)
@@ -65,17 +65,17 @@ it('shows process 1 with option dropdown, unit pill, and live-total wiring', fun
 
 it('advances through steps and preserves entries on refresh', function () {
     $scheme = Scheme::factory()->create(['sort_order' => 1]);
-    $first = Process::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 1]);
-    $second = Process::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2]);
-    $firstSub = Subprocess::factory()->create(['process_id' => $first->id]);
-    $secondSub = Subprocess::factory()->create(['process_id' => $second->id]);
-    $activityA = Activity::factory()->create(['subprocess_id' => $firstSub->id]);
-    $activityB = Activity::factory()->create(['subprocess_id' => $secondSub->id]);
+    $first = Product::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 1]);
+    $second = Product::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2]);
+    $firstProc = Process::factory()->create(['product_id' => $first->id]);
+    $secondProc = Process::factory()->create(['product_id' => $second->id]);
+    $activityA = Activity::factory()->create(['process_id' => $firstProc->id]);
+    $activityB = Activity::factory()->create(['process_id' => $secondProc->id]);
 
     $this->post(route('calculator.start'))->assertRedirect(route('calculator'));
 
     $this->post(route('calculator.step'), [
-        'process_id' => $first->id,
+        'product_id' => $first->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $activityA->id, 'option_id' => null, 'quantity' => 3],
@@ -83,10 +83,10 @@ it('advances through steps and preserves entries on refresh', function () {
     ])->assertRedirect(route('calculator'));
 
     $this->get(route('calculator'))->assertOk()
-        ->assertSee('Proses 2 dari', false);
+        ->assertSee('Produk 2 dari', false);
 
     $this->post(route('calculator.step'), [
-        'process_id' => $second->id,
+        'product_id' => $second->id,
         'direction' => 'back',
         'items' => [
             ['activity_id' => $activityB->id, 'option_id' => null, 'quantity' => 0],
@@ -94,25 +94,25 @@ it('advances through steps and preserves entries on refresh', function () {
     ])->assertRedirect();
 
     $this->get(route('calculator'))->assertOk()
-        ->assertSee('Proses 1 dari', false)
+        ->assertSee('Produk 1 dari', false)
         ->assertSee('value="3"', false);
 
     expect(SustainabilityReport::query()->count())->toBe(0);
 });
 
 it('shows the full report after the last step without saving', function () {
-    [, $process, $subprocess] = publicCalculatorContext();
+    [, $product, $process] = publicCalculatorContext();
 
     $factor = EmissionFactor::factory()->create(['ef_value' => 2.5]);
     $activity = Activity::factory()->create([
-        'subprocess_id' => $subprocess->id,
+        'process_id' => $process->id,
         'emission_factor_id' => $factor->id,
     ]);
 
     $this->post(route('calculator.start'))->assertRedirect(route('calculator'));
 
     $this->post(route('calculator.step'), [
-        'process_id' => $process->id,
+        'product_id' => $product->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $activity->id, 'option_id' => null, 'quantity' => 4],
@@ -124,7 +124,7 @@ it('shows the full report after the last step without saving', function () {
         ->assertSee('Total emisi', false)
         ->assertSee('10', false)
         ->assertSee('kg CO2e', false)
-        ->assertSee('Subtotal proses', false)
+        ->assertSee('Subtotal produk', false)
         ->assertSee('Rincian per tahap', false)
         ->assertSee('Rincian aktivitas', false)
         ->assertSee($activity->description, false)
@@ -136,18 +136,18 @@ it('shows the full report after the last step without saving', function () {
 });
 
 it('counts zero-emission rows correctly: blank stays unfilled, tosa and heritage count as filled but emit nothing', function () {
-    [, $process, $subprocess] = publicCalculatorContext();
+    [, $product, $process] = publicCalculatorContext();
 
     $tosa = Option::factory()->withoutEmissionFactor()->withoutUnit()->create(['description' => 'Tosa']);
-    $transport = Activity::factory()->withoutEmissionFactor()->withoutUnit()->create(['subprocess_id' => $subprocess->id]);
+    $transport = Activity::factory()->withoutEmissionFactor()->withoutUnit()->create(['process_id' => $process->id]);
     $transport->options()->attach($tosa->id);
-    $heritage = Activity::factory()->withoutEmissionFactor()->withoutUnit()->create(['subprocess_id' => $subprocess->id]);
-    $blank = Activity::factory()->withoutEmissionFactor()->withoutUnit()->create(['subprocess_id' => $subprocess->id]);
+    $heritage = Activity::factory()->withoutEmissionFactor()->withoutUnit()->create(['process_id' => $process->id]);
+    $blank = Activity::factory()->withoutEmissionFactor()->withoutUnit()->create(['process_id' => $process->id]);
 
     $this->post(route('calculator.start'));
 
     $this->post(route('calculator.step'), [
-        'process_id' => $process->id,
+        'product_id' => $product->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $transport->id, 'option_id' => $tosa->id, 'quantity' => 5],
@@ -164,15 +164,15 @@ it('counts zero-emission rows correctly: blank stays unfilled, tosa and heritage
 });
 
 it('rejects an option that does not belong to the activity', function () {
-    [, $process, $subprocess] = publicCalculatorContext();
+    [, $product, $process] = publicCalculatorContext();
 
-    $activity = Activity::factory()->create(['subprocess_id' => $subprocess->id]);
+    $activity = Activity::factory()->create(['process_id' => $process->id]);
     $foreignOption = Option::factory()->create();
 
     $this->post(route('calculator.start'));
 
     $this->post(route('calculator.step'), [
-        'process_id' => $process->id,
+        'product_id' => $product->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $activity->id, 'option_id' => $foreignOption->id, 'quantity' => 5],
@@ -183,15 +183,15 @@ it('rejects an option that does not belong to the activity', function () {
 });
 
 it('rejects an activity outside the current process', function () {
-    [$scheme, $process] = publicCalculatorContext();
-    $otherProcess = Process::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2]);
-    $otherSub = Subprocess::factory()->create(['process_id' => $otherProcess->id]);
-    $foreignActivity = Activity::factory()->create(['subprocess_id' => $otherSub->id]);
+    [$scheme, $product] = publicCalculatorContext();
+    $otherProduct = Product::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2]);
+    $otherProc = Process::factory()->create(['product_id' => $otherProduct->id]);
+    $foreignActivity = Activity::factory()->create(['process_id' => $otherProc->id]);
 
     $this->post(route('calculator.start'));
 
     $this->post(route('calculator.step'), [
-        'process_id' => $process->id,
+        'product_id' => $product->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $foreignActivity->id, 'option_id' => null, 'quantity' => 1],
@@ -200,13 +200,13 @@ it('rejects an activity outside the current process', function () {
 });
 
 it('rejects a negative quantity', function () {
-    [, $process, $subprocess] = publicCalculatorContext();
-    $activity = Activity::factory()->create(['subprocess_id' => $subprocess->id]);
+    [, $product, $process] = publicCalculatorContext();
+    $activity = Activity::factory()->create(['process_id' => $process->id]);
 
     $this->post(route('calculator.start'));
 
     $this->post(route('calculator.step'), [
-        'process_id' => $process->id,
+        'product_id' => $product->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $activity->id, 'option_id' => null, 'quantity' => -1],
@@ -215,15 +215,15 @@ it('rejects a negative quantity', function () {
 });
 
 it('redirects to the saved position when posting out of order', function () {
-    [$scheme, $process] = publicCalculatorContext();
-    $otherProcess = Process::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2]);
-    $otherSub = Subprocess::factory()->create(['process_id' => $otherProcess->id]);
-    $foreignActivity = Activity::factory()->create(['subprocess_id' => $otherSub->id]);
+    [$scheme, $product] = publicCalculatorContext();
+    $otherProduct = Product::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2]);
+    $otherProc = Process::factory()->create(['product_id' => $otherProduct->id]);
+    $foreignActivity = Activity::factory()->create(['process_id' => $otherProc->id]);
 
     $this->post(route('calculator.start'));
 
     $this->post(route('calculator.step'), [
-        'process_id' => $otherProcess->id,
+        'product_id' => $otherProduct->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $foreignActivity->id, 'option_id' => null, 'quantity' => 2],
@@ -231,20 +231,20 @@ it('redirects to the saved position when posting out of order', function () {
     ])->assertRedirect(route('calculator'))->assertSessionHasErrors('general');
 
     $this->get(route('calculator'))->assertOk()
-        ->assertSee('Proses 1 dari', false);
+        ->assertSee('Produk 1 dari', false);
 
     expect(SustainabilityReport::query()->count())->toBe(0);
 });
 
 it('restarts cleanly after reset with no persisted rows', function () {
-    [, $process, $subprocess] = publicCalculatorContext();
+    [, $product, $process] = publicCalculatorContext();
 
-    $activity = Activity::factory()->create(['subprocess_id' => $subprocess->id]);
+    $activity = Activity::factory()->create(['process_id' => $process->id]);
 
     $this->post(route('calculator.start'));
 
     $this->post(route('calculator.step'), [
-        'process_id' => $process->id,
+        'product_id' => $product->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $activity->id, 'option_id' => null, 'quantity' => 7],
@@ -255,7 +255,7 @@ it('restarts cleanly after reset with no persisted rows', function () {
 
     $this->get(route('calculator'))->assertOk()
         ->assertSee('Mulai Menghitung', false)
-        ->assertDontSee('Proses 1 dari', false);
+        ->assertDontSee('Produk 1 dari', false);
 
     expect(SustainabilityReport::query()->count())->toBe(0)
         ->and(SustainabilityReportItem::query()->count())->toBe(0);

@@ -62,8 +62,8 @@
             <div class="pt-16 sm:pt-24">
                 <h3 class="text-2xl font-bold leading-8 tracking-tight text-white">Production Process</h3>
                 <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
-                    @foreach ($processCards as $card)
-                        <x-landing.process-card :title="$card['title']" :body="$card['body']" />
+                    @foreach ($productCards as $card)
+                        <x-landing.product-card :title="$card['title']" :body="$card['body']" />
                     @endforeach
                 </div>
                 <p class="mt-6 text-right">

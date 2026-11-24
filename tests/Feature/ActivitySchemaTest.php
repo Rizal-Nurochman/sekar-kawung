@@ -4,24 +4,24 @@ use App\Models\Activity;
 use App\Models\EmissionFactor;
 use App\Models\Option;
 use App\Models\Process;
+use App\Models\Product;
 use App\Models\Scheme;
 use App\Models\Source;
-use App\Models\Subprocess;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
 uses(LazilyRefreshDatabase::class);
 
-it('cascades scheme deletion through processes, subprocesses, and activities', function () {
+it('cascades scheme deletion through products, processes, and activities', function () {
     $scheme = Scheme::factory()->create();
-    $process = Process::factory()->for($scheme)->create();
-    $subprocess = Subprocess::factory()->for($process)->create();
-    Activity::factory()->for($subprocess)->create();
+    $product = Product::factory()->for($scheme)->create();
+    $process = Process::factory()->for($product)->create();
+    Activity::factory()->for($process)->create();
 
     $scheme->delete();
 
-    expect(Process::count())->toBe(0)
-        ->and(Subprocess::count())->toBe(0)
+    expect(Product::count())->toBe(0)
+        ->and(Process::count())->toBe(0)
         ->and(Activity::count())->toBe(0);
 });
 
@@ -73,19 +73,19 @@ it('keeps emission factors when their source is deleted', function () {
         ->and($factor->fresh()->source)->toBeNull();
 });
 
-it('orders activities by sort order within a subprocess', function () {
-    $subprocess = Subprocess::factory()->create();
+it('orders activities by sort order within a process', function () {
+    $process = Process::factory()->create();
 
-    Activity::factory()->for($subprocess)->create([
+    Activity::factory()->for($process)->create([
         'sort_order' => 2,
         'description' => 'Second',
     ]);
-    Activity::factory()->for($subprocess)->create([
+    Activity::factory()->for($process)->create([
         'sort_order' => 1,
         'description' => 'First',
     ]);
 
-    expect($subprocess->activities()->pluck('description')->all())
+    expect($process->activities()->pluck('description')->all())
         ->toBe(['First', 'Second']);
 });
 

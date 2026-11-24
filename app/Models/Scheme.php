@@ -19,8 +19,8 @@ class Scheme extends Model
         ];
     }
 
-    public function processes(): HasMany
+    public function products(): HasMany
     {
-        return $this->hasMany(Process::class)->orderBy('sort_order');
+        return $this->hasMany(Product::class)->orderBy('sort_order');
     }
 }

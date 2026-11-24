@@ -7,17 +7,17 @@ use App\Http\Controllers\Admin\Config\ConfigController;
 use App\Http\Controllers\Admin\Config\EmissionFactorController;
 use App\Http\Controllers\Admin\Config\OptionController;
 use App\Http\Controllers\Admin\Config\ProcessController;
+use App\Http\Controllers\Admin\Config\ProductController;
 use App\Http\Controllers\Admin\Config\SchemeController;
 use App\Http\Controllers\Admin\Config\SourceController;
-use App\Http\Controllers\Admin\Config\SubprocessController;
 use App\Models\Activity;
 use App\Models\ActivityUnit;
 use App\Models\EmissionFactor;
 use App\Models\Option;
 use App\Models\Process;
+use App\Models\Product;
 use App\Models\Scheme;
 use App\Models\Source;
-use App\Models\Subprocess;
 use App\Models\SustainabilityReport;
 use App\Models\SustainabilityReportItem;
 use App\Models\User;
@@ -36,8 +36,8 @@ beforeEach(function (): void {
         Route::middleware(['web', 'auth'])->prefix('admin/config')->name('admin.config.')->group(function (): void {
             Route::get('/', [ConfigController::class, 'index'])->name('index');
             Route::resource('schemes', SchemeController::class)->except(['show']);
+            Route::resource('products', ProductController::class)->except(['show']);
             Route::resource('processes', ProcessController::class)->except(['show']);
-            Route::resource('subprocesses', SubprocessController::class)->except(['show']);
             Route::resource('activities', ActivityController::class)->except(['show']);
             Route::resource('activity-units', ActivityUnitController::class)->except(['show'])->parameters(['activity-units' => 'activityUnit']);
             Route::resource('sources', SourceController::class)->except(['show']);
@@ -118,25 +118,25 @@ it('creates the full master chain through config endpoints', function (): void {
 
     $option = Option::query()->where('description', 'Listrik PLN')->firstOrFail();
 
-    // Process → subprocess → activity chain.
-    $this->post(route('admin.config.processes.store'), [
+    // Product → process → activity chain.
+    $this->post(route('admin.config.products.store'), [
         'scheme_id' => $scheme->id,
-        'description' => 'Proses Pewarnaan',
+        'description' => 'Produk Pewarnaan',
+        'sort_order' => 1,
+    ])->assertRedirect(route('admin.config.products.index'));
+
+    $product = Product::query()->where('description', 'Produk Pewarnaan')->firstOrFail();
+
+    $this->post(route('admin.config.processes.store'), [
+        'product_id' => $product->id,
+        'description' => 'Proses Pencelupan',
         'sort_order' => 1,
     ])->assertRedirect(route('admin.config.processes.index'));
 
-    $process = Process::query()->where('description', 'Proses Pewarnaan')->firstOrFail();
-
-    $this->post(route('admin.config.subprocesses.store'), [
-        'process_id' => $process->id,
-        'description' => 'Subproses Pencelupan',
-        'sort_order' => 1,
-    ])->assertRedirect(route('admin.config.subprocesses.index'));
-
-    $subprocess = Subprocess::query()->where('description', 'Subproses Pencelupan')->firstOrFail();
+    $process = Process::query()->where('description', 'Proses Pencelupan')->firstOrFail();
 
     $this->post(route('admin.config.activities.store'), [
-        'subprocess_id' => $subprocess->id,
+        'process_id' => $process->id,
         'activity_unit_id' => $unit->id,
         'emission_factor_id' => $factor->id,
         'description' => 'Pemakaian listrik pencelupan',
@@ -204,12 +204,12 @@ it('blocks deletion of a record still referenced by a report', function (): void
     // genuine FK-violation path is via sustainability reports/items which use
     // restrictOnDelete. This exercises DeleteMasterRecord's friendly error.
     $scheme = Scheme::factory()->create();
-    $process = Process::factory()->create(['scheme_id' => $scheme->id]);
+    $product = Product::factory()->create(['scheme_id' => $scheme->id]);
     $activity = Activity::factory()->create();
 
     $report = SustainabilityReport::query()->create([
         'scheme_id' => $scheme->id,
-        'process_id' => $process->id,
+        'product_id' => $product->id,
         'title' => 'Laporan Terkait',
         'slug' => 'laporan-terkait',
         'total_emission' => 1,

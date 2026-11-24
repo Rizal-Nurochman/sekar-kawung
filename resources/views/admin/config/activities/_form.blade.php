@@ -1,9 +1,9 @@
 <div class="space-y-4">
-    <x-admin.ui.field label="Subproses" name="subprocess_id" required>
-        <select id="subprocess_id" name="subprocess_id" required class="control" @error('subprocess_id') aria-invalid="true" aria-describedby="subprocess_id-error" @enderror>
-            <option value="">Pilih subproses</option>
-            @foreach ($subprocesses as $subprocess)
-                <option value="{{ $subprocess->id }}" @selected((string) old('subprocess_id', $activity->subprocess_id ?? '') === (string) $subprocess->id)>{{ $subprocess->description }}</option>
+    <x-admin.ui.field label="Proses" name="process_id" required>
+        <select id="process_id" name="process_id" required class="control" @error('process_id') aria-invalid="true" aria-describedby="process_id-error" @enderror>
+            <option value="">Pilih proses</option>
+            @foreach ($processes as $process)
+                <option value="{{ $process->id }}" @selected((string) old('process_id', $activity->process_id ?? '') === (string) $process->id)>{{ $process->description }}</option>
             @endforeach
         </select>
     </x-admin.ui.field>

@@ -7,9 +7,9 @@ use App\Models\ActivityUnit;
 use App\Models\EmissionFactor;
 use App\Models\Option;
 use App\Models\Process;
+use App\Models\Product;
 use App\Models\Scheme;
 use App\Models\Source;
-use App\Models\Subprocess;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
 
@@ -20,8 +20,8 @@ class UpsertMasterRecord
      */
     private const ALLOWED = [
         Scheme::class,
+        Product::class,
         Process::class,
-        Subprocess::class,
         Activity::class,
         ActivityUnit::class,
         Source::class,

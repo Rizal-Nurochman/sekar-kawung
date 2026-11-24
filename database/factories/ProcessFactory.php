@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Process;
-use App\Models\Scheme;
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,7 +19,7 @@ class ProcessFactory extends Factory
     public function definition(): array
     {
         return [
-            'scheme_id' => Scheme::factory(),
+            'product_id' => Product::factory(),
             'description' => fake()->words(3, true),
             'sort_order' => 0,
         ];

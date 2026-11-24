@@ -57,7 +57,7 @@
                 </div>
                 <div>
                     <dt class="text-ink-muted">Batas sistem</dt>
-                    <dd class="mt-0.5 font-medium text-pine-900">{{ $report->process?->description ?? '-' }}</dd>
+                    <dd class="mt-0.5 font-medium text-pine-900">{{ $report->product?->description ?? '-' }}</dd>
                 </div>
                 <div>
                     <dt class="text-ink-muted">Total emisi</dt>

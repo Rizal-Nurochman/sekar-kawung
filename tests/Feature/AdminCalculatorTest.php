@@ -4,8 +4,8 @@ use App\Models\Activity;
 use App\Models\EmissionFactor;
 use App\Models\Option;
 use App\Models\Process;
+use App\Models\Product;
 use App\Models\Scheme;
-use App\Models\Subprocess;
 use App\Models\SustainabilityReport;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,16 +15,16 @@ uses(RefreshDatabase::class);
 function calculatorContext(): array
 {
     $scheme = Scheme::factory()->create(['sort_order' => 1]);
-    $process = Process::factory()->create([
+    $product = Product::factory()->create([
         'scheme_id' => $scheme->id,
         'sort_order' => 1,
     ]);
-    $subprocess = Subprocess::factory()->create([
-        'process_id' => $process->id,
+    $process = Process::factory()->create([
+        'product_id' => $product->id,
         'sort_order' => 1,
     ]);
 
-    return [$scheme, $process, $subprocess];
+    return [$scheme, $product, $process];
 }
 
 it('redirects guests away from the calculator to login', function () {
@@ -50,14 +50,14 @@ it('shows a single start button without report identity fields', function () {
 });
 
 it('starts the wizard and shows the first process with schema name', function () {
-    [$scheme, $process] = calculatorContext();
+    [$scheme, $product] = calculatorContext();
     $this->actingAs(User::factory()->create());
 
     $this->post(route('admin.calculator.start'))->assertRedirect(route('admin.calculator.edit'));
 
     $this->get(route('admin.calculator.edit'))->assertOk()
-        ->assertSee('Proses 1 dari 1', false)
-        ->assertSee($process->description, false)
+        ->assertSee('Produk 1 dari 1', false)
+        ->assertSee($product->description, false)
         ->assertSee($scheme->description, false)
         ->assertSee('Total sementara', false)
         ->assertDontSee('Simpan &amp; terbitkan', false);
@@ -67,17 +67,17 @@ it('advances through steps and preserves entries on refresh', function () {
     $this->actingAs(User::factory()->create());
 
     $scheme = Scheme::factory()->create(['description' => 'Skema Uji']);
-    $first = Process::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 1, 'description' => 'Proses Pertama']);
-    $second = Process::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2, 'description' => 'Proses Kedua']);
-    $firstSub = Subprocess::factory()->create(['process_id' => $first->id, 'description' => 'Tahap A']);
-    $secondSub = Subprocess::factory()->create(['process_id' => $second->id, 'description' => 'Tahap B']);
-    $activityA = Activity::factory()->create(['subprocess_id' => $firstSub->id]);
-    $activityB = Activity::factory()->create(['subprocess_id' => $secondSub->id]);
+    $first = Product::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 1, 'description' => 'Proses Pertama']);
+    $second = Product::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2, 'description' => 'Proses Kedua']);
+    $firstProc = Process::factory()->create(['product_id' => $first->id, 'description' => 'Tahap A']);
+    $secondProc = Process::factory()->create(['product_id' => $second->id, 'description' => 'Tahap B']);
+    $activityA = Activity::factory()->create(['process_id' => $firstProc->id]);
+    $activityB = Activity::factory()->create(['process_id' => $secondProc->id]);
 
     $this->post(route('admin.calculator.start'))->assertRedirect();
 
     $this->post(route('admin.calculator.step'), [
-        'process_id' => $first->id,
+        'product_id' => $first->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $activityA->id, 'option_id' => null, 'quantity' => 3],
@@ -86,12 +86,12 @@ it('advances through steps and preserves entries on refresh', function () {
 
     // Refresh resumes the second step with the first step saved.
     $this->get(route('admin.calculator.edit'))->assertOk()
-        ->assertSee('Proses 2 dari', false)
+        ->assertSee('Produk 2 dari', false)
         ->assertSee($second->description, false);
 
     // Go back, the first quantity is still there.
     $this->post(route('admin.calculator.step'), [
-        'process_id' => $second->id,
+        'product_id' => $second->id,
         'direction' => 'back',
         'items' => [
             ['activity_id' => $activityB->id, 'option_id' => null, 'quantity' => 0],
@@ -99,17 +99,17 @@ it('advances through steps and preserves entries on refresh', function () {
     ])->assertRedirect();
 
     $this->get(route('admin.calculator.edit'))->assertOk()
-        ->assertSee('Proses 1 dari', false)
+        ->assertSee('Produk 1 dari', false)
         ->assertSee('value="3"', false);
 });
 
 it('renders a dropdown and unit pill for activities with options', function () {
-    [, $process, $subprocess] = calculatorContext();
+    [, $product, $process] = calculatorContext();
     $this->actingAs(User::factory()->create());
 
     $option = Option::factory()->create();
     $transport = Activity::factory()->withoutEmissionFactor()->create([
-        'subprocess_id' => $subprocess->id,
+        'process_id' => $process->id,
     ]);
     $transport->options()->attach($option->id);
 
@@ -123,16 +123,16 @@ it('renders a dropdown and unit pill for activities with options', function () {
 });
 
 it('rejects an option that does not belong to the activity', function () {
-    [, $process, $subprocess] = calculatorContext();
+    [, $product, $process] = calculatorContext();
     $this->actingAs(User::factory()->create());
 
-    $activity = Activity::factory()->create(['subprocess_id' => $subprocess->id]);
+    $activity = Activity::factory()->create(['process_id' => $process->id]);
     $foreignOption = Option::factory()->create();
 
     $this->post(route('admin.calculator.start'))->assertRedirect(route('admin.calculator.edit'));
 
     $this->post(route('admin.calculator.step'), [
-        'process_id' => $process->id,
+        'product_id' => $product->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $activity->id, 'option_id' => $foreignOption->id, 'quantity' => 1],
@@ -143,16 +143,16 @@ it('rejects an option that does not belong to the activity', function () {
 });
 
 it('rejects an activity outside the current process', function () {
-    [$scheme, $process] = calculatorContext();
-    $otherProcess = Process::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2]);
-    $otherSub = Subprocess::factory()->create(['process_id' => $otherProcess->id]);
-    $foreignActivity = Activity::factory()->create(['subprocess_id' => $otherSub->id]);
+    [$scheme, $product] = calculatorContext();
+    $otherProduct = Product::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2]);
+    $otherProc = Process::factory()->create(['product_id' => $otherProduct->id]);
+    $foreignActivity = Activity::factory()->create(['process_id' => $otherProc->id]);
     $this->actingAs(User::factory()->create());
 
     $this->post(route('admin.calculator.start'))->assertRedirect(route('admin.calculator.edit'));
 
     $this->post(route('admin.calculator.step'), [
-        'process_id' => $process->id,
+        'product_id' => $product->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $foreignActivity->id, 'option_id' => null, 'quantity' => 1],
@@ -161,14 +161,14 @@ it('rejects an activity outside the current process', function () {
 });
 
 it('rejects a negative quantity', function () {
-    [, $process, $subprocess] = calculatorContext();
-    $activity = Activity::factory()->create(['subprocess_id' => $subprocess->id]);
+    [, $product, $process] = calculatorContext();
+    $activity = Activity::factory()->create(['process_id' => $process->id]);
     $this->actingAs(User::factory()->create());
 
     $this->post(route('admin.calculator.start'))->assertRedirect(route('admin.calculator.edit'));
 
     $this->post(route('admin.calculator.step'), [
-        'process_id' => $process->id,
+        'product_id' => $product->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $activity->id, 'option_id' => null, 'quantity' => -1],
@@ -177,19 +177,19 @@ it('rejects a negative quantity', function () {
 });
 
 it('shows a comprehensive review only at the end with save action', function () {
-    [$scheme, $process, $subprocess] = calculatorContext();
+    [$scheme, $product, $process] = calculatorContext();
     $this->actingAs(User::factory()->create());
 
     $factor = EmissionFactor::factory()->create(['ef_value' => 2.5]);
     $activity = Activity::factory()->create([
-        'subprocess_id' => $subprocess->id,
+        'process_id' => $process->id,
         'emission_factor_id' => $factor->id,
     ]);
 
     $this->post(route('admin.calculator.start'))->assertRedirect(route('admin.calculator.edit'));
 
     $this->post(route('admin.calculator.step'), [
-        'process_id' => $process->id,
+        'product_id' => $product->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $activity->id, 'option_id' => null, 'quantity' => 4],
@@ -198,8 +198,8 @@ it('shows a comprehensive review only at the end with save action', function () 
 
     $this->get(route('admin.calculator.edit'))->assertOk()
         ->assertSee('Periksa kembali sebelum menerbitkan', false)
-        ->assertSee('Proses 1 dari 1', false)
-        ->assertSee('Subtotal proses', false)
+        ->assertSee('Produk 1 dari 1', false)
+        ->assertSee('Subtotal produk', false)
         ->assertSee('Rincian per tahap', false)
         ->assertSee('Rincian aktivitas', false)
         ->assertSee('id="wizard-save"', false)
@@ -207,19 +207,19 @@ it('shows a comprehensive review only at the end with save action', function () 
 });
 
 it('stores a report with auto title, items, and cached total', function () {
-    [$scheme, $process, $subprocess] = calculatorContext();
+    [$scheme, $product, $process] = calculatorContext();
     $this->actingAs(User::factory()->create());
 
     $factor = EmissionFactor::factory()->create(['ef_value' => 2.5]);
     $activity = Activity::factory()->create([
-        'subprocess_id' => $subprocess->id,
+        'process_id' => $process->id,
         'emission_factor_id' => $factor->id,
     ]);
 
     $this->post(route('admin.calculator.start'))->assertRedirect(route('admin.calculator.edit'));
 
     $this->post(route('admin.calculator.step'), [
-        'process_id' => $process->id,
+        'product_id' => $product->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $activity->id, 'option_id' => null, 'quantity' => 4],
@@ -244,11 +244,11 @@ it('stores a report with auto title, items, and cached total', function () {
 });
 
 it('treats heritage activities without factors as zero emission in review', function () {
-    [, $process, $subprocess] = calculatorContext();
+    [, $product, $process] = calculatorContext();
     $this->actingAs(User::factory()->create());
 
     $heritage = Activity::factory()->create([
-        'subprocess_id' => $subprocess->id,
+        'process_id' => $process->id,
         'emission_factor_id' => null,
         'activity_unit_id' => null,
     ]);
@@ -256,7 +256,7 @@ it('treats heritage activities without factors as zero emission in review', func
     $this->post(route('admin.calculator.start'))->assertRedirect(route('admin.calculator.edit'));
 
     $this->post(route('admin.calculator.step'), [
-        'process_id' => $process->id,
+        'product_id' => $product->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $heritage->id, 'option_id' => null, 'quantity' => 9],

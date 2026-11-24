@@ -5,7 +5,7 @@ namespace App\Http\Requests\Admin;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class SubprocessRequest extends FormRequest
+class ProductRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,7 +23,7 @@ class SubprocessRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'process_id' => ['required', 'integer', 'exists:processes,id'],
+            'scheme_id' => ['required', 'integer', 'exists:schemes,id'],
             'description' => ['required', 'string', 'max:255'],
             'sort_order' => ['required', 'integer', 'min:0'],
         ];

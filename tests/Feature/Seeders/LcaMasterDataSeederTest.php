@@ -13,8 +13,8 @@ it('seeds every LCA master data table with the expected row count', function () 
     $this->seed(LcaMasterDataSeeder::class);
 
     $this->assertDatabaseCount('schemes', 2);
-    $this->assertDatabaseCount('processes', 4);
-    $this->assertDatabaseCount('subprocesses', 17);
+    $this->assertDatabaseCount('products', 4);
+    $this->assertDatabaseCount('processes', 17);
     $this->assertDatabaseCount('activity_units', 5);
     $this->assertDatabaseCount('sources', 13);
     $this->assertDatabaseCount('emission_factors', 16);
@@ -28,8 +28,8 @@ it('links the seeded scheme hierarchy', function () {
 
     $scheme = Scheme::query()->where('description', 'Gedog Tuban')->firstOrFail();
 
-    expect($scheme->processes)->toHaveCount(2)
-        ->and($scheme->processes->first()->subprocesses)->toHaveCount(5);
+    expect($scheme->products)->toHaveCount(2)
+        ->and($scheme->products->first()->processes)->toHaveCount(5);
 });
 
 it('attaches the transport and fuel options to the expected activities', function () {

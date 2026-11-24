@@ -1,4 +1,4 @@
-<x-admin.layouts.app title="Proses - Konfigurasi" heading="Proses" subheading="Batas sistem di dalam skema.">
+<x-admin.layouts.app title="Proses - Konfigurasi" heading="Proses" subheading="Tahapan kerja di dalam satu batas sistem.">
     <x-slot:breadcrumbs>
         <x-admin.ui.breadcrumbs :items="[
             ['label' => 'Konfigurasi', 'url' => route('admin.config.index')],
@@ -16,10 +16,10 @@
         @if ($processes->isEmpty())
             <x-admin.ui.empty-state
                 title="Belum ada proses"
-                description="Proses menandai batas sistem, misalnya kain mentah atau kain batik. Kalkulator memakai urutannya untuk menggabungkan tahap."
+                description="Proses mengelompokkan aktivitas menjadi tahap yang bisa dibuka-tutup di kalkulator."
             >
                 <x-slot:icon>
-                    <x-lucide-workflow />
+                    <x-lucide-list-tree />
                 </x-slot:icon>
                 <x-slot:action>
                     <x-admin.ui.button :href="route('admin.config.processes.create')" variant="primary" size="sm">Tambah proses</x-admin.ui.button>
@@ -30,7 +30,7 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th scope="col">Skema</th>
+                            <th scope="col">Produk</th>
                             <th scope="col">Deskripsi</th>
                             <th scope="col" class="w-16 text-right">Urutan</th>
                             <th scope="col" class="w-24"><span class="sr-only">Aksi</span></th>
@@ -39,7 +39,7 @@
                     <tbody>
                         @foreach ($processes as $process)
                             <tr>
-                                <td class="text-[13px] text-ink-soft">{{ $process->scheme?->description ?? '-' }}</td>
+                                <td class="text-[13px] text-ink-soft">{{ $process->product?->description ?? '-' }}</td>
                                 <td class="font-medium text-pine-900">{{ $process->description }}</td>
                                 <td class="cell-num font-normal text-ink-muted">{{ $process->sort_order }}</td>
                                 <td>

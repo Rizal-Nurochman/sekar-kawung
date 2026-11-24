@@ -21,7 +21,7 @@ class CalculatorStepRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'process_id' => ['required', 'integer', 'exists:processes,id'],
+            'product_id' => ['required', 'integer', 'exists:products,id'],
             'direction' => ['required', 'string', 'in:next,back'],
             'items' => ['present', 'array'],
             'items.*.activity_id' => ['required', 'integer', 'exists:activities,id'],
@@ -37,12 +37,12 @@ class CalculatorStepRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
-                if ($validator->errors()->has('process_id')) {
+                if ($validator->errors()->has('product_id')) {
                     return;
                 }
 
                 $data = $validator->getData();
-                $processId = (int) ($data['process_id'] ?? 0);
+                $productId = (int) ($data['product_id'] ?? 0);
                 $items = $data['items'] ?? [];
 
                 if (! is_array($items) || $items === []) {
@@ -62,7 +62,7 @@ class CalculatorStepRequest extends FormRequest
 
                 $scoped = Activity::query()
                     ->whereIn('id', $activityIds)
-                    ->whereHas('subprocess', fn ($query) => $query->where('process_id', $processId))
+                    ->whereHas('process', fn ($query) => $query->where('product_id', $productId))
                     ->pluck('id')
                     ->map(fn ($id): int => (int) $id)
                     ->all();
@@ -79,7 +79,7 @@ class CalculatorStepRequest extends FormRequest
                     if (! isset($allowed[$activityId])) {
                         $validator->errors()->add(
                             "items.{$index}.activity_id",
-                            'Aktivitas tidak termasuk dalam proses ini.'
+                            'Aktivitas tidak termasuk dalam produk ini.'
                         );
                     }
                 }

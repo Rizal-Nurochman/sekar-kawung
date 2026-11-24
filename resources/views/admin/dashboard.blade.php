@@ -70,8 +70,8 @@
                                     <p class="truncate text-[13.5px] font-semibold text-pine-900">{{ $report->title }}</p>
                                     <p class="mt-0.5 truncate text-xs text-ink-muted">
                                         {{ $report->scheme?->description ?? 'Tanpa skema' }}
-                                        @if ($report->process)
-                                            <span aria-hidden="true">·</span> {{ $report->process->description }}
+                                        @if ($report->product)
+                                            <span aria-hidden="true">·</span> {{ $report->product->description }}
                                         @endif
                                     </p>
                                 </div>

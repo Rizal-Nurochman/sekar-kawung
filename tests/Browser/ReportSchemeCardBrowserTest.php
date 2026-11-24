@@ -2,8 +2,8 @@
 
 use App\Models\Activity;
 use App\Models\Process;
+use App\Models\Product;
 use App\Models\Scheme;
-use App\Models\Subprocess;
 use App\Models\SustainabilityReport;
 use App\Models\SustainabilityReportItem;
 use App\Models\User;
@@ -14,15 +14,15 @@ uses(RefreshDatabase::class);
 it('swaps the detail section when a scheme card is clicked', function () {
     $scheme = Scheme::factory()->create(['description' => 'Gedog Tuban', 'sort_order' => 1]);
     $otherScheme = Scheme::factory()->create(['description' => 'Tenun ATBM Pisano', 'sort_order' => 2]);
-    $first = Process::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 1, 'description' => 'Proses Kain Gedog']);
-    $second = Process::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2, 'description' => 'Proses Batik Gedog']);
-    $third = Process::factory()->create(['scheme_id' => $otherScheme->id, 'sort_order' => 1, 'description' => 'Proses Kain Pisano']);
-    $firstSub = Subprocess::factory()->create(['process_id' => $first->id]);
-    $activity = Activity::factory()->create(['subprocess_id' => $firstSub->id]);
+    $first = Product::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 1, 'description' => 'Produk Kain Gedog']);
+    $second = Product::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2, 'description' => 'Produk Batik Gedog']);
+    $third = Product::factory()->create(['scheme_id' => $otherScheme->id, 'sort_order' => 1, 'description' => 'Produk Kain Pisano']);
+    $firstProc = Process::factory()->create(['product_id' => $first->id]);
+    $activity = Activity::factory()->create(['process_id' => $firstProc->id]);
 
     $report = SustainabilityReport::query()->create([
         'scheme_id' => $second->id,
-        'process_id' => $second->id,
+        'product_id' => $second->id,
         'title' => 'Laporan Skema',
         'slug' => 'laporan-skema',
         'total_emission' => 10,
@@ -58,7 +58,7 @@ it('swaps the detail section when a scheme card is clicked', function () {
     $page->click('[data-scheme-card="'.$otherScheme->id.'"]')
         ->assertVisible('#skema-'.$otherScheme->id.'-detail')
         ->assertMissing('#skema-'.$scheme->id.'-detail')
-        ->assertSee('Proses Kain Pisano')
+        ->assertSee('Produk Kain Pisano')
         ->assertSee('Belum ada isian pada proses ini')
         ->assertNoJavaScriptErrors();
 });

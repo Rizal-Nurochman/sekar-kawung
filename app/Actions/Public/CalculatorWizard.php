@@ -4,7 +4,7 @@ namespace App\Actions\Public;
 
 use App\Actions\Admin\CalculateEmissions;
 use App\Models\Activity;
-use App\Models\Process;
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Collection;
 
 class CalculatorWizard
@@ -14,40 +14,40 @@ class CalculatorWizard
     public function __construct(protected CalculateEmissions $calculator) {}
 
     /**
-     * All processes in wizard order: scheme sort, then process sort.
+     * All products in wizard order: scheme sort, then product sort.
      *
-     * @return Collection<int, Process>
+     * @return Collection<int, Product>
      */
-    public function orderedProcesses(): Collection
+    public function orderedProducts(): Collection
     {
-        return Process::query()
+        return Product::query()
             ->with('scheme')
-            ->join('schemes', 'schemes.id', '=', 'processes.scheme_id')
+            ->join('schemes', 'schemes.id', '=', 'products.scheme_id')
             ->orderBy('schemes.sort_order')
             ->orderBy('schemes.id')
-            ->orderBy('processes.sort_order')
-            ->orderBy('processes.id')
-            ->select('processes.*')
+            ->orderBy('products.sort_order')
+            ->orderBy('products.id')
+            ->select('products.*')
             ->get();
     }
 
     /**
-     * Load one process with its full inventory, ordered.
+     * Load one product with its full inventory, ordered.
      */
-    public function processWithInventory(Process $process): Process
+    public function productWithInventory(Product $product): Product
     {
-        return Process::query()
+        return Product::query()
             ->with([
                 'scheme',
-                'subprocesses' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
-                'subprocesses.activities' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
-                'subprocesses.activities.activityUnit',
-                'subprocesses.activities.emissionFactor.source',
-                'subprocesses.activities.options' => fn ($query) => $query->orderBy('options.id'),
-                'subprocesses.activities.options.activityUnit',
-                'subprocesses.activities.options.emissionFactor.source',
+                'processes' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
+                'processes.activities' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
+                'processes.activities.activityUnit',
+                'processes.activities.emissionFactor.source',
+                'processes.activities.options' => fn ($query) => $query->orderBy('options.id'),
+                'processes.activities.options.activityUnit',
+                'processes.activities.options.emissionFactor.source',
             ])
-            ->findOrFail($process->getKey());
+            ->findOrFail($product->getKey());
     }
 
     /**
@@ -83,7 +83,7 @@ class CalculatorWizard
     /**
      * @param  array<int, array{activity_id: int|string, option_id?: int|string|null, quantity?: float|int|string|null}>  $items
      */
-    public function saveStep(Process $process, array $items): void
+    public function saveStep(Product $product, array $items): void
     {
         $state = $this->state() ?? ['current' => 0, 'entries' => []];
         $entries = $state['entries'];
@@ -119,15 +119,15 @@ class CalculatorWizard
     }
 
     /**
-     * Totals for saved entries outside the given process.
+     * Totals for saved entries outside the given product.
      *
      * @param  array<string, array{option_id: ?int, quantity: float}>  $entries
      * @return array{total: float, filled: int}
      */
-    public function baseTotals(Process $currentProcess, array $entries): array
+    public function baseTotals(Product $currentProduct, array $entries): array
     {
-        $currentActivityIds = $currentProcess->subprocesses
-            ->flatMap(fn ($subprocess) => $subprocess->activities->pluck('id'))
+        $currentActivityIds = $currentProduct->processes
+            ->flatMap(fn ($process) => $process->activities->pluck('id'))
             ->map(fn ($id): string => (string) (int) $id)
             ->all();
 
@@ -165,16 +165,16 @@ class CalculatorWizard
     public function totalActivityCount(): int
     {
         return (int) Activity::query()
-            ->whereHas('subprocess.process')
+            ->whereHas('process.product')
             ->count();
     }
 
     /**
-     * Enriched review data across all processes.
+     * Enriched review data across all products.
      *
      * @param  array<string, array{option_id: ?int, quantity: float}>  $entries
      * @return array{
-     *     processes: Collection,
+     *     products: Collection,
      *     boundaries: Collection,
      *     stages: Collection,
      *     items: Collection,
@@ -187,24 +187,24 @@ class CalculatorWizard
      */
     public function reviewData(): array
     {
-        $ordered = $this->orderedProcesses();
+        $ordered = $this->orderedProducts();
         $state = $this->state();
         $entries = $state['entries'] ?? [];
 
-        $processIds = $ordered->pluck('id')->all();
+        $productIds = $ordered->pluck('id')->all();
 
-        $inventory = Process::query()
+        $inventory = Product::query()
             ->with([
                 'scheme',
-                'subprocesses' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
-                'subprocesses.activities' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
-                'subprocesses.activities.activityUnit',
-                'subprocesses.activities.emissionFactor.source',
-                'subprocesses.activities.options' => fn ($query) => $query->orderBy('options.id'),
-                'subprocesses.activities.options.activityUnit',
-                'subprocesses.activities.options.emissionFactor.source',
+                'processes' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
+                'processes.activities' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
+                'processes.activities.activityUnit',
+                'processes.activities.emissionFactor.source',
+                'processes.activities.options' => fn ($query) => $query->orderBy('options.id'),
+                'processes.activities.options.activityUnit',
+                'processes.activities.options.emissionFactor.source',
             ])
-            ->whereIn('id', $processIds)
+            ->whereIn('id', $productIds)
             ->get()
             ->sortBy([
                 fn ($a, $b): int => [$a->scheme->sort_order, $a->scheme->id, $a->sort_order, $a->id] <=> [$b->scheme->sort_order, $b->scheme->id, $b->sort_order, $b->id],
@@ -212,9 +212,9 @@ class CalculatorWizard
             ->values();
 
         $allItems = [];
-        foreach ($inventory as $process) {
-            foreach ($process->subprocesses as $subprocess) {
-                foreach ($subprocess->activities as $activity) {
+        foreach ($inventory as $product) {
+            foreach ($product->processes as $process) {
+                foreach ($process->activities as $activity) {
                     $key = (string) $activity->getKey();
                     $saved = $entries[$key] ?? ['option_id' => null, 'quantity' => 0.0];
                     $optionId = $saved['option_id'] ?? null;
@@ -251,16 +251,16 @@ class CalculatorWizard
         $enriched = collect();
         $stages = collect();
 
-        foreach ($inventory as $process) {
-            $processTotal = 0.0;
-            $processFilled = 0;
-            $processCount = 0;
+        foreach ($inventory as $product) {
+            $productTotal = 0.0;
+            $productFilled = 0;
+            $productCount = 0;
 
-            foreach ($process->subprocesses as $subprocess) {
+            foreach ($product->processes as $process) {
                 $stageTotal = 0.0;
                 $stageCount = 0;
 
-                foreach ($subprocess->activities as $activity) {
+                foreach ($process->activities as $activity) {
                     $calc = $calculatedById->get($activity->getKey());
                     $quantity = (float) ($calc['quantity'] ?? 0);
                     $emission = (float) ($calc['emission_result'] ?? 0);
@@ -287,9 +287,9 @@ class CalculatorWizard
                     $enriched->push([
                         'activity_id' => $activity->getKey(),
                         'activity' => $activity->description,
-                        'subprocess' => $subprocess->description,
                         'process' => $process->description,
-                        'scheme' => $process->scheme?->description,
+                        'product' => $product->description,
+                        'scheme' => $product->scheme?->description,
                         'option' => $optionName,
                         'quantity' => $quantity,
                         'unit' => $unit,
@@ -302,18 +302,18 @@ class CalculatorWizard
 
                     $stageTotal += $emission;
                     $stageCount++;
-                    $processTotal += $emission;
-                    $processCount++;
+                    $productTotal += $emission;
+                    $productCount++;
 
                     if ($quantity > 0) {
-                        $processFilled++;
+                        $productFilled++;
                     }
                 }
 
                 $stages->push([
-                    'process' => $process->description,
-                    'scheme' => $process->scheme?->description,
-                    'name' => $subprocess->description,
+                    'product' => $product->description,
+                    'scheme' => $product->scheme?->description,
+                    'name' => $process->description,
                     'total' => $stageTotal,
                     'count' => $stageCount,
                 ]);
@@ -323,15 +323,15 @@ class CalculatorWizard
         $total = (float) ($calculation['total'] ?? 0);
         $filled = $enriched->where(fn ($row): bool => (float) $row['quantity'] > 0)->count();
 
-        $processSummaries = $inventory->map(function (Process $process) use ($enriched): array {
-            $rows = $enriched->where(fn ($row): bool => $row['process'] === $process->description);
-            $processTotal = (float) $rows->sum('emission');
+        $productSummaries = $inventory->map(function (Product $product) use ($enriched): array {
+            $rows = $enriched->where(fn ($row): bool => $row['product'] === $product->description);
+            $productTotal = (float) $rows->sum('emission');
 
             return [
-                'id' => $process->getKey(),
-                'scheme' => $process->scheme?->description,
-                'description' => $process->description,
-                'total' => $processTotal,
+                'id' => $product->getKey(),
+                'scheme' => $product->scheme?->description,
+                'description' => $product->description,
+                'total' => $productTotal,
                 'count' => $rows->count(),
                 'filled' => $rows->where(fn ($row): bool => (float) $row['quantity'] > 0)->count(),
             ];
@@ -340,30 +340,30 @@ class CalculatorWizard
         // Per-boundary cumulative scheme subtotals: within one scheme,
         // boundary 2 includes boundary 1 (PRD progressive Cradle-to-Gate).
         $cumulativeByScheme = [];
-        $boundarySections = $inventory->map(function (Process $process) use ($enriched, $stages, $total, &$cumulativeByScheme): array {
-            $rows = $enriched->where(fn ($row): bool => $row['process'] === $process->description);
-            $processTotal = (float) $rows->sum('emission');
-            $schemeKey = $process->scheme?->description ?? 'Tanpa skema';
-            $cumulativeByScheme[$schemeKey] = ($cumulativeByScheme[$schemeKey] ?? 0.0) + $processTotal;
+        $boundarySections = $inventory->map(function (Product $product) use ($enriched, $stages, $total, &$cumulativeByScheme): array {
+            $rows = $enriched->where(fn ($row): bool => $row['product'] === $product->description);
+            $productTotal = (float) $rows->sum('emission');
+            $schemeKey = $product->scheme?->description ?? 'Tanpa skema';
+            $cumulativeByScheme[$schemeKey] = ($cumulativeByScheme[$schemeKey] ?? 0.0) + $productTotal;
 
             return [
-                'id' => $process->getKey(),
-                'scheme' => $process->scheme?->description,
-                'description' => $process->description,
-                'total' => $processTotal,
+                'id' => $product->getKey(),
+                'scheme' => $product->scheme?->description,
+                'description' => $product->description,
+                'total' => $productTotal,
                 'cumulative' => (float) $cumulativeByScheme[$schemeKey],
-                'share' => $total > 0 ? $processTotal / $total * 100 : 0.0,
+                'share' => $total > 0 ? $productTotal / $total * 100 : 0.0,
                 'count' => $rows->count(),
                 'filled' => $rows->where(fn ($row): bool => (float) $row['quantity'] > 0)->count(),
-                'stages' => $stages->where(fn ($stage): bool => $stage['process'] === $process->description)->values(),
+                'stages' => $stages->where(fn ($stage): bool => $stage['product'] === $product->description)->values(),
                 'items' => $rows->values(),
             ];
         })->values();
 
         $hotspot = $enriched->sortByDesc('emission')->first();
         $sources = $inventory
-            ->flatMap(fn (Process $process) => $process->subprocesses)
-            ->flatMap(fn ($subprocess) => $subprocess->activities)
+            ->flatMap(fn (Product $product) => $product->processes)
+            ->flatMap(fn ($process) => $process->activities)
             ->flatMap(function ($activity) use ($entries): array {
                 $key = (string) $activity->getKey();
                 $optionId = $entries[$key]['option_id'] ?? null;
@@ -382,7 +382,7 @@ class CalculatorWizard
             ->values();
 
         return [
-            'processes' => $processSummaries,
+            'products' => $productSummaries,
             'boundaries' => $boundarySections,
             'stages' => $stages,
             'items' => $enriched,

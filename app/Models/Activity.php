@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-#[Fillable(['subprocess_id', 'activity_unit_id', 'emission_factor_id', 'sort_order', 'description'])]
+#[Fillable(['process_id', 'activity_unit_id', 'emission_factor_id', 'sort_order', 'description'])]
 class Activity extends Model
 {
     use HasFactory;
@@ -16,16 +16,16 @@ class Activity extends Model
     protected function casts(): array
     {
         return [
-            'subprocess_id' => 'integer',
+            'process_id' => 'integer',
             'activity_unit_id' => 'integer',
             'emission_factor_id' => 'integer',
             'sort_order' => 'integer',
         ];
     }
 
-    public function subprocess(): BelongsTo
+    public function process(): BelongsTo
     {
-        return $this->belongsTo(Subprocess::class);
+        return $this->belongsTo(Process::class);
     }
 
     public function activityUnit(): BelongsTo

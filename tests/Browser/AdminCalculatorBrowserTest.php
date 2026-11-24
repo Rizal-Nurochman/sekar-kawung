@@ -4,8 +4,8 @@ use App\Models\Activity;
 use App\Models\EmissionFactor;
 use App\Models\Option;
 use App\Models\Process;
+use App\Models\Product;
 use App\Models\Scheme;
-use App\Models\Subprocess;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -14,23 +14,23 @@ uses(RefreshDatabase::class);
 function seedWizardTwoSteps(): array
 {
     $scheme = Scheme::factory()->create(['description' => 'Gedog Tuban', 'sort_order' => 1]);
-    $first = Process::factory()->create([
+    $first = Product::factory()->create([
         'scheme_id' => $scheme->id,
         'sort_order' => 1,
-        'description' => 'Proses Produksi dari Biji Sampai Jadi Kain',
+        'description' => 'Produk Produksi dari Biji Sampai Jadi Kain',
     ]);
-    $second = Process::factory()->create([
+    $second = Product::factory()->create([
         'scheme_id' => $scheme->id,
         'sort_order' => 2,
-        'description' => 'Proses Produksi dari Biji Sampai Jadi Kain Batik',
+        'description' => 'Produk Produksi dari Biji Sampai Jadi Kain Batik',
     ]);
 
-    $firstSub = Subprocess::factory()->create(['process_id' => $first->id, 'description' => 'Mengolah Tanah']);
-    $secondSub = Subprocess::factory()->create(['process_id' => $second->id, 'description' => 'Membatik Tulis']);
+    $firstProc = Process::factory()->create(['product_id' => $first->id, 'description' => 'Mengolah Tanah']);
+    $secondProc = Process::factory()->create(['product_id' => $second->id, 'description' => 'Membatik Tulis']);
 
     $factor = EmissionFactor::factory()->create(['ef_value' => 2.5]);
     $standalone = Activity::factory()->create([
-        'subprocess_id' => $firstSub->id,
+        'process_id' => $firstProc->id,
         'emission_factor_id' => $factor->id,
         'description' => 'Pupuk organik mandiri',
     ]);
@@ -41,7 +41,7 @@ function seedWizardTwoSteps(): array
         'description' => 'Sepeda Motor',
     ]);
     $transport = Activity::factory()->withoutEmissionFactor()->create([
-        'subprocess_id' => $secondSub->id,
+        'process_id' => $secondProc->id,
         'description' => 'Transport ke Temanggung',
     ]);
     $transport->options()->attach($option->id);
@@ -79,7 +79,7 @@ it('walks the full wizard from start to published report', function () {
         ->assertNoJavaScriptErrors();
 
     $page->click('#start-calculator')
-        ->assertSee('Proses 1 dari 2')
+        ->assertSee('Produk 1 dari 2')
         ->assertSee('Gedog Tuban')
         ->assertSee('Total sementara')
         ->assertMissing('Simpan & terbitkan')
@@ -90,13 +90,13 @@ it('walks the full wizard from start to published report', function () {
         ->keys('input[data-quantity-input]', '4')
         ->assertSeeIn('#total-sementara', '10')
         ->click('#wizard-next')
-        ->assertSee('Proses 2 dari 2')
+        ->assertSee('Produk 2 dari 2')
         ->assertSee('Membatik Tulis')
         ->assertNoJavaScriptErrors();
 
     // Refresh resumes the same step (session persistence).
     $page = visit('/admin/kalkulator');
-    $page->assertSee('Proses 2 dari 2')
+    $page->assertSee('Produk 2 dari 2')
         ->assertNoJavaScriptErrors();
 
     // Second step has an option dropdown; pick it and fill quantity.
@@ -106,8 +106,8 @@ it('walks the full wizard from start to published report', function () {
         ->assertSeeIn('#total-sementara', '16')
         ->click('#wizard-next')
         ->assertSee('Periksa kembali sebelum menerbitkan')
-        ->assertSee('Proses 1 dari 2')
-        ->assertSee('Proses 2 dari 2')
+        ->assertSee('Produk 1 dari 2')
+        ->assertSee('Produk 2 dari 2')
         ->assertSee('Rincian per tahap')
         ->assertSee('Rincian aktivitas')
         ->assertVisible('#wizard-save')
@@ -131,7 +131,7 @@ it('keeps the temporary total visible without a save action on steps', function 
 
     $page = visit('/admin/kalkulator')
         ->click('#start-calculator')
-        ->assertSee('Proses 1 dari 2')
+        ->assertSee('Produk 1 dari 2')
         ->assertVisible('#total-sementara')
         ->assertMissing('Simpan & terbitkan')
         ->click('input[data-quantity-input]')

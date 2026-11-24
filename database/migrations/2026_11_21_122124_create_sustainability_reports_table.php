@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('sustainability_reports', function (Blueprint $table) {
             $table->id();
             $table->foreignId('scheme_id')->constrained()->restrictOnDelete();
-            $table->foreignId('process_id')->constrained()->restrictOnDelete();
+            $table->foreignId('product_id')->constrained()->restrictOnDelete();
             $table->string('title');
             $table->string('slug')->unique();
             $table->text('summary')->nullable();

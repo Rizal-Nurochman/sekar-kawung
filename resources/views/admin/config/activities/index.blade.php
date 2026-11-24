@@ -31,7 +31,7 @@
                     <thead>
                         <tr>
                             <th scope="col">Aktivitas</th>
-                            <th scope="col">Subproses</th>
+                            <th scope="col">Proses</th>
                             <th scope="col">Faktor emisi</th>
                             <th scope="col" class="w-24"><span class="sr-only">Aksi</span></th>
                         </tr>
@@ -40,7 +40,7 @@
                         @foreach ($activities as $activity)
                             <tr>
                                 <td class="font-medium text-pine-900">{{ $activity->description }}</td>
-                                <td class="max-w-[16rem] text-[13px] text-ink-soft">{{ $activity->subprocess?->description ?? '-' }}</td>
+                                <td class="max-w-[16rem] text-[13px] text-ink-soft">{{ $activity->process?->description ?? '-' }}</td>
                                 <td class="text-[13px]">
                                     @if ($activity->options_count > 0)
                                         <span class="inline-flex items-center gap-1.5 rounded-badge bg-sage-50 px-1.5 py-0.5 font-semibold text-sage-700">
