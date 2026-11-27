@@ -164,8 +164,6 @@ class ReportController extends Controller
 
         $stageTotal = (float) $stages->sum('total');
 
-        $hotspot = $report->items->sortByDesc(fn ($item) => (float) $item->emission_result)->first();
-
         $sources = $report->items
             ->map(fn ($item) => $item->activity?->emissionFactor?->source ?? $item->option?->emissionFactor?->source)
             ->filter()
@@ -179,7 +177,6 @@ class ReportController extends Controller
             'grandTotal' => $grandTotal,
             'stages' => $stages,
             'stageTotal' => $stageTotal,
-            'hotspot' => $hotspot,
             'sources' => $sources,
         ]);
     }

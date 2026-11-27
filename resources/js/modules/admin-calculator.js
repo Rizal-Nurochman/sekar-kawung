@@ -7,13 +7,9 @@ const trimNumber = (value, precision) => {
 const formatEmission = (value) => trimNumber(Number(value) || 0, 4);
 
 export const adminCalculator = (params = {}) => ({
-    baseTotal: Number(params.baseTotal ?? 0) || 0,
-    baseFilled: Number(params.baseFilled ?? 0) || 0,
-    totalActivities: Number(params.totalActivities ?? 0) || 0,
+    baseSchemeTotals: Array.isArray(params.baseSchemeTotals) ? params.baseSchemeTotals : [],
+    currentSchemeId: Number(params.currentSchemeId ?? 0) || 0,
     stepTotal: 0,
-    stepFilled: 0,
-    total: Number(params.baseTotal ?? 0) || 0,
-    filled: Number(params.baseFilled ?? 0) || 0,
     rowCount: 0,
 
     init() {
@@ -57,34 +53,29 @@ export const adminCalculator = (params = {}) => ({
 
     recalculate() {
         let stepTotal = 0;
-        let stepFilled = 0;
 
         for (const row of this.rows()) {
             stepTotal += this.rowTotal(row);
-
-            const quantity = Number.parseFloat(row.querySelector('[data-quantity-input]')?.value ?? '0') || 0;
-
-            if (quantity > 0) {
-                stepFilled++;
-            }
         }
 
         this.stepTotal = stepTotal;
-        this.stepFilled = stepFilled;
-        this.total = this.baseTotal + stepTotal;
-        this.filled = this.baseFilled + stepFilled;
     },
 
-    get formattedTotal() {
-        return formatEmission(this.total);
-    },
+    /**
+     * Per-scheme running totals. The scheme currently being filled receives
+     * the live step total; every other scheme keeps its saved subtotal.
+     */
+    get schemeTotals() {
+        return this.baseSchemeTotals.map((scheme) => {
+            const total = Number(scheme.total) + (Number(scheme.id) === this.currentSchemeId ? this.stepTotal : 0);
 
-    get progress() {
-        if (this.totalActivities === 0) {
-            return 0;
-        }
-
-        return Math.min(100, Math.round((this.filled / this.totalActivities) * 100));
+            return {
+                id: scheme.id,
+                name: scheme.name,
+                total,
+                formattedTotal: formatEmission(total),
+            };
+        });
     },
 
     /**

@@ -37,9 +37,10 @@
         @endphp
 
         <section class="mx-auto w-full max-w-[1200px] px-4 pb-20 sm:px-6 lg:px-0">
-            <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <p class="text-[13px] font-medium text-ink-muted">{{ $product->scheme?->description }}</p>
+            <div class="mt-1 flex flex-wrap items-baseline justify-between gap-2">
                 <h2 id="wizard-progress" class="text-lg font-bold leading-7 tracking-tight text-pine-900">
-                    Produk {{ $position }} dari {{ $totalSteps }}
+                    Produk {{ $position }} dari {{ $totalSteps }} : {{ $product->description }}
                 </h2>
                 <p class="text-[13px] tabular-nums text-ink-muted">{{ $percent }}%</p>
             </div>
@@ -51,7 +52,7 @@
                 id="calculator-form"
                 method="POST"
                 action="{{ route('calculator.step') }}"
-                x-data="adminCalculator({ baseTotal: {{ json_encode((float) $baseTotal) }}, baseFilled: {{ (int) $baseFilled }}, totalActivities: {{ (int) $totalActivities }} })"
+                x-data="adminCalculator({ baseSchemeTotals: @js($schemeTotals), currentSchemeId: {{ (int) $currentSchemeId }} })"
                 x-on:input="recalculate()"
                 x-on:change="recalculate()"
                 class="mt-6 pb-24 lg:pb-0"
@@ -167,43 +168,35 @@
                         <div class="sticky top-24 space-y-4">
                             <div class="rounded-panel border border-line bg-white px-5 py-4">
                                 <p class="text-[13px] font-medium text-ink-muted">Total sementara</p>
-                                <p class="mt-1 flex flex-wrap items-baseline gap-x-1.5" aria-live="polite">
-                                    <span id="total-sementara" class="text-[32px] font-bold leading-10 tracking-tight tabular-nums text-pine-900" x-text="formattedTotal">0</span>
-                                    <span class="text-[13px] font-medium text-ink-muted">kg CO2e</span>
-                                </p>
-
-                                <div class="mt-3">
-                                    <div class="h-1 w-full overflow-hidden rounded-full bg-sage-100" role="presentation">
-                                        <div class="h-full rounded-full bg-sage-600 transition-[width] duration-200 motion-reduce:transition-none" x-bind:style="`width: ${progress}%`"></div>
+                                <template x-for="(scheme, index) in schemeTotals" :key="scheme.id">
+                                    <div class="mt-2" :class="index > 0 ? 'border-t border-line pt-2' : ''" aria-live="polite">
+                                        <p class="text-xs leading-5 text-ink-muted" x-text="scheme.name"></p>
+                                        <p class="flex flex-wrap items-baseline gap-x-1.5">
+                                            <span x-bind:id="'total-sementara-' + scheme.id" class="text-2xl font-bold leading-9 tracking-tight tabular-nums text-pine-900" x-text="scheme.formattedTotal">0</span>
+                                            <span class="text-[13px] font-medium text-ink-muted">kg CO2e</span>
+                                        </p>
                                     </div>
-                                    <p class="mt-1.5 text-xs text-ink-muted">
-                                        <span id="filled-count" x-text="filled">0</span> dari {{ $totalActivities }} aktivitas terisi
-                                    </p>
-                                </div>
+                                </template>
                             </div>
                         </div>
                     </aside>
                 </div>
 
                 <div class="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
-                    <div class="flex items-center gap-3">
-                        <div class="min-w-0 flex-1">
-                            <p class="text-xs font-medium text-ink-muted">Total sementara</p>
-                            <p class="truncate" aria-live="polite">
-                                <span class="text-lg font-bold tabular-nums text-pine-900" x-text="formattedTotal">0</span>
-                                <span class="text-xs font-medium text-ink-muted">kg CO2e</span>
-                            </p>
-                        </div>
-                        <p class="shrink-0 text-xs tabular-nums text-ink-muted"><span x-text="filled">0</span>/{{ $totalActivities }}</p>
-                    </div>
+                    <p class="text-xs font-medium text-ink-muted">Total sementara</p>
+                    <template x-for="(scheme, index) in schemeTotals" :key="scheme.id">
+                        <p class="flex flex-wrap items-baseline gap-x-1.5" :class="index > 0 ? 'mt-1 border-t border-line pt-1' : ''" aria-live="polite">
+                            <span class="text-xs text-ink-muted" x-text="scheme.name"></span>
+                            <span x-bind:id="'total-sementara-mobile-' + scheme.id" class="text-lg font-bold tabular-nums text-pine-900" x-text="scheme.formattedTotal">0</span>
+                            <span class="text-xs font-medium text-ink-muted">kg CO2e</span>
+                        </p>
+                    </template>
                 </div>
             </form>
         </section>
     @elseif ($mode === 'review')
         @php
             $boundaries = $review['boundaries'];
-            $items = $review['items'];
-            $grandTotal = (float) $review['total'];
             $lastProcess = $ordered->last();
         @endphp
 
@@ -219,19 +212,27 @@
 
             <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_17.5rem]">
                 <div class="min-w-0 space-y-6">
-                    <div class="rounded-panel border border-line bg-white px-5 py-4">
-                        <p class="text-[13px] font-medium text-ink-muted">Total emisi</p>
-                        <p class="mt-1 flex flex-wrap items-baseline gap-x-2" aria-live="polite">
-                            <span id="review-total" class="text-[32px] font-bold leading-10 tracking-tight tabular-nums text-pine-900">{{ \App\Support\Number::emissionId($grandTotal) }}</span>
-                            <span class="text-[13px] font-medium text-ink-muted">kg CO2e</span>
-                        </p>
-                        <p class="mt-1 text-[13px] leading-5 text-ink-muted">{{ $review['filled'] }} dari {{ $review['totalActivities'] }} aktivitas terisi · {{ $items->count() }} baris</p>
-                        @if ($review['hotspot'])
-                            <p class="mt-3 border-t border-line pt-3 text-[13px] leading-5 text-ink-soft">
-                                Kontribusi terbesar: <span class="font-semibold text-pine-900">{{ $review['hotspot']['activity'] }}</span>
-                                ({{ \App\Support\Number::emissionId($review['hotspot']['emission']) }} kg CO2e)
-                            </p>
-                        @endif
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        @foreach ($review['scheme_totals'] as $schemeTotal)
+                            @php
+                                $schemeName = $schemeTotal['name'];
+                                $schemeHotspot = $review['hotspot_by_scheme'][$schemeName] ?? null;
+                            @endphp
+                            <div class="rounded-panel border border-line bg-white px-5 py-4">
+                                <p class="text-[13px] font-medium text-ink-muted">{{ $schemeName }}</p>
+                                <p class="mt-1 flex flex-wrap items-baseline gap-x-2" aria-live="polite">
+                                    <span class="text-[32px] font-bold leading-10 tracking-tight tabular-nums text-pine-900">{{ \App\Support\Number::emissionId($schemeTotal['total']) }}</span>
+                                    <span class="text-[13px] font-medium text-ink-muted">kg CO2e</span>
+                                </p>
+                                <p class="mt-1 text-[13px] leading-5 text-ink-muted">{{ $schemeTotal['filled'] }} dari {{ $schemeTotal['count'] }} aktivitas terisi</p>
+                                @if ($schemeHotspot)
+                                    <p class="mt-3 border-t border-line pt-3 text-[13px] leading-5 text-ink-soft">
+                                        Kontribusi terbesar: <span class="font-semibold text-pine-900">{{ $schemeHotspot['activity'] }}</span>
+                                        ({{ \App\Support\Number::emissionId($schemeHotspot['emission']) }} kg CO2e)
+                                    </p>
+                                @endif
+                            </div>
+                        @endforeach
                     </div>
 
                     @foreach ($boundaries as $index => $boundary)
@@ -371,11 +372,13 @@
                     <div class="sticky top-24 space-y-4">
                         <div class="rounded-panel border border-line bg-white px-5 py-4">
                             <p class="text-[13px] font-medium text-ink-muted">Total akhir</p>
-                            <p class="mt-1 flex flex-wrap items-baseline gap-x-1.5">
-                                <span class="text-[32px] font-bold leading-10 tracking-tight tabular-nums text-pine-900">{{ \App\Support\Number::emissionId($grandTotal) }}</span>
-                                <span class="text-[13px] font-medium text-ink-muted">kg CO2e</span>
-                            </p>
-                            <p class="mt-2 text-xs leading-5 text-ink-muted">{{ $review['filled'] }} dari {{ $review['totalActivities'] }} aktivitas terisi</p>
+                            @foreach ($review['scheme_totals'] as $schemeTotal)
+                                <p class="mt-2 text-xs leading-5 text-ink-muted">{{ $schemeTotal['name'] }}</p>
+                                <p class="flex flex-wrap items-baseline gap-x-1.5">
+                                    <span class="text-xl font-bold tracking-tight tabular-nums text-pine-900">{{ \App\Support\Number::emissionId($schemeTotal['total']) }}</span>
+                                    <span class="text-[12px] font-medium text-ink-muted">kg CO2e</span>
+                                </p>
+                            @endforeach
                         </div>
                     </div>
                 </aside>

@@ -17,8 +17,7 @@ it('redirects guests away from the dashboard to login', function () {
 });
 
 it('redirects authenticated admins away from login to the dashboard', function () {
-    $this->seed();
-    $user = User::query()->where('email', 'test@example.com')->firstOrFail();
+    $user = User::factory()->create();
 
     $this->actingAs($user)
         ->get(route('admin.login'))
@@ -52,8 +51,10 @@ it('rejects login with invalid payload', function () {
 });
 
 it('logs in with valid credentials and renders the dashboard', function () {
-    $this->seed();
-    $user = User::query()->where('email', 'test@example.com')->firstOrFail();
+    $user = User::factory()->create([
+        'email' => 'test@example.com',
+        'password' => 'password',
+    ]);
 
     $this->post(route('admin.login'), [
         'email' => 'test@example.com',
@@ -65,8 +66,7 @@ it('logs in with valid credentials and renders the dashboard', function () {
 });
 
 it('logs out the admin', function () {
-    $this->seed();
-    $user = User::query()->where('email', 'test@example.com')->firstOrFail();
+    $user = User::factory()->create();
     $this->actingAs($user);
 
     $this->post(route('admin.logout'))->assertRedirect(route('admin.login'));

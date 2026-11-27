@@ -101,7 +101,7 @@ it('advances through steps and preserves entries on refresh', function () {
 });
 
 it('shows the full report after the last step without saving', function () {
-    [, $product, $process] = publicCalculatorContext();
+    [$scheme, $product, $process] = publicCalculatorContext();
 
     $factor = EmissionFactor::factory()->create(['ef_value' => 2.5]);
     $activity = Activity::factory()->create([
@@ -121,7 +121,7 @@ it('shows the full report after the last step without saving', function () {
 
     $this->get(route('calculator'))->assertOk()
         ->assertSee('Periksa kembali hasil perhitungan Anda', false)
-        ->assertSee('Total emisi', false)
+        ->assertSee($scheme->description, false)
         ->assertSee('10', false)
         ->assertSee('kg CO2e', false)
         ->assertSee('Subtotal produk', false)
@@ -133,6 +133,61 @@ it('shows the full report after the last step without saving', function () {
 
     expect(SustainabilityReport::query()->count())->toBe(0)
         ->and(SustainabilityReportItem::query()->count())->toBe(0);
+});
+
+it('splits the review total and hotspot per scheme', function () {
+    $gedog = Scheme::factory()->create(['description' => 'Gedog Tuban', 'sort_order' => 1]);
+    $atbm = Scheme::factory()->create(['description' => 'Tenun ATBM Pisano', 'sort_order' => 2]);
+
+    $gedogProduct = Product::factory()->create(['scheme_id' => $gedog->id, 'sort_order' => 1]);
+    $atbmProduct = Product::factory()->create(['scheme_id' => $atbm->id, 'sort_order' => 1]);
+
+    $gedogProcess = Process::factory()->create(['product_id' => $gedogProduct->id]);
+    $atbmProcess = Process::factory()->create(['product_id' => $atbmProduct->id]);
+
+    $gedogFactor = EmissionFactor::factory()->create(['ef_value' => 2.0]);
+    $atbmFactor = EmissionFactor::factory()->create(['ef_value' => 5.0]);
+
+    $gedogActivity = Activity::factory()->create([
+        'process_id' => $gedogProcess->id,
+        'emission_factor_id' => $gedogFactor->id,
+        'description' => 'Aktivitas Gedog',
+    ]);
+    $atbmActivity = Activity::factory()->create([
+        'process_id' => $atbmProcess->id,
+        'emission_factor_id' => $atbmFactor->id,
+        'description' => 'Aktivitas ATBM',
+    ]);
+
+    $this->post(route('calculator.start'));
+
+    $this->post(route('calculator.step'), [
+        'product_id' => $gedogProduct->id,
+        'direction' => 'next',
+        'items' => [
+            ['activity_id' => $gedogActivity->id, 'option_id' => null, 'quantity' => 3],
+        ],
+    ])->assertRedirect();
+
+    $this->post(route('calculator.step'), [
+        'product_id' => $atbmProduct->id,
+        'direction' => 'next',
+        'items' => [
+            ['activity_id' => $atbmActivity->id, 'option_id' => null, 'quantity' => 2],
+        ],
+    ])->assertRedirect();
+
+    $response = $this->get(route('calculator'))->assertOk()
+        ->assertSee('Gedog Tuban', false)
+        ->assertSee('Tenun ATBM Pisano', false)
+        // Gedog: 3 × 2 = 6, ATBM: 2 × 5 = 10
+        ->assertSee('6', false)
+        ->assertSee('10', false)
+        ->assertSee('Aktivitas Gedog', false)
+        ->assertSee('Aktivitas ATBM', false);
+
+    // One hotspot line per scheme.
+    expect(substr_count($response->getContent(), 'Kontribusi terbesar'))->toBe(2);
 });
 
 it('counts zero-emission rows correctly: blank stays unfilled, tosa and heritage count as filled but emit nothing', function () {

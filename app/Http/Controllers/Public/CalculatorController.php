@@ -61,20 +61,21 @@ class CalculatorController extends Controller
 
         $product = $wizard->productWithInventory($currentProduct);
         $entries = $state['entries'] ?? [];
-        $base = $wizard->baseTotals($product, $entries);
+        $baseByScheme = collect($wizard->baseTotals($product, $entries))->keyBy('id');
 
-        $currentIds = $product->processes
-            ->flatMap(fn ($process) => $process->activities->pluck('id'))
-            ->map(fn ($id): string => (string) (int) $id)
-            ->all();
-        $currentSet = array_flip($currentIds);
+        $schemeTotals = $ordered->pluck('scheme')
+            ->filter()
+            ->unique('id')
+            ->map(function ($scheme) use ($baseByScheme): array {
+                $base = $baseByScheme->get($scheme->getKey());
 
-        $currentFilled = 0;
-        foreach ($entries as $activityId => $entry) {
-            if (isset($currentSet[(string) $activityId]) && (float) ($entry['quantity'] ?? 0) > 0) {
-                $currentFilled++;
-            }
-        }
+                return [
+                    'id' => (int) $scheme->getKey(),
+                    'name' => (string) $scheme->description,
+                    'total' => (float) ($base['total'] ?? 0),
+                ];
+            })
+            ->values();
 
         return view('landing.calculator.edit', [
             'mode' => 'step',
@@ -82,10 +83,8 @@ class CalculatorController extends Controller
             'currentIndex' => $current,
             'product' => $product,
             'entries' => $entries,
-            'baseTotal' => (float) $base['total'],
-            'baseFilled' => (int) $base['filled'],
-            'currentFilled' => $currentFilled,
-            'totalActivities' => $wizard->totalActivityCount(),
+            'schemeTotals' => $schemeTotals,
+            'currentSchemeId' => (int) $product->scheme_id,
             'ordered' => $ordered,
         ]);
     }

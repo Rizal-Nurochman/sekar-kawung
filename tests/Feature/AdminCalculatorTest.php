@@ -206,6 +206,63 @@ it('shows a comprehensive review only at the end with save action', function () 
         ->assertSee($activity->description, false);
 });
 
+it('splits the review total and hotspot per scheme', function () {
+    $this->actingAs(User::factory()->create());
+
+    $gedog = Scheme::factory()->create(['description' => 'Gedog Tuban', 'sort_order' => 1]);
+    $atbm = Scheme::factory()->create(['description' => 'Tenun ATBM Pisano', 'sort_order' => 2]);
+
+    $gedogProduct = Product::factory()->create(['scheme_id' => $gedog->id, 'sort_order' => 1]);
+    $atbmProduct = Product::factory()->create(['scheme_id' => $atbm->id, 'sort_order' => 1]);
+
+    $gedogProcess = Process::factory()->create(['product_id' => $gedogProduct->id]);
+    $atbmProcess = Process::factory()->create(['product_id' => $atbmProduct->id]);
+
+    $gedogFactor = EmissionFactor::factory()->create(['ef_value' => 2.0]);
+    $atbmFactor = EmissionFactor::factory()->create(['ef_value' => 5.0]);
+
+    $gedogActivity = Activity::factory()->create([
+        'process_id' => $gedogProcess->id,
+        'emission_factor_id' => $gedogFactor->id,
+        'description' => 'Aktivitas Gedog',
+    ]);
+    $atbmActivity = Activity::factory()->create([
+        'process_id' => $atbmProcess->id,
+        'emission_factor_id' => $atbmFactor->id,
+        'description' => 'Aktivitas ATBM',
+    ]);
+
+    $this->post(route('admin.calculator.start'));
+
+    $this->post(route('admin.calculator.step'), [
+        'product_id' => $gedogProduct->id,
+        'direction' => 'next',
+        'items' => [
+            ['activity_id' => $gedogActivity->id, 'option_id' => null, 'quantity' => 3],
+        ],
+    ])->assertRedirect();
+
+    $this->post(route('admin.calculator.step'), [
+        'product_id' => $atbmProduct->id,
+        'direction' => 'next',
+        'items' => [
+            ['activity_id' => $atbmActivity->id, 'option_id' => null, 'quantity' => 2],
+        ],
+    ])->assertRedirect();
+
+    $response = $this->get(route('admin.calculator.edit'))->assertOk()
+        ->assertSee('Gedog Tuban', false)
+        ->assertSee('Tenun ATBM Pisano', false)
+        // Gedog: 3 × 2 = 6, ATBM: 2 × 5 = 10
+        ->assertSee('6', false)
+        ->assertSee('10', false)
+        ->assertSee('Aktivitas Gedog', false)
+        ->assertSee('Aktivitas ATBM', false);
+
+    // One hotspot line per scheme.
+    expect(substr_count($response->getContent(), 'Kontribusi terbesar'))->toBe(2);
+});
+
 it('stores a report with auto title, items, and cached total', function () {
     [$scheme, $product, $process] = calculatorContext();
     $this->actingAs(User::factory()->create());

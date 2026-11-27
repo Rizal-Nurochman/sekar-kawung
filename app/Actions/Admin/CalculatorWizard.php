@@ -119,10 +119,10 @@ class CalculatorWizard
     }
 
     /**
-     * Totals for saved entries outside the given product.
+     * Per-scheme totals for saved entries outside the given product.
      *
      * @param  array<string, array{option_id: ?int, quantity: float}>  $entries
-     * @return array{total: float, filled: int}
+     * @return array<int, array{id: int, name: string, total: float}>
      */
     public function baseTotals(Product $currentProduct, array $entries): array
     {
@@ -134,39 +134,53 @@ class CalculatorWizard
         $currentSet = array_flip($currentActivityIds);
 
         $otherItems = [];
-        $filled = 0;
 
         foreach ($entries as $activityId => $entry) {
             if (isset($currentSet[(string) $activityId])) {
                 continue;
             }
 
-            $quantity = (float) ($entry['quantity'] ?? 0);
-
-            if ($quantity > 0) {
-                $filled++;
-            }
-
             $otherItems[] = [
                 'activity_id' => (int) $activityId,
                 'option_id' => $entry['option_id'] ?? null,
-                'quantity' => $quantity,
+                'quantity' => (float) ($entry['quantity'] ?? 0),
             ];
         }
 
         $calculation = $this->calculator->handle(['items' => $otherItems]);
 
-        return [
-            'total' => (float) ($calculation['total'] ?? 0),
-            'filled' => $filled,
-        ];
-    }
+        $schemeByActivity = Activity::query()
+            ->with('process.product.scheme')
+            ->whereIn('id', collect($otherItems)->pluck('activity_id')->all())
+            ->get()
+            ->mapWithKeys(function (Activity $activity): array {
+                $scheme = $activity->process?->product?->scheme;
 
-    public function totalActivityCount(): int
-    {
-        return (int) Activity::query()
-            ->whereHas('process.product')
-            ->count();
+                return [(int) $activity->getKey() => $scheme === null ? null : [
+                    'id' => (int) $scheme->getKey(),
+                    'name' => (string) $scheme->description,
+                ]];
+            });
+
+        $schemes = [];
+
+        foreach ($calculation['items'] ?? [] as $item) {
+            $scheme = $schemeByActivity->get((int) $item['activity_id']);
+
+            if ($scheme === null) {
+                continue;
+            }
+
+            $schemes[$scheme['id']] ??= [
+                'id' => $scheme['id'],
+                'name' => $scheme['name'],
+                'total' => 0.0,
+            ];
+
+            $schemes[$scheme['id']]['total'] += (float) $item['emission_result'];
+        }
+
+        return array_values($schemes);
     }
 
     /**
@@ -178,10 +192,10 @@ class CalculatorWizard
      *     boundaries: Collection,
      *     stages: Collection,
      *     items: Collection,
-     *     total: float,
+     *     scheme_totals: Collection,
+     *     hotspot_by_scheme: array,
      *     filled: int,
      *     totalActivities: int,
-     *     hotspot: ?array,
      *     sources: Collection,
      * }
      */
@@ -360,7 +374,21 @@ class CalculatorWizard
             ];
         })->values();
 
-        $hotspot = $enriched->sortByDesc('emission')->first();
+        // Per-scheme totals
+        $schemeTotals = $enriched->groupBy('scheme')->map(function ($rows, $schemeName) {
+            return [
+                'name' => $schemeName,
+                'total' => (float) $rows->sum('emission'),
+                'filled' => $rows->where(fn ($row): bool => (float) $row['quantity'] > 0)->count(),
+                'count' => $rows->count(),
+            ];
+        })->values();
+
+        // Per-scheme hotspots
+        $hotspotByScheme = $enriched->groupBy('scheme')->map(function ($rows): ?array {
+            return $rows->sortByDesc('emission')->first();
+        })->toArray();
+
         $sources = $inventory
             ->flatMap(fn (Product $product) => $product->processes)
             ->flatMap(fn ($process) => $process->activities)
@@ -386,10 +414,10 @@ class CalculatorWizard
             'boundaries' => $boundarySections,
             'stages' => $stages,
             'items' => $enriched,
-            'total' => $total,
+            'scheme_totals' => $schemeTotals,
+            'hotspot_by_scheme' => $hotspotByScheme,
             'filled' => $filled,
             'totalActivities' => $enriched->count(),
-            'hotspot' => $hotspot,
             'sources' => $sources,
         ];
     }
