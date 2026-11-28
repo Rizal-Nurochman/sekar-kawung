@@ -360,3 +360,85 @@ it('restarts cleanly after reset with no persisted rows', function () {
     expect(SustainabilityReport::query()->count())->toBe(0)
         ->and(SustainabilityReportItem::query()->count())->toBe(0);
 });
+
+it('walks only the selected scheme when one is chosen', function () {
+    $gedog = Scheme::factory()->create(['description' => 'Gedog Tuban', 'sort_order' => 1]);
+    $atbm = Scheme::factory()->create(['description' => 'Tenun ATBM Pisano', 'sort_order' => 2]);
+
+    $gedogBoundary = Boundary::factory()->create(['scheme_id' => $gedog->id, 'sort_order' => 1, 'description' => 'Boundary Gedog']);
+    $atbmBoundary = Boundary::factory()->create(['scheme_id' => $atbm->id, 'sort_order' => 1, 'description' => 'Boundary ATBM']);
+
+    $gedogProcess = Process::factory()->create(['boundary_id' => $gedogBoundary->id]);
+    Process::factory()->create(['boundary_id' => $atbmBoundary->id]);
+
+    $gedogActivity = Activity::factory()->create([
+        'process_id' => $gedogProcess->id,
+        'emission_factor_id' => EmissionFactor::factory()->create(['ef_value' => 2.0])->id,
+    ]);
+
+    $this->post(route('calculator.start'), ['scheme_id' => $gedog->id])->assertRedirect(route('calculator'));
+
+    $this->get(route('calculator'))->assertOk()
+        ->assertSee('Boundary 1 dari 1', false)
+        ->assertSee('Boundary Gedog', false)
+        ->assertDontSee('Boundary ATBM', false);
+
+    $this->post(route('calculator.step'), [
+        'boundary_id' => $gedogBoundary->id,
+        'direction' => 'next',
+        'items' => [
+            ['activity_id' => $gedogActivity->id, 'option_id' => null, 'quantity' => 3],
+        ],
+    ])->assertRedirect();
+
+    $this->get(route('calculator'))->assertOk()
+        ->assertSee('Periksa kembali hasil perhitungan Anda', false)
+        ->assertSee('Gedog Tuban', false)
+        ->assertDontSee('Boundary ATBM', false);
+});
+
+it('walks every scheme when Semua skema is selected', function () {
+    $gedog = Scheme::factory()->create(['description' => 'Gedog Tuban', 'sort_order' => 1]);
+    $atbm = Scheme::factory()->create(['description' => 'Tenun ATBM Pisano', 'sort_order' => 2]);
+
+    Boundary::factory()->create(['scheme_id' => $gedog->id, 'sort_order' => 1]);
+    Boundary::factory()->create(['scheme_id' => $atbm->id, 'sort_order' => 1]);
+
+    $this->post(route('calculator.start'), ['scheme_id' => ''])->assertRedirect(route('calculator'));
+
+    $this->get(route('calculator'))->assertOk()
+        ->assertSee('Boundary 1 dari 2', false);
+});
+
+it('resets progress when the scheme is changed mid-run', function () {
+    $gedog = Scheme::factory()->create(['description' => 'Gedog Tuban', 'sort_order' => 1]);
+    $atbm = Scheme::factory()->create(['description' => 'Tenun ATBM Pisano', 'sort_order' => 2]);
+
+    $gedogBoundary = Boundary::factory()->create(['scheme_id' => $gedog->id, 'sort_order' => 1, 'description' => 'Boundary Gedog']);
+    $atbmBoundary = Boundary::factory()->create(['scheme_id' => $atbm->id, 'sort_order' => 1, 'description' => 'Boundary ATBM']);
+
+    $gedogProcess = Process::factory()->create(['boundary_id' => $gedogBoundary->id]);
+    $atbmProcess = Process::factory()->create(['boundary_id' => $atbmBoundary->id]);
+
+    $gedogActivity = Activity::factory()->create(['process_id' => $gedogProcess->id]);
+
+    $this->post(route('calculator.start'));
+
+    $this->post(route('calculator.step'), [
+        'boundary_id' => $gedogBoundary->id,
+        'direction' => 'next',
+        'items' => [
+            ['activity_id' => $gedogActivity->id, 'option_id' => null, 'quantity' => 5],
+        ],
+    ])->assertRedirect();
+
+    $this->post(route('calculator.start'), ['scheme_id' => $atbm->id])->assertRedirect(route('calculator'));
+
+    $this->get(route('calculator'))->assertOk()
+        ->assertSee('Boundary 1 dari 1', false)
+        ->assertSee('Boundary ATBM', false);
+
+    $wizard = app(CalculatorWizard::class);
+    expect($wizard->state()['scheme_id'])->toBe($atbm->id)
+        ->and($wizard->state()['entries'])->toBe([]);
+});

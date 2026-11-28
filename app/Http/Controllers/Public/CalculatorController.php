@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Public;
 use App\Actions\Public\CalculatorWizard;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CalculatorStepRequest;
+use App\Models\Scheme;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CalculatorController extends Controller
@@ -14,23 +16,25 @@ class CalculatorController extends Controller
     {
         $ordered = $wizard->orderedBoundaries();
         $totalSteps = $ordered->count();
+        $state = $wizard->state();
+        $selectedSchemeId = $state['scheme_id'] ?? null;
+        $schemes = Scheme::query()->orderBy('sort_order')->orderBy('id')->get();
 
         if ($totalSteps === 0) {
             return view('landing.calculator.edit', [
                 'mode' => 'empty',
                 'totalSteps' => 0,
+                'schemes' => $schemes,
+                'selectedSchemeId' => $selectedSchemeId,
             ]);
         }
 
-        $state = $wizard->state();
-
         if ($state === null) {
-            $schemes = $ordered->pluck('scheme')->filter()->unique('id')->values();
-
             return view('landing.calculator.edit', [
                 'mode' => 'start',
                 'totalSteps' => $totalSteps,
                 'schemes' => $schemes,
+                'selectedSchemeId' => $selectedSchemeId,
                 'ordered' => $ordered,
             ]);
         }
@@ -44,6 +48,8 @@ class CalculatorController extends Controller
                 'mode' => 'review',
                 'totalSteps' => $totalSteps,
                 'review' => $review,
+                'schemes' => $schemes,
+                'selectedSchemeId' => $selectedSchemeId,
                 'ordered' => $ordered,
             ]);
         }
@@ -85,13 +91,21 @@ class CalculatorController extends Controller
             'entries' => $entries,
             'schemeTotals' => $schemeTotals,
             'currentSchemeId' => (int) $boundary->scheme_id,
+            'schemes' => $schemes,
+            'selectedSchemeId' => $selectedSchemeId,
             'ordered' => $ordered,
         ]);
     }
 
-    public function start(CalculatorWizard $wizard): RedirectResponse
+    public function start(Request $request, CalculatorWizard $wizard): RedirectResponse
     {
-        $wizard->start();
+        $validated = $request->validate([
+            'scheme_id' => ['nullable', 'integer', 'exists:schemes,id'],
+        ]);
+
+        $schemeId = isset($validated['scheme_id']) ? (int) $validated['scheme_id'] : null;
+
+        $wizard->start($schemeId);
 
         return redirect()->route('calculator');
     }

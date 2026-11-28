@@ -15,20 +15,29 @@ class CalculatorWizard
 
     /**
      * All boundaries in wizard order: scheme sort, then boundary sort.
+     * When a scheme is selected in the current run, only that scheme's
+     * boundaries are returned.
      *
      * @return Collection<int, Boundary>
      */
     public function orderedBoundaries(): Collection
     {
-        return Boundary::query()
+        $query = Boundary::query()
             ->with('scheme')
             ->join('schemes', 'schemes.id', '=', 'boundaries.scheme_id')
             ->orderBy('schemes.sort_order')
             ->orderBy('schemes.id')
             ->orderBy('boundaries.sort_order')
             ->orderBy('boundaries.id')
-            ->select('boundaries.*')
-            ->get();
+            ->select('boundaries.*');
+
+        $schemeId = $this->state()['scheme_id'] ?? null;
+
+        if ($schemeId !== null) {
+            $query->where('boundaries.scheme_id', $schemeId);
+        }
+
+        return $query->get();
     }
 
     /**
@@ -51,7 +60,7 @@ class CalculatorWizard
     }
 
     /**
-     * @return array{current: int, entries: array<string, array{option_id: ?int, quantity: float}>}|null
+     * @return array{current: int, entries: array<string, array{option_id: ?int, quantity: float}>, scheme_id: ?int}|null
      */
     public function state(): ?array
     {
@@ -64,14 +73,16 @@ class CalculatorWizard
         return [
             'current' => (int) $state['current'],
             'entries' => is_array($state['entries']) ? $state['entries'] : [],
+            'scheme_id' => isset($state['scheme_id']) ? (int) $state['scheme_id'] : null,
         ];
     }
 
-    public function start(): void
+    public function start(?int $schemeId = null): void
     {
         session()->put(self::SESSION_KEY, [
             'current' => 0,
             'entries' => [],
+            'scheme_id' => $schemeId,
         ]);
     }
 
@@ -85,7 +96,7 @@ class CalculatorWizard
      */
     public function saveStep(Boundary $boundary, array $items): void
     {
-        $state = $this->state() ?? ['current' => 0, 'entries' => []];
+        $state = $this->state() ?? ['current' => 0, 'entries' => [], 'scheme_id' => null];
         $entries = $state['entries'];
 
         foreach ($items as $row) {
@@ -113,7 +124,7 @@ class CalculatorWizard
 
     public function moveTo(int $index, int $totalSteps): void
     {
-        $state = $this->state() ?? ['current' => 0, 'entries' => []];
+        $state = $this->state() ?? ['current' => 0, 'entries' => [], 'scheme_id' => null];
         $state['current'] = max(0, min($index, $totalSteps));
         session()->put(self::SESSION_KEY, $state);
     }

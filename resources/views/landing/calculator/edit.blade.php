@@ -20,9 +20,17 @@
             <div class="w-full max-w-xs text-center">
                 <h2 class="text-xl font-bold leading-7 tracking-tight text-pine-900">Kalkulator Emisi Karbon</h2>
 
-                <form id="start-form" method="POST" action="{{ route('calculator.start') }}" class="mt-6">
+                <form id="start-form" method="POST" action="{{ route('calculator.start') }}" class="mt-6 text-left">
                     @csrf
-                    <button id="start-calculator" type="submit" class="inline-flex w-full items-center justify-center rounded-full bg-pine-900 px-6 py-3 text-base font-semibold leading-6 text-white transition-colors hover:bg-pine-950">
+                    <label for="start-scheme" class="text-[13px] font-medium text-ink-muted">Skema perhitungan</label>
+                    <select id="start-scheme" name="scheme_id" class="control mt-1 h-12 w-full">
+                        <option value="">Semua skema</option>
+                        @foreach ($schemes as $scheme)
+                            <option value="{{ $scheme->id }}" @selected((int) ($selectedSchemeId ?? 0) === (int) $scheme->id)>{{ $scheme->description }}</option>
+                        @endforeach
+                    </select>
+                    <p class="mt-2 text-[13px] leading-5 text-ink-muted">Pilih satu skema, atau hitung semua skema sekaligus.</p>
+                    <button id="start-calculator" type="submit" class="mt-4 inline-flex w-full items-center justify-center rounded-full bg-pine-900 px-6 py-3 text-base font-semibold leading-6 text-white transition-colors hover:bg-pine-950">
                         Mulai Menghitung
                     </button>
                 </form>
@@ -37,6 +45,9 @@
         @endphp
 
         <section class="mx-auto w-full max-w-[1200px] px-4 pb-20 sm:px-6 lg:px-0">
+            <div class="mb-4">
+                @include('landing.calculator._scheme-picker')
+            </div>
             <p class="text-[13px] font-medium text-ink-muted">{{ $boundary->scheme?->description }}</p>
             <div class="mt-1 flex flex-wrap items-baseline justify-between gap-2">
                 <h2 id="wizard-progress" class="text-lg font-bold leading-7 tracking-tight text-pine-900">
@@ -201,6 +212,9 @@
         @endphp
 
         <section class="mx-auto w-full max-w-[1200px] px-4 pb-20 sm:px-6 lg:px-0">
+            <div class="mb-4">
+                @include('landing.calculator._scheme-picker')
+            </div>
             <p class="text-[13px] font-medium text-ink-muted">Hasil perhitungan</p>
             <div class="mt-1 flex flex-wrap items-baseline justify-between gap-2">
                 <h2 id="review-heading" class="text-lg font-bold leading-7 tracking-tight text-pine-900">Periksa kembali hasil perhitungan Anda</h2>
