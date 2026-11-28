@@ -34,9 +34,15 @@ class UpsertReport
                 'slug' => $slug,
                 'summary' => $validated['summary'] ?? null,
                 'total_emission' => $calculation['total'],
-                'is_published' => (bool) ($validated['is_published'] ?? false),
+                'is_active' => (bool) ($validated['is_active'] ?? false),
             ]);
             $report->save();
+
+            if ($report->is_active) {
+                SustainabilityReport::query()
+                    ->where('id', '!=', $report->getKey())
+                    ->update(['is_active' => false]);
+            }
 
             $report->items()->delete();
 

@@ -26,7 +26,7 @@ it('swaps the detail section when a scheme card is clicked', function () {
         'title' => 'Laporan Skema',
         'slug' => 'laporan-skema',
         'total_emission' => 10,
-        'is_published' => false,
+        'is_active' => false,
     ]);
 
     SustainabilityReportItem::query()->create([

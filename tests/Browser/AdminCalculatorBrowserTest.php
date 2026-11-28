@@ -57,7 +57,7 @@ function loginAsAdmin(string $email = 'admin@example.com'): void
     ]);
 }
 
-it('walks the full wizard from start to published report', function () {
+it('walks the full wizard from start to active report', function () {
     [$scheme] = seedWizardTwoSteps();
     loginAsAdmin();
 
@@ -75,14 +75,14 @@ it('walks the full wizard from start to published report', function () {
     $page->assertSee('Mulai Menghitung')
         ->assertVisible('#start-calculator')
         ->assertMissing('Judul laporan')
-        ->assertMissing('Simpan & terbitkan')
+        ->assertMissing('Simpan & aktifkan')
         ->assertNoJavaScriptErrors();
 
     $page->click('#start-calculator')
         ->assertSee('Boundary 1 dari 2')
         ->assertSee('Gedog Tuban')
         ->assertSee('Total sementara')
-        ->assertMissing('Simpan & terbitkan')
+        ->assertMissing('Simpan & aktifkan')
         ->assertNoJavaScriptErrors();
 
     // Type the quantity with real keystrokes so Alpine input events fire.
@@ -133,7 +133,7 @@ it('keeps the temporary total visible without a save action on steps', function 
         ->click('#start-calculator')
         ->assertSee('Boundary 1 dari 2')
         ->assertVisible('#total-sementara-'.$scheme->id)
-        ->assertMissing('Simpan & terbitkan')
+        ->assertMissing('Simpan & aktifkan')
         ->click('input[data-quantity-input]')
         ->keys('input[data-quantity-input]', '2')
         ->assertSeeIn('#total-sementara-'.$scheme->id, '5')

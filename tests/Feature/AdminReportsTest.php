@@ -1,8 +1,8 @@
 <?php
 
-use App\Actions\Admin\TogglePublish;
+use App\Actions\Admin\ToggleActive;
 use App\Actions\Admin\UpsertReport;
-use App\Http\Controllers\Admin\PublishedReportController;
+use App\Http\Controllers\Admin\ActiveReportController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Models\Activity;
 use App\Models\Boundary;
@@ -25,8 +25,8 @@ beforeEach(function (): void {
     if (! Route::has('admin.reports.index')) {
         Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(function (): void {
             Route::resource('reports', ReportController::class)->except(['create', 'store']);
-            Route::post('reports/{report}/publish', [PublishedReportController::class, 'store'])->name('reports.publish');
-            Route::delete('reports/{report}/publish', [PublishedReportController::class, 'destroy'])->name('reports.unpublish');
+            Route::post('reports/{report}/activate', [ActiveReportController::class, 'store'])->name('reports.activate');
+            Route::delete('reports/{report}/activate', [ActiveReportController::class, 'destroy'])->name('reports.deactivate');
         });
 
         // Routes added at runtime miss the name-lookup refresh that
@@ -55,7 +55,7 @@ function validReportPayload(Scheme $scheme, Boundary $boundary, array $overrides
         'scheme_id' => $scheme->id,
         'boundary_id' => $boundary->id,
         'summary' => 'Ringkasan hasil perhitungan.',
-        'is_published' => false,
+        'is_active' => false,
     ], $overrides);
 }
 
@@ -67,7 +67,7 @@ it('redirects guests away from report pages', function (): void {
         'title' => 'Laporan tamu',
         'slug' => 'laporan-tamu',
         'total_emission' => 0,
-        'is_published' => false,
+        'is_active' => false,
     ]);
 
     $this->get(route('admin.reports.index'))->assertRedirect('/admin/login');
@@ -100,7 +100,7 @@ it('rejects invalid and duplicate report updates', function (): void {
         'title' => 'Laporan lama',
         'slug' => 'laporan-sama',
         'total_emission' => 0,
-        'is_published' => false,
+        'is_active' => false,
     ]);
 
     $report = SustainabilityReport::query()->create([
@@ -109,7 +109,7 @@ it('rejects invalid and duplicate report updates', function (): void {
         'title' => 'Laporan saya',
         'slug' => 'laporan-saya',
         'total_emission' => 0,
-        'is_published' => false,
+        'is_active' => false,
     ]);
 
     // Missing title is rejected. A supplied slug is ignored: the slug
@@ -142,7 +142,7 @@ it('keeps the calculation scope fixed when a report is updated', function (): vo
         'title' => 'Laporan terkunci',
         'slug' => 'laporan-terkunci',
         'total_emission' => 4,
-        'is_published' => false,
+        'is_active' => false,
     ]);
 
     $this->put(route('admin.reports.update', $report), [
@@ -170,7 +170,7 @@ it('regenerates the slug from the title on every update', function (): void {
         'title' => 'Laporan lama',
         'slug' => 'laporan-lama',
         'total_emission' => 0,
-        'is_published' => true,
+        'is_active' => true,
     ]);
 
     $this->put(route('admin.reports.update', $report), [
@@ -187,7 +187,7 @@ it('regenerates the slug from the title on every update', function (): void {
         'title' => 'Judul bentrok',
         'slug' => 'judul-bentrok',
         'total_emission' => 0,
-        'is_published' => false,
+        'is_active' => false,
     ]);
 
     $this->put(route('admin.reports.update', $report), [
@@ -210,7 +210,7 @@ it('preserves items and totals when editorial fields are updated', function (): 
         'slug' => 'laporan-awal',
         'summary' => 'Ringkasan awal.',
         'total_emission' => 12.5,
-        'is_published' => false,
+        'is_active' => false,
     ]);
 
     SustainabilityReportItem::query()->create([
@@ -243,6 +243,50 @@ it('preserves items and totals when editorial fields are updated', function (): 
         ->and((float) $report->items()->sum('emission_result'))->toBe(12.5);
 });
 
+it('lists the report id and every represented scheme in the overview', function (): void {
+    $this->actingAs($this->user);
+    $gedog = Scheme::factory()->create(['description' => 'Biji Sampai Kain Batik Gedog Tuban', 'sort_order' => 1]);
+    $tenun = Scheme::factory()->create(['description' => 'Biji Sampai Kain Batik Tenun ATBM Pisano', 'sort_order' => 2]);
+    $gedogBoundary = Boundary::factory()->create(['scheme_id' => $gedog->id]);
+    $tenunBoundary = Boundary::factory()->create(['scheme_id' => $tenun->id]);
+    $gedogProcess = Process::factory()->create(['boundary_id' => $gedogBoundary->id]);
+    $tenunProcess = Process::factory()->create(['boundary_id' => $tenunBoundary->id]);
+    $gedogActivity = Activity::factory()->create(['process_id' => $gedogProcess->id]);
+    $tenunActivity = Activity::factory()->create(['process_id' => $tenunProcess->id]);
+
+    $report = SustainabilityReport::query()->create([
+        'scheme_id' => $gedog->id,
+        'boundary_id' => $gedogBoundary->id,
+        'title' => 'Judul panjang dari kalkulator',
+        'slug' => 'judul-panjang-dari-kalkulator',
+        'total_emission' => 10,
+        'is_active' => true,
+    ]);
+
+    SustainabilityReportItem::query()->create([
+        'sustainability_report_id' => $report->id,
+        'activity_id' => $gedogActivity->id,
+        'option_id' => null,
+        'quantity' => 1,
+        'emission_result' => 4,
+    ]);
+    SustainabilityReportItem::query()->create([
+        'sustainability_report_id' => $report->id,
+        'activity_id' => $tenunActivity->id,
+        'option_id' => null,
+        'quantity' => 1,
+        'emission_result' => 6,
+    ]);
+
+    $this->get(route('admin.reports.index'))->assertOk()
+        ->assertSee('Laporan '.$report->id)
+        ->assertSeeInOrder([
+            'Biji Sampai Kain Batik Gedog Tuban',
+            'Biji Sampai Kain Batik Tenun ATBM Pisano',
+        ])
+        ->assertDontSee('Judul panjang dari kalkulator');
+});
+
 it('renders one card per scheme with its process details', function (): void {
     $this->actingAs($this->user);
     $scheme = Scheme::factory()->create(['description' => 'Skema Uji', 'sort_order' => 1]);
@@ -261,7 +305,7 @@ it('renders one card per scheme with its process details', function (): void {
         'title' => 'Laporan batas',
         'slug' => 'laporan-batas',
         'total_emission' => 30,
-        'is_published' => false,
+        'is_active' => false,
     ]);
 
     SustainabilityReportItem::query()->create([
@@ -315,7 +359,7 @@ it('renders report stages in configured order regardless of emissions', function
         'title' => 'Laporan urutan tahap',
         'slug' => 'laporan-urutan-tahap',
         'total_emission' => 110,
-        'is_published' => false,
+        'is_active' => false,
     ]);
 
     SustainabilityReportItem::query()->create([
@@ -406,37 +450,102 @@ it('creates a report through the calculator action and persists items with total
     $this->get(route('admin.reports.show', $report))->assertOk()->assertSee('Jejak Karbon Batik Tulis', false);
 });
 
-it('toggles publish status without recalculating the total', function (): void {
+it('makes the newest calculated report the only active report', function (): void {
+    $this->actingAs($this->user);
+    [$scheme, $boundary] = reportSchemeWithBoundary();
+    $process = Process::factory()->create(['boundary_id' => $boundary->id]);
+    $activity = Activity::factory()->create(['process_id' => $process->id]);
+
+    $previous = SustainabilityReport::query()->create([
+        'scheme_id' => $scheme->id,
+        'boundary_id' => $boundary->id,
+        'title' => 'Laporan sebelumnya',
+        'slug' => 'laporan-sebelumnya',
+        'total_emission' => 1,
+        'is_active' => true,
+    ]);
+
+    $this->post(route('admin.calculator.start'))->assertRedirect();
+
+    $this->post(route('admin.calculator.step'), [
+        'boundary_id' => $boundary->id,
+        'direction' => 'next',
+        'items' => [
+            ['activity_id' => $activity->id, 'option_id' => null, 'quantity' => 1],
+        ],
+    ])->assertRedirect();
+
+    $this->post(route('admin.calculator.store'))->assertRedirect();
+
+    $newest = SustainabilityReport::query()->latest('id')->firstOrFail();
+
+    expect($previous->refresh()->is_active)->toBeFalse()
+        ->and($newest->is_active)->toBeTrue()
+        ->and(SustainabilityReport::query()->where('is_active', true)->count())->toBe(1);
+});
+
+it('keeps only one report active when manually activated', function (): void {
+    $this->actingAs($this->user);
+    [$scheme, $boundary] = reportSchemeWithBoundary();
+
+    $first = SustainabilityReport::query()->create([
+        'scheme_id' => $scheme->id,
+        'boundary_id' => $boundary->id,
+        'title' => 'Laporan pertama',
+        'slug' => 'laporan-pertama',
+        'total_emission' => 1,
+        'is_active' => true,
+    ]);
+
+    $second = SustainabilityReport::query()->create([
+        'scheme_id' => $scheme->id,
+        'boundary_id' => $boundary->id,
+        'title' => 'Laporan kedua',
+        'slug' => 'laporan-kedua',
+        'total_emission' => 2,
+        'is_active' => false,
+    ]);
+
+    $this->post(route('admin.reports.activate', $second))
+        ->assertRedirect()
+        ->assertSessionHas('status');
+
+    expect($first->refresh()->is_active)->toBeFalse()
+        ->and($second->refresh()->is_active)->toBeTrue()
+        ->and(SustainabilityReport::query()->where('is_active', true)->count())->toBe(1);
+});
+
+it('toggles active status without recalculating the total', function (): void {
     $this->actingAs($this->user);
     [$scheme, $boundary] = reportSchemeWithBoundary();
 
     $report = SustainabilityReport::query()->create([
         'scheme_id' => $scheme->id,
         'boundary_id' => $boundary->id,
-        'title' => 'Laporan draf',
-        'slug' => 'laporan-draf',
+        'title' => 'Laporan nonaktif',
+        'slug' => 'laporan-nonaktif',
         'total_emission' => 9.5,
-        'is_published' => false,
+        'is_active' => false,
     ]);
 
-    $this->post(route('admin.reports.publish', $report))
+    $this->post(route('admin.reports.activate', $report))
         ->assertRedirect()
         ->assertSessionHas('status');
 
-    expect($report->refresh()->is_published)->toBeTrue();
+    expect($report->refresh()->is_active)->toBeTrue();
     expect((float) $report->refresh()->total_emission)->toBe(9.5);
 
     // Direct action usage keeps the total untouched as well.
-    app(TogglePublish::class)->handle($report->refresh(), false);
+    app(ToggleActive::class)->handle($report->refresh(), false);
 
-    expect($report->refresh()->is_published)->toBeFalse();
+    expect($report->refresh()->is_active)->toBeFalse();
     expect((float) $report->refresh()->total_emission)->toBe(9.5);
 
-    $this->delete(route('admin.reports.unpublish', $report))
+    $this->delete(route('admin.reports.deactivate', $report))
         ->assertRedirect()
         ->assertSessionHas('status');
 
-    expect($report->refresh()->is_published)->toBeFalse();
+    expect($report->refresh()->is_active)->toBeFalse();
 });
 
 it('deletes a report together with its items', function (): void {
@@ -450,7 +559,7 @@ it('deletes a report together with its items', function (): void {
         'title' => 'Laporan dihapus',
         'slug' => 'laporan-dihapus',
         'total_emission' => 3,
-        'is_published' => false,
+        'is_active' => false,
     ]);
 
     $item = SustainabilityReportItem::query()->create([

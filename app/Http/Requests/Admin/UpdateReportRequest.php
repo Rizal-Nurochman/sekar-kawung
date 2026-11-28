@@ -31,7 +31,7 @@ class UpdateReportRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'summary' => ['nullable', 'string'],
-            'is_published' => ['sometimes', 'boolean'],
+            'is_active' => ['sometimes', 'boolean'],
         ];
     }
 }

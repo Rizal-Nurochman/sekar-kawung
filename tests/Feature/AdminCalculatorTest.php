@@ -45,8 +45,8 @@ it('shows a single start button without report identity fields', function () {
         ->assertSee('id="start-calculator"', false)
         ->assertDontSee('Judul laporan', false)
         ->assertDontSee('Ringkasan', false)
-        ->assertDontSee('Simpan &amp; terbitkan', false)
-        ->assertDontSee('Simpan & terbitkan', false);
+        ->assertDontSee('Simpan &amp; aktifkan', false)
+        ->assertDontSee('Simpan & aktifkan', false);
 });
 
 it('starts the wizard and shows the first process with schema name', function () {
@@ -60,7 +60,7 @@ it('starts the wizard and shows the first process with schema name', function ()
         ->assertSee($boundary->description, false)
         ->assertSee($scheme->description, false)
         ->assertSee('Total sementara', false)
-        ->assertDontSee('Simpan &amp; terbitkan', false);
+        ->assertDontSee('Simpan &amp; aktifkan', false);
 });
 
 it('advances through steps and preserves entries on refresh', function () {
@@ -290,7 +290,7 @@ it('stores a report with auto title, items, and cached total', function () {
     $report = SustainabilityReport::query()->firstOrFail();
     expect($report->title)->not->toBeEmpty()
         ->and($report->slug)->not->toBeEmpty()
-        ->and($report->is_published)->toBeTrue()
+        ->and($report->is_active)->toBeTrue()
         ->and((float) $report->total_emission)->toBe(10.0)
         ->and($report->items)->toHaveCount(1)
         ->and((float) $report->items->first()->emission_result)->toBe(10.0)

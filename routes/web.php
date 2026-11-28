@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ActiveReportController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CalculatorController as AdminCalculatorController;
 use App\Http\Controllers\Admin\Config\ActivityController;
@@ -13,7 +14,6 @@ use App\Http\Controllers\Admin\Config\ProcessController;
 use App\Http\Controllers\Admin\Config\SchemeController;
 use App\Http\Controllers\Admin\Config\SourceController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\PublishedReportController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OldHomeController;
@@ -54,8 +54,8 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::post('/kalkulator/ulang', [AdminCalculatorController::class, 'reset'])->name('calculator.reset');
         Route::post('/kalkulator', [AdminCalculatorController::class, 'store'])->name('calculator.store');
         Route::resource('reports', ReportController::class)->except(['create', 'store']);
-        Route::post('reports/{report}/publish', [PublishedReportController::class, 'store'])->name('reports.publish');
-        Route::delete('reports/{report}/publish', [PublishedReportController::class, 'destroy'])->name('reports.unpublish');
+        Route::post('reports/{report}/activate', [ActiveReportController::class, 'store'])->name('reports.activate');
+        Route::delete('reports/{report}/activate', [ActiveReportController::class, 'destroy'])->name('reports.deactivate');
         Route::prefix('config')->name('config.')->group(function (): void {
             Route::get('/', [ConfigController::class, 'index'])->name('index');
             Route::resource('schemes', SchemeController::class)->except(['show']);

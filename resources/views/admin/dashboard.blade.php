@@ -8,17 +8,17 @@
         <dl class="grid grid-cols-1 divide-y divide-line sm:grid-cols-3 sm:divide-x sm:divide-y-0">
             <div class="px-5 py-4">
                 <x-admin.ui.stat
-                    label="Emisi terbit"
+                    label="Emisi aktif"
                     :value="number_format($totalEmission, 2)"
                     unit="kg CO2e"
-                    :meta="$publishedReports.' laporan terbit'"
+                    :meta="$activeReports.' laporan aktif'"
                 />
             </div>
             <div class="px-5 py-4">
                 <x-admin.ui.stat
                     label="Laporan"
                     :value="$totalReports"
-                    :meta="$draftReports.' draf menunggu ditinjau'"
+                    :meta="$inactiveReports.' laporan nonaktif'"
                 />
             </div>
             <div class="px-5 py-4">
@@ -75,10 +75,10 @@
                                         @endif
                                     </p>
                                 </div>
-                                @if ($report->is_published)
-                                    <x-admin.ui.badge tone="published">Terbit</x-admin.ui.badge>
+                                @if ($report->is_active)
+                                    <x-admin.ui.badge tone="published">Aktif</x-admin.ui.badge>
                                 @else
-                                    <x-admin.ui.badge tone="draft">Draf</x-admin.ui.badge>
+                                    <x-admin.ui.badge tone="draft">Nonaktif</x-admin.ui.badge>
                                 @endif
                                 <p class="w-24 shrink-0 text-right text-[13.5px] font-semibold tabular-nums text-pine-900">{{ number_format((float) $report->total_emission, 2) }}</p>
                             </a>

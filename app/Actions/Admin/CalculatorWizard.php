@@ -425,7 +425,7 @@ class CalculatorWizard
     /**
      * Build the payload for UpsertReport from the wizard session.
      *
-     * @return array{scheme_id: int, boundary_id: int, title: string, slug: null, summary: null, is_published: true, items: array}
+     * @return array{scheme_id: int, boundary_id: int, title: string, slug: null, summary: null, is_active: true, items: array}
      */
     public function buildStorePayload(): array
     {
@@ -470,7 +470,7 @@ class CalculatorWizard
             'title' => $title,
             'slug' => null,
             'summary' => null,
-            'is_published' => true,
+            'is_active' => true,
             'items' => $items,
         ];
     }

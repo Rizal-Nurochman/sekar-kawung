@@ -258,7 +258,6 @@ it('counts zero-emission rows correctly: blank stays unfilled, tosa and heritage
     ])->assertRedirect();
 
     $this->get(route('calculator'))->assertOk()
-        ->assertSee('2 dari 3 aktivitas terisi', false)
         ->assertSee('Tahap manual tanpa emisi', false);
 
     expect(SustainabilityReport::query()->count())->toBe(0);

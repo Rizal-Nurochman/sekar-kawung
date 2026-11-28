@@ -19,10 +19,10 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->text('summary')->nullable();
             $table->decimal('total_emission', total: 20, places: 10)->default(0);
-            $table->boolean('is_published')->default(false);
+            $table->boolean('is_active')->default(false);
             $table->timestamps();
 
-            $table->index(['is_published', 'created_at']);
+            $table->index(['is_active', 'created_at']);
         });
     }
 

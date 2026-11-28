@@ -1,14 +1,14 @@
 @php
     $tabs = [
         'all' => ['label' => 'Semua', 'count' => $totalReports, 'url' => route('admin.reports.index', array_filter(['q' => $search]))],
-        'published' => ['label' => 'Terbit', 'count' => $publishedReports, 'url' => route('admin.reports.index', array_filter(['status' => 'published', 'q' => $search]))],
-        'draft' => ['label' => 'Draf', 'count' => $draftReports, 'url' => route('admin.reports.index', array_filter(['status' => 'draft', 'q' => $search]))],
+        'active' => ['label' => 'Aktif', 'count' => $activeReports, 'url' => route('admin.reports.index', array_filter(['status' => 'active', 'q' => $search]))],
+        'inactive' => ['label' => 'Nonaktif', 'count' => $inactiveReports, 'url' => route('admin.reports.index', array_filter(['status' => 'inactive', 'q' => $search]))],
     ];
     $activeTab = $status ?? 'all';
     $isFiltered = $status !== null || $search !== '';
 @endphp
 
-<x-admin.layouts.app title="Laporan - Admin Sekar Kawung" heading="Laporan" subheading="Kelola laporan keberlanjutan dan status terbitnya.">
+<x-admin.layouts.app title="Laporan - Admin Sekar Kawung" heading="Laporan" subheading="Kelola laporan keberlanjutan dan status aktifnya.">
     <div class="flex flex-wrap items-center justify-between gap-3">
         <nav class="flex gap-1" aria-label="Filter status laporan">
             @foreach ($tabs as $key => $tab)
@@ -91,29 +91,42 @@
                     </thead>
                     <tbody>
                         @foreach ($reports as $report)
+                            @php
+                                $reportSchemes = $report->items
+                                    ->map(fn ($item) => $item->activity?->process?->boundary?->scheme)
+                                    ->filter()
+                                    ->unique('id')
+                                    ->sortBy('sort_order')
+                                    ->values();
+                            @endphp
                             <tr>
                                 <td class="max-w-[26rem]">
-                                    <a href="{{ route('admin.reports.show', $report) }}" class="block truncate font-semibold text-pine-900 hover:underline">{{ $report->title }}</a>
+                                    <a href="{{ route('admin.reports.show', $report) }}" class="block truncate font-semibold text-pine-900 hover:underline">Laporan {{ $report->id }}</a>
                                     <p class="mt-0.5 truncate text-xs text-ink-muted">{{ $report->slug }}</p>
                                 </td>
                                 <td class="text-[13px] text-ink-soft">
-                                    <p>{{ $report->scheme?->description ?? '-' }}</p>
-                                    @if ($report->boundary)
-                                        <p class="mt-0.5 text-xs text-ink-muted">{{ $report->boundary->description }}</p>
+                                    @if ($reportSchemes->isNotEmpty())
+                                        <ul class="space-y-0.5">
+                                            @foreach ($reportSchemes as $scheme)
+                                                <li class="flex gap-1.5"><span aria-hidden="true">-</span><span>{{ $scheme->description }}</span></li>
+                                            @endforeach
+                                        </ul>
+                                    @else
+                                        <p>{{ $report->scheme?->description ?? '-' }}</p>
                                     @endif
                                 </td>
                                 <td>
-                                    @if ($report->is_published)
-                                        <x-admin.ui.badge tone="published">Terbit</x-admin.ui.badge>
+                                    @if ($report->is_active)
+                                        <x-admin.ui.badge tone="published">Aktif</x-admin.ui.badge>
                                     @else
-                                        <x-admin.ui.badge tone="draft">Draf</x-admin.ui.badge>
+                                        <x-admin.ui.badge tone="draft">Nonaktif</x-admin.ui.badge>
                                     @endif
                                 </td>
                                 <td class="whitespace-nowrap text-[13px] text-ink-muted">{{ $report->updated_at?->translatedFormat('j M Y') }}</td>
                                 <td class="cell-num">{{ number_format((float) $report->total_emission, 2) }}</td>
                                 <td>
                                     <div class="flex items-center justify-end">
-                                        <a href="{{ route('admin.reports.show', $report) }}" title="Buka {{ $report->title }}" aria-label="Buka {{ $report->title }}" class="inline-flex size-8 items-center justify-center rounded-control text-ink-muted transition-colors hover:bg-pine-900/[0.06] hover:text-pine-900">
+                                        <a href="{{ route('admin.reports.show', $report) }}" title="Buka Laporan {{ $report->id }}" aria-label="Buka Laporan {{ $report->id }}" class="inline-flex size-8 items-center justify-center rounded-control text-ink-muted transition-colors hover:bg-pine-900/[0.06] hover:text-pine-900">
                                             <x-lucide-chevron-right class="size-4" />
                                         </a>
                                     </div>
@@ -126,19 +139,35 @@
 
             <ul class="divide-y divide-line md:hidden">
                 @foreach ($reports as $report)
+                    @php
+                        $reportSchemes = $report->items
+                            ->map(fn ($item) => $item->activity?->process?->boundary?->scheme)
+                            ->filter()
+                            ->unique('id')
+                            ->sortBy('sort_order')
+                            ->values();
+                    @endphp
                     <li>
                         <a href="{{ route('admin.reports.show', $report) }}" class="block px-4 py-3">
                             <div class="flex items-start justify-between gap-3">
-                                <p class="min-w-0 flex-1 text-[13.5px] font-semibold text-pine-900">{{ $report->title }}</p>
+                                <p class="min-w-0 flex-1 text-[13.5px] font-semibold text-pine-900">Laporan {{ $report->id }}</p>
                                 <p class="shrink-0 text-[13.5px] font-semibold tabular-nums text-pine-900">{{ number_format((float) $report->total_emission, 2) }}</p>
                             </div>
                             <div class="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-ink-muted">
-                                @if ($report->is_published)
-                                    <x-admin.ui.badge tone="published">Terbit</x-admin.ui.badge>
+                                @if ($report->is_active)
+                                    <x-admin.ui.badge tone="published">Aktif</x-admin.ui.badge>
                                 @else
-                                    <x-admin.ui.badge tone="draft">Draf</x-admin.ui.badge>
+                                    <x-admin.ui.badge tone="draft">Nonaktif</x-admin.ui.badge>
                                 @endif
-                                <span class="truncate">{{ $report->scheme?->description ?? '-' }}</span>
+                                @if ($reportSchemes->isNotEmpty())
+                                    <ul class="w-full space-y-0.5">
+                                        @foreach ($reportSchemes as $scheme)
+                                            <li class="flex gap-1.5"><span aria-hidden="true">-</span><span>{{ $scheme->description }}</span></li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <span class="truncate">{{ $report->scheme?->description ?? '-' }}</span>
+                                @endif
                                 <span aria-hidden="true">·</span>
                                 <span>{{ $report->updated_at?->translatedFormat('j M Y') }}</span>
                             </div>

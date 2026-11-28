@@ -18,9 +18,9 @@ class DashboardController extends Controller
     public function __invoke(): View
     {
         $totalReports = SustainabilityReport::query()->count();
-        $publishedReports = SustainabilityReport::query()->where('is_published', true)->count();
-        $draftReports = $totalReports - $publishedReports;
-        $totalEmission = (float) SustainabilityReport::query()->where('is_published', true)->sum('total_emission');
+        $activeReports = SustainabilityReport::query()->where('is_active', true)->count();
+        $inactiveReports = $totalReports - $activeReports;
+        $totalEmission = (float) SustainabilityReport::query()->where('is_active', true)->sum('total_emission');
 
         $recentReports = SustainabilityReport::query()
             ->with(['scheme', 'boundary'])
@@ -43,8 +43,8 @@ class DashboardController extends Controller
 
         return view('admin.dashboard', [
             'totalReports' => $totalReports,
-            'publishedReports' => $publishedReports,
-            'draftReports' => $draftReports,
+            'activeReports' => $activeReports,
+            'inactiveReports' => $inactiveReports,
             'totalEmission' => $totalEmission,
             'recentReports' => $recentReports,
             'hotspots' => $hotspots,

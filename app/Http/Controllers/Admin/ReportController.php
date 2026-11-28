@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Admin\ToggleActive;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateReportRequest;
 use App\Models\Boundary;
@@ -20,16 +21,16 @@ class ReportController extends Controller
      */
     public function index(Request $request): View
     {
-        $status = in_array($request->query('status'), ['published', 'draft'], true)
+        $status = in_array($request->query('status'), ['active', 'inactive'], true)
             ? $request->query('status')
             : null;
 
         $search = trim((string) $request->query('q', ''));
 
         $reports = SustainabilityReport::query()
-            ->with(['scheme', 'boundary'])
-            ->when($status === 'published', fn ($query) => $query->where('is_published', true))
-            ->when($status === 'draft', fn ($query) => $query->where('is_published', false))
+            ->with(['scheme', 'boundary', 'items.activity.process.boundary.scheme'])
+            ->when($status === 'active', fn ($query) => $query->where('is_active', true))
+            ->when($status === 'inactive', fn ($query) => $query->where('is_active', false))
             ->when($search !== '', fn ($query) => $query->where('title', 'like', '%'.$search.'%'))
             ->orderByDesc('created_at')
             ->orderByDesc('id')
@@ -37,15 +38,15 @@ class ReportController extends Controller
             ->withQueryString();
 
         $totalReports = SustainabilityReport::query()->count();
-        $publishedReports = SustainabilityReport::query()->where('is_published', true)->count();
+        $activeReports = SustainabilityReport::query()->where('is_active', true)->count();
 
         return view('admin.reports.index', [
             'reports' => $reports,
             'status' => $status,
             'search' => $search,
             'totalReports' => $totalReports,
-            'publishedReports' => $publishedReports,
-            'draftReports' => $totalReports - $publishedReports,
+            'activeReports' => $activeReports,
+            'inactiveReports' => $totalReports - $activeReports,
         ]);
     }
 
@@ -68,17 +69,18 @@ class ReportController extends Controller
      * system boundary, items, and total stay fixed; only the editorial fields
      * can change. The slug always regenerates from the title.
      */
-    public function update(UpdateReportRequest $request, SustainabilityReport $report): RedirectResponse
+    public function update(UpdateReportRequest $request, SustainabilityReport $report, ToggleActive $toggle): RedirectResponse
     {
         $validated = $request->safe()->only(['title', 'summary']);
-        $validated['is_published'] = $request->boolean('is_published');
+        $isActive = $request->boolean('is_active');
 
         $report->update([
             'title' => $validated['title'],
             'slug' => $this->resolveSlug($validated['title'], $validated['title'], $report->getKey()),
             'summary' => $validated['summary'] ?? null,
-            'is_published' => $validated['is_published'],
         ]);
+
+        $toggle->handle($report, $isActive);
 
         return redirect()->route('admin.reports.show', $report->refresh())->with('status', 'Laporan berhasil diperbarui.');
     }

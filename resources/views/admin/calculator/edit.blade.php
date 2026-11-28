@@ -247,7 +247,7 @@
                                 <span class="text-[32px] font-bold leading-10 tracking-tight tabular-nums text-pine-900">{{ \App\Support\Number::emissionId($schemeTotal['total']) }}</span>
                                 <span class="text-[13px] font-medium text-ink-muted">kg CO2e</span>
                             </p>
-                            <p class="mt-1 text-[13px] leading-5 text-ink-muted">{{ $schemeTotal['filled'] }} dari {{ $schemeTotal['count'] }} aktivitas terisi</p>
+
                             @if ($schemeHotspot)
                                 <p class="mt-3 border-t border-line pt-3 text-[13px] leading-5 text-ink-soft">
                                     Kontribusi terbesar: <span class="font-semibold text-pine-900">{{ $schemeHotspot['activity'] }}</span>
@@ -383,7 +383,7 @@
                         @csrf
                         <x-admin.ui.button id="wizard-save" type="submit" variant="primary" size="md">
                             <x-lucide-send />
-                            Simpan &amp; terbitkan
+                            Simpan &amp; aktifkan
                         </x-admin.ui.button>
                     </form>
                 </nav>

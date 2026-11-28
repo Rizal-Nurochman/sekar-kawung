@@ -30,19 +30,19 @@
             </div>
         </x-admin.ui.panel>
 
-        <x-admin.ui.panel title="Terbitkan" description="Laporan terbit tampil di katalog publik.">
+        <x-admin.ui.panel title="Aktifkan" description="Laporan aktif menjadi laporan utama. Hanya satu laporan yang dapat aktif.">
             <label class="flex cursor-pointer items-start gap-3">
                 <input
                     type="checkbox"
-                    name="is_published"
-                    id="is_published"
+                    name="is_active"
+                    id="is_active"
                     value="1"
-                    @checked((bool) old('is_published', $report->is_published ?? false))
+                    @checked((bool) old('is_active', $report->is_active ?? false))
                     class="mt-0.5 size-4 rounded border-line-strong accent-pine-900"
                 >
                 <span class="min-w-0">
-                    <span class="block text-[13.5px] font-medium text-pine-900">Terbitkan laporan</span>
-                    <span class="mt-0.5 block text-[13px] leading-5 text-ink-muted">Kosongkan untuk menyimpan sebagai draf yang hanya terlihat oleh admin.</span>
+                    <span class="block text-[13.5px] font-medium text-pine-900">Aktifkan laporan</span>
+                    <span class="mt-0.5 block text-[13px] leading-5 text-ink-muted">Kosongkan untuk menyimpan sebagai laporan nonaktif.</span>
                 </span>
             </label>
         </x-admin.ui.panel>

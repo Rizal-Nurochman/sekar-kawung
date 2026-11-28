@@ -213,7 +213,7 @@ it('blocks deletion of a record still referenced by a report', function (): void
         'title' => 'Laporan Terkait',
         'slug' => 'laporan-terkait',
         'total_emission' => 1,
-        'is_published' => false,
+        'is_active' => false,
     ]);
 
     SustainabilityReportItem::query()->create([

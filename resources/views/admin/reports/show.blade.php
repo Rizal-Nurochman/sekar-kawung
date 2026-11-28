@@ -20,21 +20,21 @@
             <x-lucide-pencil />
             Ubah
         </x-admin.ui.button>
-        @if ($report->is_published)
-            <form method="POST" action="{{ route('admin.reports.unpublish', $report) }}">
+        @if ($report->is_active)
+            <form method="POST" action="{{ route('admin.reports.deactivate', $report) }}">
                 @csrf
                 @method('DELETE')
                 <x-admin.ui.button type="submit" size="sm">
                     <x-lucide-eye-off />
-                    Jadikan draf
+                    Nonaktifkan
                 </x-admin.ui.button>
             </form>
         @else
-            <form method="POST" action="{{ route('admin.reports.publish', $report) }}">
+            <form method="POST" action="{{ route('admin.reports.activate', $report) }}">
                 @csrf
                 <x-admin.ui.button type="submit" variant="primary" size="sm">
                     <x-lucide-send />
-                    Terbitkan
+                    Aktifkan
                 </x-admin.ui.button>
             </form>
         @endif
@@ -43,10 +43,10 @@
     <x-admin.ui.panel>
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-2">
-                @if ($report->is_published)
-                    <x-admin.ui.badge tone="published">Terbit</x-admin.ui.badge>
+                @if ($report->is_active)
+                    <x-admin.ui.badge tone="published">Aktif</x-admin.ui.badge>
                 @else
-                    <x-admin.ui.badge tone="draft">Draf</x-admin.ui.badge>
+                    <x-admin.ui.badge tone="draft">Nonaktif</x-admin.ui.badge>
                 @endif
                 <p class="text-xs tabular-nums text-ink-muted">{{ $totalItems }} item</p>
             </div>
@@ -78,7 +78,7 @@
                     <span class="block border-t-2 border-pine-900 pt-3">
                         <span id="skema-{{ $scheme['id'] }}-heading" class="block text-base font-bold leading-6 tracking-tight text-pine-900">{{ $scheme['name'] }}</span>
                         <span class="mt-1 flex flex-wrap items-baseline justify-between gap-2">
-                            <span class="text-[13px] leading-5 text-ink-muted">{{ $scheme["boundaries"]->count() }} boundary · {{ $scheme['filled'] }} dari {{ $scheme['count'] }} aktivitas terisi</span>
+                            <span class="text-[13px] leading-5 text-ink-muted">{{ $scheme["boundaries"]->count() }} boundary</span>
                             <span class="text-xl font-bold tabular-nums tracking-tight text-pine-900">{{ \App\Support\Number::emissionId($scheme['total']) }} <span class="text-[12px] font-medium text-ink-muted">kg CO2e</span></span>
                         </span>
                     </span>
