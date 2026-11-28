@@ -12,7 +12,7 @@ class LcaMasterDataSeeder extends Seeder
         DB::transaction(function (): void {
             $this->call([
                 LcaSchemeSeeder::class,
-                LcaProductSeeder::class,
+                LcaBoundarySeeder::class,
                 LcaProcessSeeder::class,
                 LcaActivityUnitSeeder::class,
                 LcaSourceSeeder::class,

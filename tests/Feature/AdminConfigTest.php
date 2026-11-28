@@ -3,19 +3,19 @@
 use App\Http\Controllers\Admin\Config\ActivityController;
 use App\Http\Controllers\Admin\Config\ActivityOptionController;
 use App\Http\Controllers\Admin\Config\ActivityUnitController;
+use App\Http\Controllers\Admin\Config\BoundaryController;
 use App\Http\Controllers\Admin\Config\ConfigController;
 use App\Http\Controllers\Admin\Config\EmissionFactorController;
 use App\Http\Controllers\Admin\Config\OptionController;
 use App\Http\Controllers\Admin\Config\ProcessController;
-use App\Http\Controllers\Admin\Config\ProductController;
 use App\Http\Controllers\Admin\Config\SchemeController;
 use App\Http\Controllers\Admin\Config\SourceController;
 use App\Models\Activity;
 use App\Models\ActivityUnit;
+use App\Models\Boundary;
 use App\Models\EmissionFactor;
 use App\Models\Option;
 use App\Models\Process;
-use App\Models\Product;
 use App\Models\Scheme;
 use App\Models\Source;
 use App\Models\SustainabilityReport;
@@ -36,7 +36,7 @@ beforeEach(function (): void {
         Route::middleware(['web', 'auth'])->prefix('admin/config')->name('admin.config.')->group(function (): void {
             Route::get('/', [ConfigController::class, 'index'])->name('index');
             Route::resource('schemes', SchemeController::class)->except(['show']);
-            Route::resource('products', ProductController::class)->except(['show']);
+            Route::resource('boundaries', BoundaryController::class)->except(['show']);
             Route::resource('processes', ProcessController::class)->except(['show']);
             Route::resource('activities', ActivityController::class)->except(['show']);
             Route::resource('activity-units', ActivityUnitController::class)->except(['show'])->parameters(['activity-units' => 'activityUnit']);
@@ -118,17 +118,17 @@ it('creates the full master chain through config endpoints', function (): void {
 
     $option = Option::query()->where('description', 'Listrik PLN')->firstOrFail();
 
-    // Product → process → activity chain.
-    $this->post(route('admin.config.products.store'), [
+    // Boundary → process → activity chain.
+    $this->post(route('admin.config.boundaries.store'), [
         'scheme_id' => $scheme->id,
-        'description' => 'Produk Pewarnaan',
+        'description' => 'Boundary Pewarnaan',
         'sort_order' => 1,
-    ])->assertRedirect(route('admin.config.products.index'));
+    ])->assertRedirect(route('admin.config.boundaries.index'));
 
-    $product = Product::query()->where('description', 'Produk Pewarnaan')->firstOrFail();
+    $boundary = Boundary::query()->where('description', 'Boundary Pewarnaan')->firstOrFail();
 
     $this->post(route('admin.config.processes.store'), [
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'description' => 'Proses Pencelupan',
         'sort_order' => 1,
     ])->assertRedirect(route('admin.config.processes.index'));
@@ -204,12 +204,12 @@ it('blocks deletion of a record still referenced by a report', function (): void
     // genuine FK-violation path is via sustainability reports/items which use
     // restrictOnDelete. This exercises DeleteMasterRecord's friendly error.
     $scheme = Scheme::factory()->create();
-    $product = Product::factory()->create(['scheme_id' => $scheme->id]);
+    $boundary = Boundary::factory()->create(['scheme_id' => $scheme->id]);
     $activity = Activity::factory()->create();
 
     $report = SustainabilityReport::query()->create([
         'scheme_id' => $scheme->id,
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'title' => 'Laporan Terkait',
         'slug' => 'laporan-terkait',
         'total_emission' => 1,

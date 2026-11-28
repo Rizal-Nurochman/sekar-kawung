@@ -1,4 +1,4 @@
-<x-admin.layouts.app title="Skema - Konfigurasi" heading="Skema" subheading="Jalur produk yang dihitung, misalnya Gedog Tuban.">
+<x-admin.layouts.app title="Skema - Konfigurasi" heading="Skema" subheading="Jalur produksi yang dihitung, misalnya Gedog Tuban.">
     <x-slot:breadcrumbs>
         <x-admin.ui.breadcrumbs :items="[
             ['label' => 'Konfigurasi', 'url' => route('admin.config.index')],
@@ -16,7 +16,7 @@
         @if ($schemes->isEmpty())
             <x-admin.ui.empty-state
                 title="Belum ada skema"
-                description="Skema adalah titik awal semua perhitungan. Buat satu skema untuk setiap jalur produk."
+                description="Skema adalah titik awal semua perhitungan. Buat satu skema untuk setiap jalur produksi."
             >
                 <x-slot:icon>
                     <x-lucide-layers />

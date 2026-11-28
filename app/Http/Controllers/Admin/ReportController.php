@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateReportRequest;
-use App\Models\Product;
+use App\Models\Boundary;
 use App\Models\Scheme;
 use App\Models\SustainabilityReport;
 use Illuminate\Database\Eloquent\Collection;
@@ -27,7 +27,7 @@ class ReportController extends Controller
         $search = trim((string) $request->query('q', ''));
 
         $reports = SustainabilityReport::query()
-            ->with(['scheme', 'product'])
+            ->with(['scheme', 'boundary'])
             ->when($status === 'published', fn ($query) => $query->where('is_published', true))
             ->when($status === 'draft', fn ($query) => $query->where('is_published', false))
             ->when($search !== '', fn ($query) => $query->where('title', 'like', '%'.$search.'%'))
@@ -55,9 +55,9 @@ class ReportController extends Controller
     public function edit(SustainabilityReport $report): View
     {
         return view('admin.reports.edit', [
-            'report' => $report->load(['scheme', 'product']),
+            'report' => $report->load(['scheme', 'boundary']),
             'schemes' => $this->schemes(),
-            'products' => $this->products(),
+            'boundaries' => $this->boundaries(),
         ]);
     }
 
@@ -90,30 +90,30 @@ class ReportController extends Controller
     {
         $report->load([
             'scheme',
-            'product',
-            'items.activity.process.product.scheme',
+            'boundary',
+            'items.activity.process.boundary.scheme',
             'items.activity.activityUnit',
             'items.activity.emissionFactor.source',
             'items.option.activityUnit',
             'items.option.emissionFactor.source',
         ]);
 
-        $orderedProducts = Product::query()
+        $orderedBoundaries = Boundary::query()
             ->with('scheme')
-            ->join('schemes', 'schemes.id', '=', 'products.scheme_id')
+            ->join('schemes', 'schemes.id', '=', 'boundaries.scheme_id')
             ->orderBy('schemes.sort_order')
             ->orderBy('schemes.id')
-            ->orderBy('products.sort_order')
-            ->orderBy('products.id')
-            ->select('products.*')
+            ->orderBy('boundaries.sort_order')
+            ->orderBy('boundaries.id')
+            ->select('boundaries.*')
             ->get();
 
-        $boundaries = $orderedProducts->map(function (Product $product) use ($report): array {
+        $boundaries = $orderedBoundaries->map(function (Boundary $boundary) use ($report): array {
             $rows = $report->items
-                ->filter(fn ($item) => (int) ($item->activity?->process?->product_id) === (int) $product->getKey())
+                ->filter(fn ($item) => (int) ($item->activity?->process?->boundary_id) === (int) $boundary->getKey())
                 ->values();
 
-            $productTotal = (float) $rows->sum(fn ($item) => (float) $item->emission_result);
+            $boundaryTotal = (float) $rows->sum(fn ($item) => (float) $item->emission_result);
 
             $stages = $rows
                 ->groupBy(fn ($item) => $item->activity?->process?->getKey() ?? 'other')
@@ -129,11 +129,11 @@ class ReportController extends Controller
                 ->values();
 
             return [
-                'id' => $product->getKey(),
-                'scheme_id' => $product->scheme_id,
-                'scheme' => $product->scheme?->description,
-                'description' => $product->description,
-                'total' => $productTotal,
+                'id' => $boundary->getKey(),
+                'scheme_id' => $boundary->scheme_id,
+                'scheme' => $boundary->scheme?->description,
+                'description' => $boundary->description,
+                'total' => $boundaryTotal,
                 'count' => $rows->count(),
                 'filled' => $rows->where(fn ($item): bool => (float) $item->quantity > 0)->count(),
                 'stages' => $stages,
@@ -143,13 +143,13 @@ class ReportController extends Controller
 
         $schemes = $boundaries
             ->groupBy('scheme_id')
-            ->map(fn ($products, $schemeId) => [
+            ->map(fn ($boundaries, $schemeId) => [
                 'id' => (int) $schemeId,
-                'name' => $products->first()['scheme'],
-                'total' => (float) $products->sum('total'),
-                'count' => (int) $products->sum('count'),
-                'filled' => (int) $products->sum('filled'),
-                'products' => $products->values(),
+                'name' => $boundaries->first()['scheme'],
+                'total' => (float) $boundaries->sum('total'),
+                'count' => (int) $boundaries->sum('count'),
+                'filled' => (int) $boundaries->sum('filled'),
+                'boundaries' => $boundaries->values(),
             ])
             ->values();
 
@@ -187,11 +187,11 @@ class ReportController extends Controller
     }
 
     /**
-     * @return Collection<int, Product>
+     * @return Collection<int, Boundary>
      */
-    protected function products()
+    protected function boundaries()
     {
-        return Product::query()->with('scheme')->orderBy('scheme_id')->orderBy('sort_order')->orderBy('id')->get();
+        return Boundary::query()->with('scheme')->orderBy('scheme_id')->orderBy('sort_order')->orderBy('id')->get();
     }
 
     protected function resolveSlug(?string $slug, string $title, mixed $ignoreId = null): string

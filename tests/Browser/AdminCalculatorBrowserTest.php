@@ -1,10 +1,10 @@
 <?php
 
 use App\Models\Activity;
+use App\Models\Boundary;
 use App\Models\EmissionFactor;
 use App\Models\Option;
 use App\Models\Process;
-use App\Models\Product;
 use App\Models\Scheme;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,19 +14,19 @@ uses(RefreshDatabase::class);
 function seedWizardTwoSteps(): array
 {
     $scheme = Scheme::factory()->create(['description' => 'Gedog Tuban', 'sort_order' => 1]);
-    $first = Product::factory()->create([
+    $first = Boundary::factory()->create([
         'scheme_id' => $scheme->id,
         'sort_order' => 1,
-        'description' => 'Produk Produksi dari Biji Sampai Jadi Kain',
+        'description' => 'Proses Produksi dari Biji Sampai Jadi Kain',
     ]);
-    $second = Product::factory()->create([
+    $second = Boundary::factory()->create([
         'scheme_id' => $scheme->id,
         'sort_order' => 2,
-        'description' => 'Produk Produksi dari Biji Sampai Jadi Kain Batik',
+        'description' => 'Proses dari Kain Gedog Tuban sampai Kain Batik Gedog Tuban',
     ]);
 
-    $firstProc = Process::factory()->create(['product_id' => $first->id, 'description' => 'Mengolah Tanah']);
-    $secondProc = Process::factory()->create(['product_id' => $second->id, 'description' => 'Membatik Tulis']);
+    $firstProc = Process::factory()->create(['boundary_id' => $first->id, 'description' => 'Mengolah Tanah']);
+    $secondProc = Process::factory()->create(['boundary_id' => $second->id, 'description' => 'Membatik Tulis']);
 
     $factor = EmissionFactor::factory()->create(['ef_value' => 2.5]);
     $standalone = Activity::factory()->create([
@@ -79,7 +79,7 @@ it('walks the full wizard from start to published report', function () {
         ->assertNoJavaScriptErrors();
 
     $page->click('#start-calculator')
-        ->assertSee('Produk 1 dari 2')
+        ->assertSee('Boundary 1 dari 2')
         ->assertSee('Gedog Tuban')
         ->assertSee('Total sementara')
         ->assertMissing('Simpan & terbitkan')
@@ -90,13 +90,13 @@ it('walks the full wizard from start to published report', function () {
         ->keys('input[data-quantity-input]', '4')
         ->assertSeeIn('#total-sementara-'.$scheme->id, '10')
         ->click('#wizard-next')
-        ->assertSee('Produk 2 dari 2')
+        ->assertSee('Boundary 2 dari 2')
         ->assertSee('Membatik Tulis')
         ->assertNoJavaScriptErrors();
 
     // Refresh resumes the same step (session persistence).
     $page = visit('/admin/kalkulator');
-    $page->assertSee('Produk 2 dari 2')
+    $page->assertSee('Boundary 2 dari 2')
         ->assertNoJavaScriptErrors();
 
     // Second step has an option dropdown; pick it and fill quantity.
@@ -106,8 +106,8 @@ it('walks the full wizard from start to published report', function () {
         ->assertSeeIn('#total-sementara-'.$scheme->id, '16')
         ->click('#wizard-next')
         ->assertSee('Periksa kembali sebelum menerbitkan')
-        ->assertSee('Produk 1 dari 2')
-        ->assertSee('Produk 2 dari 2')
+        ->assertSee('Boundary 1 dari 2')
+        ->assertSee('Boundary 2 dari 2')
         ->assertSee('Rincian per tahap')
         ->assertSee('Rincian aktivitas')
         ->assertVisible('#wizard-save')
@@ -131,7 +131,7 @@ it('keeps the temporary total visible without a save action on steps', function 
 
     $page = visit('/admin/kalkulator')
         ->click('#start-calculator')
-        ->assertSee('Produk 1 dari 2')
+        ->assertSee('Boundary 1 dari 2')
         ->assertVisible('#total-sementara-'.$scheme->id)
         ->assertMissing('Simpan & terbitkan')
         ->click('input[data-quantity-input]')
@@ -143,10 +143,10 @@ it('keeps the temporary total visible without a save action on steps', function 
 it('updates only the active scheme in temporary totals', function () {
     $gedog = Scheme::factory()->create(['description' => 'Gedog Tuban', 'sort_order' => 1]);
     $atbm = Scheme::factory()->create(['description' => 'Tenun ATBM Pisano', 'sort_order' => 2]);
-    $gedogProduct = Product::factory()->for($gedog)->create(['sort_order' => 1]);
-    $atbmProduct = Product::factory()->for($atbm)->create(['sort_order' => 1]);
-    $gedogProcess = Process::factory()->for($gedogProduct)->create();
-    $atbmProcess = Process::factory()->for($atbmProduct)->create();
+    $gedogBoundary = Boundary::factory()->for($gedog)->create(['sort_order' => 1]);
+    $atbmBoundary = Boundary::factory()->for($atbm)->create(['sort_order' => 1]);
+    $gedogProcess = Process::factory()->for($gedogBoundary)->create();
+    $atbmProcess = Process::factory()->for($atbmBoundary)->create();
     $gedogFactor = EmissionFactor::factory()->create(['ef_value' => 2.0]);
     $atbmFactor = EmissionFactor::factory()->create(['ef_value' => 5.0]);
     Activity::factory()->for($gedogProcess)->create(['emission_factor_id' => $gedogFactor->id]);

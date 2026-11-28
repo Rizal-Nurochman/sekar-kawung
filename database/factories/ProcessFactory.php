@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Boundary;
 use App\Models\Process;
-use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,7 +19,7 @@ class ProcessFactory extends Factory
     public function definition(): array
     {
         return [
-            'product_id' => Product::factory(),
+            'boundary_id' => Boundary::factory(),
             'description' => fake()->words(3, true),
             'sort_order' => 0,
         ];

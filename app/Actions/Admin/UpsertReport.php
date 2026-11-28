@@ -29,7 +29,7 @@ class UpsertReport
 
             $report->fill([
                 'scheme_id' => $validated['scheme_id'],
-                'product_id' => $validated['product_id'],
+                'boundary_id' => $validated['boundary_id'],
                 'title' => $validated['title'],
                 'slug' => $slug,
                 'summary' => $validated['summary'] ?? null,

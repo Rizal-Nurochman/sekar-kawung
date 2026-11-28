@@ -30,7 +30,7 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th scope="col">Produk</th>
+                            <th scope="col">Boundary</th>
                             <th scope="col">Deskripsi</th>
                             <th scope="col" class="w-16 text-right">Urutan</th>
                             <th scope="col" class="w-24"><span class="sr-only">Aksi</span></th>
@@ -39,7 +39,7 @@
                     <tbody>
                         @foreach ($processes as $process)
                             <tr>
-                                <td class="text-[13px] text-ink-soft">{{ $process->product?->description ?? '-' }}</td>
+                                <td class="text-[13px] text-ink-soft">{{ $process->boundary?->description ?? '-' }}</td>
                                 <td class="font-medium text-pine-900">{{ $process->description }}</td>
                                 <td class="cell-num font-normal text-ink-muted">{{ $process->sort_order }}</td>
                                 <td>

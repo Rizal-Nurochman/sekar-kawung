@@ -1,4 +1,4 @@
-<x-admin.layouts.app title="Tambah Skema - Konfigurasi" heading="Tambah skema" subheading="Buat jalur produk baru untuk dihitung.">
+<x-admin.layouts.app title="Tambah Skema - Konfigurasi" heading="Tambah skema" subheading="Buat jalur produksi baru untuk dihitung.">
     <x-slot:breadcrumbs>
         <x-admin.ui.breadcrumbs :items="[
             ['label' => 'Konfigurasi', 'url' => route('admin.config.index')],

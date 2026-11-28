@@ -1,9 +1,9 @@
 <div class="space-y-4">
-    <x-admin.ui.field label="Produk" name="product_id" required>
-        <select id="product_id" name="product_id" required class="control" @error('product_id') aria-invalid="true" aria-describedby="product_id-error" @enderror>
-            <option value="">Pilih produk</option>
-            @foreach ($products as $product)
-                <option value="{{ $product->id }}" @selected((string) old('product_id', $process->product_id ?? '') === (string) $product->id)>{{ $product->description }}</option>
+    <x-admin.ui.field label="Boundary" name="boundary_id" required>
+        <select id="boundary_id" name="boundary_id" required class="control" @error('boundary_id') aria-invalid="true" aria-describedby="boundary_id-error" @enderror>
+            <option value="">Pilih boundary</option>
+            @foreach ($boundaries as $boundary)
+                <option value="{{ $boundary->id }}" @selected((string) old('boundary_id', $process->boundary_id ?? '') === (string) $boundary->id)>{{ $boundary->description }}</option>
             @endforeach
         </select>
     </x-admin.ui.field>

@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('processes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('boundary_id')->constrained()->cascadeOnDelete();
             $table->text('description');
             $table->unsignedInteger('sort_order')->default(0);
             $table->timestamps();
 
-            $table->index(['product_id', 'sort_order']);
+            $table->index(['boundary_id', 'sort_order']);
         });
     }
 

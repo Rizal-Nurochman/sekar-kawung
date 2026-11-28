@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['product_id', 'description', 'sort_order'])]
+#[Fillable(['boundary_id', 'description', 'sort_order'])]
 class Process extends Model
 {
     use HasFactory;
@@ -16,14 +16,14 @@ class Process extends Model
     protected function casts(): array
     {
         return [
-            'product_id' => 'integer',
+            'boundary_id' => 'integer',
             'sort_order' => 'integer',
         ];
     }
 
-    public function product(): BelongsTo
+    public function boundary(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Boundary::class);
     }
 
     public function activities(): HasMany

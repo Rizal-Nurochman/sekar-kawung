@@ -2,8 +2,8 @@
     $totalItems = $report->items->count();
     $reportSubheading = $report->scheme?->description;
 
-    if ($report->product) {
-        $reportSubheading = trim(($reportSubheading ? $reportSubheading.' · ' : '').$report->product->description);
+    if ($report->boundary) {
+        $reportSubheading = trim(($reportSubheading ? $reportSubheading.' · ' : '').$report->boundary->description);
     }
 @endphp
 
@@ -78,7 +78,7 @@
                     <span class="block border-t-2 border-pine-900 pt-3">
                         <span id="skema-{{ $scheme['id'] }}-heading" class="block text-base font-bold leading-6 tracking-tight text-pine-900">{{ $scheme['name'] }}</span>
                         <span class="mt-1 flex flex-wrap items-baseline justify-between gap-2">
-                            <span class="text-[13px] leading-5 text-ink-muted">{{ $scheme["products"]->count() }} produk · {{ $scheme['filled'] }} dari {{ $scheme['count'] }} aktivitas terisi</span>
+                            <span class="text-[13px] leading-5 text-ink-muted">{{ $scheme["boundaries"]->count() }} boundary · {{ $scheme['filled'] }} dari {{ $scheme['count'] }} aktivitas terisi</span>
                             <span class="text-xl font-bold tabular-nums tracking-tight text-pine-900">{{ \App\Support\Number::emissionId($scheme['total']) }} <span class="text-[12px] font-medium text-ink-muted">kg CO2e</span></span>
                         </span>
                     </span>
@@ -94,17 +94,17 @@
             </h2>
 
             <div class="mt-4 space-y-8">
-                @foreach ($scheme["products"] as $boundary)
+                @foreach ($scheme["boundaries"] as $boundary)
                     @php
                         $position = $boundaries->search(fn ($item) => (int) $item['id'] === (int) $boundary['id']) + 1;
                         $boundaryTotal = $boundaries->count();
                     @endphp
                     <section aria-labelledby="proses-{{ $boundary['id'] }}">
                         <h3 id="proses-{{ $boundary['id'] }}" class="text-lg font-bold leading-7 tracking-tight text-pine-900">
-                            Produk {{ $position }} dari {{ $boundaryTotal }} : {{ $boundary['description'] }}
+                            Boundary {{ $position }} dari {{ $boundaryTotal }} : {{ $boundary['description'] }}
                         </h3>
                         <p class="mt-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 rounded-panel bg-pine-900 px-4 py-3">
-                            <span class="text-[13px] font-semibold text-white">Subtotal produk</span>
+                            <span class="text-[13px] font-semibold text-white">Subtotal boundary</span>
                             <span class="text-xl font-bold tabular-nums tracking-tight text-white">{{ \App\Support\Number::emissionId($boundary['total']) }} <span class="text-[12px] font-medium text-sage-pale">kg CO2e</span></span>
                         </p>
 
@@ -112,7 +112,7 @@
                                 <x-admin.ui.panel class="mt-4" flush>
                                     <x-admin.ui.empty-state
                                         title="Belum ada isian pada proses ini"
-                                        description="Produk ini belum punya kuantitas tersimpan pada laporan ini."
+                                        description="Boundary ini belum punya kuantitas tersimpan pada laporan ini."
                                     >
                                         <x-slot:icon>
                                             <x-lucide-list-tree />

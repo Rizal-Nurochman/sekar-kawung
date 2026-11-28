@@ -23,7 +23,7 @@ class ProcessRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'boundary_id' => ['required', 'integer', 'exists:boundaries,id'],
             'description' => ['required', 'string', 'max:255'],
             'sort_order' => ['required', 'integer', 'min:0'],
         ];

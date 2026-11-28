@@ -3,6 +3,7 @@
         [
             'number' => '01',
             'title' => 'Tuban Gedog Fabric',
+            'scope' => 'From Seed to Fabric',
             'summary' => 'Cotton cultivation and manual processing through to handwoven Gedog fabric.',
             'activities' => [
                 'Soil and growing-medium preparation',
@@ -15,6 +16,7 @@
         [
             'number' => '02',
             'title' => 'Tuban Gedog Batik Fabric',
+            'scope' => 'From Fabric to Batik Fabric',
             'summary' => 'Hand-drawn batik and the dyeing activities listed for Tuban Gedog fabric.',
             'activities' => [
                 'Hand-drawn batik: wax, lighting and stove gas',
@@ -26,6 +28,7 @@
         [
             'number' => '03',
             'title' => 'Pisano Handwoven Fabric (ATBM)',
+            'scope' => 'From Seed to Fabric',
             'summary' => 'Cotton cultivation, machine-assisted yarn preparation and ATBM hand weaving, including the listed transport legs.',
             'activities' => [
                 'Soil and growing-medium preparation',
@@ -38,6 +41,7 @@
         [
             'number' => '04',
             'title' => 'Pisano Handwoven Batik Fabric (ATBM)',
+            'scope' => 'From Fabric to Batik Fabric',
             'summary' => 'Hand-drawn batik and the listed blue and white dyeing stages for Pisano ATBM fabric.',
             'activities' => [
                 'Hand-drawn batik: transport to Tancep/DIY, wax, lighting and stove gas',
@@ -108,7 +112,7 @@
                     <article class="min-h-[560px] rounded-2xl border border-pine-900 bg-mist-100 p-6 sm:p-8">
                         <p class="text-base font-bold leading-6">{{ $boundary['number'] }}</p>
                         <h3 class="mt-3 text-2xl font-bold leading-8">{{ $boundary['title'] }}</h3>
-                        <p class="mt-3 text-base leading-6">From Seed to Finished Fabric</p>
+                        <p class="mt-3 text-base leading-6">{{ $boundary['scope'] }}</p>
                         <p class="mt-5 text-lg leading-[30px]">{{ $boundary['summary'] }}</p>
                         <h4 class="mt-5 text-base font-bold leading-6">Included Activities</h4>
                         <ul class="mt-3 space-y-2 text-lg leading-[30px]">

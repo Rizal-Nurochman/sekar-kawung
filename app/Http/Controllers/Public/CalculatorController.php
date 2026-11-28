@@ -12,7 +12,7 @@ class CalculatorController extends Controller
 {
     public function edit(CalculatorWizard $wizard): View
     {
-        $ordered = $wizard->orderedProducts();
+        $ordered = $wizard->orderedBoundaries();
         $totalSteps = $ordered->count();
 
         if ($totalSteps === 0) {
@@ -48,9 +48,9 @@ class CalculatorController extends Controller
             ]);
         }
 
-        $currentProduct = $ordered->values()->get($current);
+        $currentBoundary = $ordered->values()->get($current);
 
-        if ($currentProduct === null) {
+        if ($currentBoundary === null) {
             $wizard->reset();
 
             return view('landing.calculator.edit', [
@@ -59,9 +59,9 @@ class CalculatorController extends Controller
             ]);
         }
 
-        $product = $wizard->productWithInventory($currentProduct);
+        $boundary = $wizard->boundaryWithInventory($currentBoundary);
         $entries = $state['entries'] ?? [];
-        $baseByScheme = collect($wizard->baseTotals($product, $entries))->keyBy('id');
+        $baseByScheme = collect($wizard->baseTotals($boundary, $entries))->keyBy('id');
 
         $schemeTotals = $ordered->pluck('scheme')
             ->filter()
@@ -81,10 +81,10 @@ class CalculatorController extends Controller
             'mode' => 'step',
             'totalSteps' => $totalSteps,
             'currentIndex' => $current,
-            'product' => $product,
+            'boundary' => $boundary,
             'entries' => $entries,
             'schemeTotals' => $schemeTotals,
-            'currentSchemeId' => (int) $product->scheme_id,
+            'currentSchemeId' => (int) $boundary->scheme_id,
             'ordered' => $ordered,
         ]);
     }
@@ -99,7 +99,7 @@ class CalculatorController extends Controller
     public function step(CalculatorStepRequest $request, CalculatorWizard $wizard): RedirectResponse
     {
         $validated = $request->validated();
-        $ordered = $wizard->orderedProducts();
+        $ordered = $wizard->orderedBoundaries();
         $totalSteps = $ordered->count();
 
         $state = $wizard->state();
@@ -109,22 +109,22 @@ class CalculatorController extends Controller
         }
 
         $current = (int) $state['current'];
-        $currentProduct = $ordered->values()->get($current);
+        $currentBoundary = $ordered->values()->get($current);
 
-        if ($currentProduct === null) {
+        if ($currentBoundary === null) {
             $wizard->reset();
 
             return redirect()->route('calculator');
         }
 
-        if ((int) $validated['product_id'] !== (int) $currentProduct->getKey()) {
+        if ((int) $validated['boundary_id'] !== (int) $currentBoundary->getKey()) {
             return redirect()->route('calculator')->withErrors([
                 'general' => 'Langkah tidak sesuai urutan. Lanjutkan dari posisi tersimpan.',
             ]);
         }
 
-        $fullProduct = $wizard->productWithInventory($currentProduct);
-        $wizard->saveStep($fullProduct, $validated['items'] ?? []);
+        $fullBoundary = $wizard->boundaryWithInventory($currentBoundary);
+        $wizard->saveStep($fullBoundary, $validated['items'] ?? []);
 
         $direction = $validated['direction'] === 'back' ? -1 : 1;
         $wizard->moveTo($current + $direction, $totalSteps);
@@ -134,7 +134,7 @@ class CalculatorController extends Controller
 
     public function backFromReview(CalculatorWizard $wizard): RedirectResponse
     {
-        $ordered = $wizard->orderedProducts();
+        $ordered = $wizard->orderedBoundaries();
         $state = $wizard->state();
 
         if ($state === null || $ordered->isEmpty()) {

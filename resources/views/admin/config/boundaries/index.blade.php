@@ -1,28 +1,28 @@
-<x-admin.layouts.app title="Produk - Konfigurasi" heading="Produk" subheading="Batas sistem di dalam skema.">
+<x-admin.layouts.app title="Boundary - Konfigurasi" heading="Boundary" subheading="Batas sistem di dalam skema.">
     <x-slot:breadcrumbs>
         <x-admin.ui.breadcrumbs :items="[
             ['label' => 'Konfigurasi', 'url' => route('admin.config.index')],
-            ['label' => 'Produk'],
+            ['label' => 'Boundary'],
         ]" />
     </x-slot:breadcrumbs>
 
     <x-admin.ui.data-shell
-        title="Produk"
-        :count="$products->total()"
-        count-label="produk"
-        create-label="Tambah produk"
-        :create-route="route('admin.config.products.create')"
+        title="Boundary"
+        :count="$boundaries->total()"
+        count-label="boundary"
+        create-label="Tambah boundary"
+        :create-route="route('admin.config.boundaries.create')"
     >
-        @if ($products->isEmpty())
+        @if ($boundaries->isEmpty())
             <x-admin.ui.empty-state
-                title="Belum ada produk"
-                description="Produk menandai batas sistem, misalnya kain mentah atau kain batik. Kalkulator memakai urutannya untuk menggabungkan tahap."
+                title="Belum ada boundary"
+                description="Boundary menandai batas sistem, misalnya kain mentah atau kain batik. Kalkulator memakai urutannya untuk menggabungkan tahap."
             >
                 <x-slot:icon>
                     <x-lucide-workflow />
                 </x-slot:icon>
                 <x-slot:action>
-                    <x-admin.ui.button :href="route('admin.config.products.create')" variant="primary" size="sm">Tambah produk</x-admin.ui.button>
+                    <x-admin.ui.button :href="route('admin.config.boundaries.create')" variant="primary" size="sm">Tambah boundary</x-admin.ui.button>
                 </x-slot:action>
             </x-admin.ui.empty-state>
         @else
@@ -37,16 +37,16 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($products as $product)
+                        @foreach ($boundaries as $boundary)
                             <tr>
-                                <td class="text-[13px] text-ink-soft">{{ $product->scheme?->description ?? '-' }}</td>
-                                <td class="font-medium text-pine-900">{{ $product->description }}</td>
-                                <td class="cell-num font-normal text-ink-muted">{{ $product->sort_order }}</td>
+                                <td class="text-[13px] text-ink-soft">{{ $boundary->scheme?->description ?? '-' }}</td>
+                                <td class="font-medium text-pine-900">{{ $boundary->description }}</td>
+                                <td class="cell-num font-normal text-ink-muted">{{ $boundary->sort_order }}</td>
                                 <td>
                                     <x-admin.ui.row-actions
-                                        :label="$product->description"
-                                        :edit-route="route('admin.config.products.edit', $product)"
-                                        :delete-route="route('admin.config.products.destroy', $product)"
+                                        :label="$boundary->description"
+                                        :edit-route="route('admin.config.boundaries.edit', $boundary)"
+                                        :delete-route="route('admin.config.boundaries.destroy', $boundary)"
                                     />
                                 </td>
                             </tr>
@@ -57,7 +57,7 @@
         @endif
 
         <x-slot:footer>
-            {{ $products->links() }}
+            {{ $boundaries->links() }}
         </x-slot:footer>
     </x-admin.ui.data-shell>
 </x-admin.layouts.app>

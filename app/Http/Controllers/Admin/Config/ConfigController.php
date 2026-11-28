@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Admin\Config;
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\ActivityUnit;
+use App\Models\Boundary;
 use App\Models\EmissionFactor;
 use App\Models\Option;
 use App\Models\Process;
-use App\Models\Product;
 use App\Models\Scheme;
 use App\Models\Source;
 use Illuminate\View\View;
@@ -18,8 +18,8 @@ class ConfigController extends Controller
     public function index(): View
     {
         $structure = [
-            ['name' => 'Skema', 'description' => 'Jalur produk yang dihitung, misalnya Gedog Tuban.', 'route' => 'admin.config.schemes.index', 'icon' => 'layers', 'count' => Scheme::query()->count(), 'unit' => 'skema'],
-            ['name' => 'Produk', 'description' => 'Batas sistem di dalam skema, dari kain hingga kain batik.', 'route' => 'admin.config.products.index', 'icon' => 'workflow', 'count' => Product::query()->count(), 'unit' => 'produk'],
+            ['name' => 'Skema', 'description' => 'Jalur produksi yang dihitung, misalnya Gedog Tuban.', 'route' => 'admin.config.schemes.index', 'icon' => 'layers', 'count' => Scheme::query()->count(), 'unit' => 'skema'],
+            ['name' => 'Boundary', 'description' => 'Batas sistem di dalam skema, dari biji hingga kain atau dari kain hingga kain batik.', 'route' => 'admin.config.boundaries.index', 'icon' => 'workflow', 'count' => Boundary::query()->count(), 'unit' => 'boundary'],
             ['name' => 'Proses', 'description' => 'Tahapan kerja di dalam satu batas sistem.', 'route' => 'admin.config.processes.index', 'icon' => 'list-tree', 'count' => Process::query()->count(), 'unit' => 'proses'],
             ['name' => 'Aktivitas', 'description' => 'Baris inventaris yang diisi kuantitasnya di kalkulator.', 'route' => 'admin.config.activities.index', 'icon' => 'list-checks', 'count' => Activity::query()->count(), 'unit' => 'aktivitas'],
             ['name' => 'Opsi', 'description' => 'Pilihan jawaban untuk aktivitas, misalnya moda transportasi.', 'route' => 'admin.config.options.index', 'icon' => 'circle-dot', 'count' => Option::query()->count(), 'unit' => 'opsi'],

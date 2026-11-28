@@ -98,8 +98,8 @@
                                 </td>
                                 <td class="text-[13px] text-ink-soft">
                                     <p>{{ $report->scheme?->description ?? '-' }}</p>
-                                    @if ($report->product)
-                                        <p class="mt-0.5 text-xs text-ink-muted">{{ $report->product->description }}</p>
+                                    @if ($report->boundary)
+                                        <p class="mt-0.5 text-xs text-ink-muted">{{ $report->boundary->description }}</p>
                                     @endif
                                 </td>
                                 <td>

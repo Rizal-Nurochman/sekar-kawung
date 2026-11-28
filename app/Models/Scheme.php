@@ -19,8 +19,8 @@ class Scheme extends Model
         ];
     }
 
-    public function products(): HasMany
+    public function boundaries(): HasMany
     {
-        return $this->hasMany(Product::class)->orderBy('sort_order');
+        return $this->hasMany(Boundary::class)->orderBy('sort_order');
     }
 }

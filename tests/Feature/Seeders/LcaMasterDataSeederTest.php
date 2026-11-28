@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Activity;
+use App\Models\Boundary;
 use App\Models\EmissionFactor;
 use App\Models\Option;
 use App\Models\Scheme;
@@ -13,7 +14,13 @@ it('seeds every LCA master data table with the expected row count', function () 
     $this->seed(LcaMasterDataSeeder::class);
 
     $this->assertDatabaseCount('schemes', 2);
-    $this->assertDatabaseCount('products', 4);
+    $this->assertDatabaseCount('boundaries', 4);
+    expect(Boundary::query()->orderBy('id')->pluck('description')->all())->toBe([
+        'Proses Produksi dari Biji Sampai Jadi Kain Gedog Tuban',
+        'Proses dari Kain Gedog Tuban sampai Kain Batik Gedog Tuban',
+        'Proses Produksi dari Biji Sampai Jadi Kain Tenun ATBM Pisano',
+        'Proses dari Kain Tenun ATBM Pisano sampai Kain Batik Tenun ATBM Pisano',
+    ]);
     $this->assertDatabaseCount('processes', 17);
     $this->assertDatabaseCount('activity_units', 5);
     $this->assertDatabaseCount('sources', 13);
@@ -26,10 +33,14 @@ it('seeds every LCA master data table with the expected row count', function () 
 it('links the seeded scheme hierarchy', function () {
     $this->seed(LcaMasterDataSeeder::class);
 
-    $scheme = Scheme::query()->where('description', 'Gedog Tuban')->firstOrFail();
+    $this->assertDatabaseHas('schemes', ['description' => 'Biji sampai Kain Batik Gedog Tuban']);
+    $this->assertDatabaseHas('schemes', ['description' => 'Biji sampai Kain Batik Tenun ATBM Pisano']);
 
-    expect($scheme->products)->toHaveCount(2)
-        ->and($scheme->products->first()->processes)->toHaveCount(5);
+    $scheme = Scheme::query()->where('description', 'Biji sampai Kain Batik Gedog Tuban')->firstOrFail();
+
+    expect($scheme->boundaries)->toHaveCount(2)
+        ->and($scheme->boundaries->first()->processes)->toHaveCount(5)
+        ->and($scheme->boundaries->last()->processes)->toHaveCount(4);
 });
 
 it('attaches the transport and fuel options to the expected activities', function () {
@@ -63,7 +74,7 @@ it('orders the seeded schemes by their sort order', function () {
     $this->seed(LcaMasterDataSeeder::class);
 
     expect(Scheme::query()->orderBy('sort_order')->pluck('description')->all())
-        ->toBe(['Gedog Tuban', 'Tenun ATBM Pisano']);
+        ->toBe(['Biji sampai Kain Batik Gedog Tuban', 'Biji sampai Kain Batik Tenun ATBM Pisano']);
 });
 
 it('can be seeded twice without duplicating rows', function () {

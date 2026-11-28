@@ -53,10 +53,10 @@
             $rowIndex = 0;
         @endphp
 
-        <p class="text-[13px] font-medium text-ink-muted">{{ $product->scheme?->description }}</p>
+        <p class="text-[13px] font-medium text-ink-muted">{{ $boundary->scheme?->description }}</p>
         <div class="mt-1 flex flex-wrap items-baseline justify-between gap-2">
             <h2 id="wizard-progress" class="text-lg font-bold leading-7 tracking-tight text-pine-900">
-                Produk {{ $position }} dari {{ $totalSteps }} : {{ $product->description }}
+                Boundary {{ $position }} dari {{ $totalSteps }} : {{ $boundary->description }}
             </h2>
             <p class="text-[13px] tabular-nums text-ink-muted">{{ $percent }}%</p>
         </div>
@@ -74,17 +74,17 @@
             class="mt-6 pb-24 lg:pb-0"
         >
             @csrf
-            <input type="hidden" name="product_id" value="{{ $product->id }}">
+            <input type="hidden" name="boundary_id" value="{{ $boundary->id }}">
 
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_17.5rem]">
                 <div class="min-w-0 space-y-6">
                     <x-admin.ui.errors />
 
-                    @if ($product->processes->isEmpty())
+                    @if ($boundary->processes->isEmpty())
                         <x-admin.ui.panel flush>
                             <x-admin.ui.empty-state
-                                title="Produk ini belum punya tahap"
-                                description="Produk ini belum punya proses atau aktivitas. Lanjut ke produk berikutnya untuk tetap menyimpan posisi."
+                                title="Boundary ini belum punya tahap"
+                                description="Boundary ini belum punya proses atau aktivitas. Lanjut ke boundary berikutnya untuk tetap menyimpan posisi."
                             >
                                 <x-slot:icon>
                                     <x-lucide-list-tree />
@@ -92,7 +92,7 @@
                             </x-admin.ui.empty-state>
                         </x-admin.ui.panel>
                     @else
-                        @foreach ($product->processes as $process)
+                        @foreach ($boundary->processes as $process)
                             <section aria-labelledby="process-{{ $process->id }}" class="overflow-hidden rounded-2xl border border-line bg-white">
                                 <div class="border-b border-line px-4 py-3 sm:px-5">
                                     <h3 id="process-{{ $process->id }}" class="text-[15px] font-semibold leading-6 text-pine-900">{{ $process->description }}</h3>
@@ -183,7 +183,7 @@
                             @if ($position >= $totalSteps)
                                 Lihat ulasan
                             @else
-                                Lanjut ke Produk {{ $position + 1 }}
+                                Lanjut ke Boundary {{ $position + 1 }}
                             @endif
                             <x-lucide-arrow-right />
                         </x-admin.ui.button>
@@ -222,7 +222,7 @@
     @elseif ($mode === 'review')
         @php
             $boundaries = $review['boundaries'];
-            $lastProcess = $ordered->last();
+            $lastBoundary = $ordered->last();
         @endphp
 
         <p class="text-[13px] font-medium text-ink-muted">Ulasan menyeluruh</p>
@@ -261,15 +261,15 @@
                 @foreach ($boundaries as $index => $boundary)
                     @php
                         $position = $index + 1;
-                        $boundaryTotal = $boundaries->count();
+                        $boundaryCount = $boundaries->count();
                     @endphp
                     <section aria-labelledby="review-proses-{{ $boundary['id'] }}" class="mt-2">
                         <p class="text-[13px] font-medium text-ink-muted">{{ $boundary['scheme'] }}</p>
                         <h2 id="review-proses-{{ $boundary['id'] }}" class="mt-1 text-lg font-bold leading-7 tracking-tight text-pine-900">
-                            Produk {{ $position }} dari {{ $boundaryTotal }} : {{ $boundary['description'] }}
+                            Boundary {{ $position }} dari {{ $boundaryCount }} : {{ $boundary['description'] }}
                         </h2>
                         <p class="mt-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 rounded-panel bg-pine-900 px-4 py-3">
-                            <span class="text-[13px] font-semibold text-white">Subtotal produk</span>
+                            <span class="text-[13px] font-semibold text-white">Subtotal boundary</span>
                             <span class="text-xl font-bold tabular-nums tracking-tight text-white">{{ \App\Support\Number::emissionId($boundary['total']) }} <span class="text-[12px] font-medium text-sage-pale">kg CO2e</span></span>
                         </p>
 
@@ -277,7 +277,7 @@
                             <x-admin.ui.panel class="mt-4" flush>
                                 <x-admin.ui.empty-state
                                     title="Belum ada isian pada proses ini"
-                                    description="Produk ini belum punya kuantitas tersimpan."
+                                    description="Boundary ini belum punya kuantitas tersimpan."
                                 >
                                     <x-slot:icon>
                                         <x-lucide-list-tree />
@@ -376,7 +376,7 @@
                         @csrf
                         <x-admin.ui.button id="wizard-back-review" type="submit" size="md">
                             <x-lucide-arrow-left />
-                            Kembali ke {{ $lastProcess?->description ? 'Produk '.$totalSteps : 'produk' }}
+                            Kembali ke {{ $lastBoundary?->description ? 'Boundary '.$totalSteps : 'boundary' }}
                         </x-admin.ui.button>
                     </form>
                     <form method="POST" action="{{ route('admin.calculator.store') }}">

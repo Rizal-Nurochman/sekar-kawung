@@ -1,10 +1,10 @@
 <?php
 
 use App\Models\Activity;
+use App\Models\Boundary;
 use App\Models\EmissionFactor;
 use App\Models\Option;
 use App\Models\Process;
-use App\Models\Product;
 use App\Models\Scheme;
 use App\Models\SustainabilityReport;
 use App\Models\User;
@@ -15,16 +15,16 @@ uses(RefreshDatabase::class);
 function calculatorContext(): array
 {
     $scheme = Scheme::factory()->create(['sort_order' => 1]);
-    $product = Product::factory()->create([
+    $boundary = Boundary::factory()->create([
         'scheme_id' => $scheme->id,
         'sort_order' => 1,
     ]);
     $process = Process::factory()->create([
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'sort_order' => 1,
     ]);
 
-    return [$scheme, $product, $process];
+    return [$scheme, $boundary, $process];
 }
 
 it('redirects guests away from the calculator to login', function () {
@@ -50,14 +50,14 @@ it('shows a single start button without report identity fields', function () {
 });
 
 it('starts the wizard and shows the first process with schema name', function () {
-    [$scheme, $product] = calculatorContext();
+    [$scheme, $boundary] = calculatorContext();
     $this->actingAs(User::factory()->create());
 
     $this->post(route('admin.calculator.start'))->assertRedirect(route('admin.calculator.edit'));
 
     $this->get(route('admin.calculator.edit'))->assertOk()
-        ->assertSee('Produk 1 dari 1', false)
-        ->assertSee($product->description, false)
+        ->assertSee('Boundary 1 dari 1', false)
+        ->assertSee($boundary->description, false)
         ->assertSee($scheme->description, false)
         ->assertSee('Total sementara', false)
         ->assertDontSee('Simpan &amp; terbitkan', false);
@@ -67,17 +67,17 @@ it('advances through steps and preserves entries on refresh', function () {
     $this->actingAs(User::factory()->create());
 
     $scheme = Scheme::factory()->create(['description' => 'Skema Uji']);
-    $first = Product::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 1, 'description' => 'Proses Pertama']);
-    $second = Product::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2, 'description' => 'Proses Kedua']);
-    $firstProc = Process::factory()->create(['product_id' => $first->id, 'description' => 'Tahap A']);
-    $secondProc = Process::factory()->create(['product_id' => $second->id, 'description' => 'Tahap B']);
+    $first = Boundary::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 1, 'description' => 'Proses Pertama']);
+    $second = Boundary::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2, 'description' => 'Proses Kedua']);
+    $firstProc = Process::factory()->create(['boundary_id' => $first->id, 'description' => 'Tahap A']);
+    $secondProc = Process::factory()->create(['boundary_id' => $second->id, 'description' => 'Tahap B']);
     $activityA = Activity::factory()->create(['process_id' => $firstProc->id]);
     $activityB = Activity::factory()->create(['process_id' => $secondProc->id]);
 
     $this->post(route('admin.calculator.start'))->assertRedirect();
 
     $this->post(route('admin.calculator.step'), [
-        'product_id' => $first->id,
+        'boundary_id' => $first->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $activityA->id, 'option_id' => null, 'quantity' => 3],
@@ -86,12 +86,12 @@ it('advances through steps and preserves entries on refresh', function () {
 
     // Refresh resumes the second step with the first step saved.
     $this->get(route('admin.calculator.edit'))->assertOk()
-        ->assertSee('Produk 2 dari', false)
+        ->assertSee('Boundary 2 dari', false)
         ->assertSee($second->description, false);
 
     // Go back, the first quantity is still there.
     $this->post(route('admin.calculator.step'), [
-        'product_id' => $second->id,
+        'boundary_id' => $second->id,
         'direction' => 'back',
         'items' => [
             ['activity_id' => $activityB->id, 'option_id' => null, 'quantity' => 0],
@@ -99,12 +99,12 @@ it('advances through steps and preserves entries on refresh', function () {
     ])->assertRedirect();
 
     $this->get(route('admin.calculator.edit'))->assertOk()
-        ->assertSee('Produk 1 dari', false)
+        ->assertSee('Boundary 1 dari', false)
         ->assertSee('value="3"', false);
 });
 
 it('renders a dropdown and unit pill for activities with options', function () {
-    [, $product, $process] = calculatorContext();
+    [, $boundary, $process] = calculatorContext();
     $this->actingAs(User::factory()->create());
 
     $option = Option::factory()->create();
@@ -123,7 +123,7 @@ it('renders a dropdown and unit pill for activities with options', function () {
 });
 
 it('rejects an option that does not belong to the activity', function () {
-    [, $product, $process] = calculatorContext();
+    [, $boundary, $process] = calculatorContext();
     $this->actingAs(User::factory()->create());
 
     $activity = Activity::factory()->create(['process_id' => $process->id]);
@@ -132,7 +132,7 @@ it('rejects an option that does not belong to the activity', function () {
     $this->post(route('admin.calculator.start'))->assertRedirect(route('admin.calculator.edit'));
 
     $this->post(route('admin.calculator.step'), [
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $activity->id, 'option_id' => $foreignOption->id, 'quantity' => 1],
@@ -143,16 +143,16 @@ it('rejects an option that does not belong to the activity', function () {
 });
 
 it('rejects an activity outside the current process', function () {
-    [$scheme, $product] = calculatorContext();
-    $otherProduct = Product::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2]);
-    $otherProc = Process::factory()->create(['product_id' => $otherProduct->id]);
+    [$scheme, $boundary] = calculatorContext();
+    $otherBoundary = Boundary::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2]);
+    $otherProc = Process::factory()->create(['boundary_id' => $otherBoundary->id]);
     $foreignActivity = Activity::factory()->create(['process_id' => $otherProc->id]);
     $this->actingAs(User::factory()->create());
 
     $this->post(route('admin.calculator.start'))->assertRedirect(route('admin.calculator.edit'));
 
     $this->post(route('admin.calculator.step'), [
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $foreignActivity->id, 'option_id' => null, 'quantity' => 1],
@@ -161,14 +161,14 @@ it('rejects an activity outside the current process', function () {
 });
 
 it('rejects a negative quantity', function () {
-    [, $product, $process] = calculatorContext();
+    [, $boundary, $process] = calculatorContext();
     $activity = Activity::factory()->create(['process_id' => $process->id]);
     $this->actingAs(User::factory()->create());
 
     $this->post(route('admin.calculator.start'))->assertRedirect(route('admin.calculator.edit'));
 
     $this->post(route('admin.calculator.step'), [
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $activity->id, 'option_id' => null, 'quantity' => -1],
@@ -177,7 +177,7 @@ it('rejects a negative quantity', function () {
 });
 
 it('shows a comprehensive review only at the end with save action', function () {
-    [$scheme, $product, $process] = calculatorContext();
+    [$scheme, $boundary, $process] = calculatorContext();
     $this->actingAs(User::factory()->create());
 
     $factor = EmissionFactor::factory()->create(['ef_value' => 2.5]);
@@ -189,7 +189,7 @@ it('shows a comprehensive review only at the end with save action', function () 
     $this->post(route('admin.calculator.start'))->assertRedirect(route('admin.calculator.edit'));
 
     $this->post(route('admin.calculator.step'), [
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $activity->id, 'option_id' => null, 'quantity' => 4],
@@ -198,8 +198,8 @@ it('shows a comprehensive review only at the end with save action', function () 
 
     $this->get(route('admin.calculator.edit'))->assertOk()
         ->assertSee('Periksa kembali sebelum menerbitkan', false)
-        ->assertSee('Produk 1 dari 1', false)
-        ->assertSee('Subtotal produk', false)
+        ->assertSee('Boundary 1 dari 1', false)
+        ->assertSee('Subtotal boundary', false)
         ->assertSee('Rincian per tahap', false)
         ->assertSee('Rincian aktivitas', false)
         ->assertSee('id="wizard-save"', false)
@@ -212,11 +212,11 @@ it('splits the review total and hotspot per scheme', function () {
     $gedog = Scheme::factory()->create(['description' => 'Gedog Tuban', 'sort_order' => 1]);
     $atbm = Scheme::factory()->create(['description' => 'Tenun ATBM Pisano', 'sort_order' => 2]);
 
-    $gedogProduct = Product::factory()->create(['scheme_id' => $gedog->id, 'sort_order' => 1]);
-    $atbmProduct = Product::factory()->create(['scheme_id' => $atbm->id, 'sort_order' => 1]);
+    $gedogBoundary = Boundary::factory()->create(['scheme_id' => $gedog->id, 'sort_order' => 1]);
+    $atbmBoundary = Boundary::factory()->create(['scheme_id' => $atbm->id, 'sort_order' => 1]);
 
-    $gedogProcess = Process::factory()->create(['product_id' => $gedogProduct->id]);
-    $atbmProcess = Process::factory()->create(['product_id' => $atbmProduct->id]);
+    $gedogProcess = Process::factory()->create(['boundary_id' => $gedogBoundary->id]);
+    $atbmProcess = Process::factory()->create(['boundary_id' => $atbmBoundary->id]);
 
     $gedogFactor = EmissionFactor::factory()->create(['ef_value' => 2.0]);
     $atbmFactor = EmissionFactor::factory()->create(['ef_value' => 5.0]);
@@ -235,7 +235,7 @@ it('splits the review total and hotspot per scheme', function () {
     $this->post(route('admin.calculator.start'));
 
     $this->post(route('admin.calculator.step'), [
-        'product_id' => $gedogProduct->id,
+        'boundary_id' => $gedogBoundary->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $gedogActivity->id, 'option_id' => null, 'quantity' => 3],
@@ -243,7 +243,7 @@ it('splits the review total and hotspot per scheme', function () {
     ])->assertRedirect();
 
     $this->post(route('admin.calculator.step'), [
-        'product_id' => $atbmProduct->id,
+        'boundary_id' => $atbmBoundary->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $atbmActivity->id, 'option_id' => null, 'quantity' => 2],
@@ -264,7 +264,7 @@ it('splits the review total and hotspot per scheme', function () {
 });
 
 it('stores a report with auto title, items, and cached total', function () {
-    [$scheme, $product, $process] = calculatorContext();
+    [$scheme, $boundary, $process] = calculatorContext();
     $this->actingAs(User::factory()->create());
 
     $factor = EmissionFactor::factory()->create(['ef_value' => 2.5]);
@@ -276,7 +276,7 @@ it('stores a report with auto title, items, and cached total', function () {
     $this->post(route('admin.calculator.start'))->assertRedirect(route('admin.calculator.edit'));
 
     $this->post(route('admin.calculator.step'), [
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $activity->id, 'option_id' => null, 'quantity' => 4],
@@ -301,7 +301,7 @@ it('stores a report with auto title, items, and cached total', function () {
 });
 
 it('treats heritage activities without factors as zero emission in review', function () {
-    [, $product, $process] = calculatorContext();
+    [, $boundary, $process] = calculatorContext();
     $this->actingAs(User::factory()->create());
 
     $heritage = Activity::factory()->create([
@@ -313,7 +313,7 @@ it('treats heritage activities without factors as zero emission in review', func
     $this->post(route('admin.calculator.start'))->assertRedirect(route('admin.calculator.edit'));
 
     $this->post(route('admin.calculator.step'), [
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'direction' => 'next',
         'items' => [
             ['activity_id' => $heritage->id, 'option_id' => null, 'quantity' => 9],

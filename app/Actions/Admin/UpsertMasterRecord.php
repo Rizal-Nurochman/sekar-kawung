@@ -4,10 +4,10 @@ namespace App\Actions\Admin;
 
 use App\Models\Activity;
 use App\Models\ActivityUnit;
+use App\Models\Boundary;
 use App\Models\EmissionFactor;
 use App\Models\Option;
 use App\Models\Process;
-use App\Models\Product;
 use App\Models\Scheme;
 use App\Models\Source;
 use Illuminate\Database\Eloquent\Model;
@@ -20,7 +20,7 @@ class UpsertMasterRecord
      */
     private const ALLOWED = [
         Scheme::class,
-        Product::class,
+        Boundary::class,
         Process::class,
         Activity::class,
         ActivityUnit::class,

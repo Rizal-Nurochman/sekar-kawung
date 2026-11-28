@@ -5,8 +5,8 @@ use App\Actions\Admin\UpsertReport;
 use App\Http\Controllers\Admin\PublishedReportController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Models\Activity;
+use App\Models\Boundary;
 use App\Models\Process;
-use App\Models\Product;
 use App\Models\Scheme;
 use App\Models\SustainabilityReport;
 use App\Models\SustainabilityReportItem;
@@ -39,31 +39,31 @@ beforeEach(function (): void {
     $this->user = User::factory()->create();
 });
 
-function reportSchemeWithProduct(): array
+function reportSchemeWithBoundary(): array
 {
     $scheme = Scheme::factory()->create();
-    $product = Product::factory()->create(['scheme_id' => $scheme->id]);
+    $boundary = Boundary::factory()->create(['scheme_id' => $scheme->id]);
 
-    return [$scheme, $product];
+    return [$scheme, $boundary];
 }
 
-function validReportPayload(Scheme $scheme, Product $product, array $overrides = []): array
+function validReportPayload(Scheme $scheme, Boundary $boundary, array $overrides = []): array
 {
     return array_merge([
         'title' => 'Jejak Karbon Batik Tulis',
         'slug' => 'jejak-karbon-batik-tulis',
         'scheme_id' => $scheme->id,
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'summary' => 'Ringkasan hasil perhitungan.',
         'is_published' => false,
     ], $overrides);
 }
 
 it('redirects guests away from report pages', function (): void {
-    [$scheme, $product] = reportSchemeWithProduct();
+    [$scheme, $boundary] = reportSchemeWithBoundary();
     $report = SustainabilityReport::query()->create([
         'scheme_id' => $scheme->id,
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'title' => 'Laporan tamu',
         'slug' => 'laporan-tamu',
         'total_emission' => 0,
@@ -92,11 +92,11 @@ it('does not expose a direct report creation route', function (): void {
 
 it('rejects invalid and duplicate report updates', function (): void {
     $this->actingAs($this->user);
-    [$scheme, $product] = reportSchemeWithProduct();
+    [$scheme, $boundary] = reportSchemeWithBoundary();
 
     SustainabilityReport::query()->create([
         'scheme_id' => $scheme->id,
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'title' => 'Laporan lama',
         'slug' => 'laporan-sama',
         'total_emission' => 0,
@@ -105,7 +105,7 @@ it('rejects invalid and duplicate report updates', function (): void {
 
     $report = SustainabilityReport::query()->create([
         'scheme_id' => $scheme->id,
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'title' => 'Laporan saya',
         'slug' => 'laporan-saya',
         'total_emission' => 0,
@@ -121,7 +121,7 @@ it('rejects invalid and duplicate report updates', function (): void {
     ])->assertSessionHasErrors(['title']);
 
     $this->put(route('admin.reports.update', $report), array_merge(
-        validReportPayload($scheme, $product),
+        validReportPayload($scheme, $boundary),
         ['slug' => 'slug-diabaikan']
     ))->assertRedirect(route('admin.reports.show', $report));
 
@@ -133,12 +133,12 @@ it('rejects invalid and duplicate report updates', function (): void {
 
 it('keeps the calculation scope fixed when a report is updated', function (): void {
     $this->actingAs($this->user);
-    [$scheme, $product] = reportSchemeWithProduct();
-    [$otherScheme, $otherProduct] = reportSchemeWithProduct();
+    [$scheme, $boundary] = reportSchemeWithBoundary();
+    [$otherScheme, $otherBoundary] = reportSchemeWithBoundary();
 
     $report = SustainabilityReport::query()->create([
         'scheme_id' => $scheme->id,
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'title' => 'Laporan terkunci',
         'slug' => 'laporan-terkunci',
         'total_emission' => 4,
@@ -150,23 +150,23 @@ it('keeps the calculation scope fixed when a report is updated', function (): vo
         'slug' => 'laporan-terkunci',
         'summary' => 'Ringkasan baru.',
         'scheme_id' => $otherScheme->id,
-        'product_id' => $otherProduct->id,
+        'boundary_id' => $otherBoundary->id,
     ])->assertRedirect(route('admin.reports.show', $report));
 
     $report->refresh();
 
     expect($report->title)->toBe('Laporan terkunci diperbarui')
         ->and($report->scheme_id)->toBe($scheme->id)
-        ->and($report->product_id)->toBe($product->id);
+        ->and($report->boundary_id)->toBe($boundary->id);
 });
 
 it('regenerates the slug from the title on every update', function (): void {
     $this->actingAs($this->user);
-    [$scheme, $product] = reportSchemeWithProduct();
+    [$scheme, $boundary] = reportSchemeWithBoundary();
 
     $report = SustainabilityReport::query()->create([
         'scheme_id' => $scheme->id,
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'title' => 'Laporan lama',
         'slug' => 'laporan-lama',
         'total_emission' => 0,
@@ -183,7 +183,7 @@ it('regenerates the slug from the title on every update', function (): void {
     // A clashing title gets a unique suffix, excluding the report itself.
     SustainabilityReport::query()->create([
         'scheme_id' => $scheme->id,
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'title' => 'Judul bentrok',
         'slug' => 'judul-bentrok',
         'total_emission' => 0,
@@ -199,13 +199,13 @@ it('regenerates the slug from the title on every update', function (): void {
 
 it('preserves items and totals when editorial fields are updated', function (): void {
     $this->actingAs($this->user);
-    [$scheme, $product] = reportSchemeWithProduct();
-    $process = Process::factory()->create(['product_id' => $product->id]);
+    [$scheme, $boundary] = reportSchemeWithBoundary();
+    $process = Process::factory()->create(['boundary_id' => $boundary->id]);
     $activity = Activity::factory()->create(['process_id' => $process->id]);
 
     $report = SustainabilityReport::query()->create([
         'scheme_id' => $scheme->id,
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'title' => 'Laporan awal',
         'slug' => 'laporan-awal',
         'summary' => 'Ringkasan awal.',
@@ -247,17 +247,17 @@ it('renders one card per scheme with its process details', function (): void {
     $this->actingAs($this->user);
     $scheme = Scheme::factory()->create(['description' => 'Skema Uji', 'sort_order' => 1]);
     $otherScheme = Scheme::factory()->create(['description' => 'Skema Lain', 'sort_order' => 2]);
-    $first = Product::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 1, 'description' => 'Proses Pertama']);
-    $second = Product::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2, 'description' => 'Proses Kedua']);
-    $third = Product::factory()->create(['scheme_id' => $otherScheme->id, 'sort_order' => 1, 'description' => 'Proses Ketiga']);
-    $firstProc = Process::factory()->create(['product_id' => $first->id]);
-    $secondProc = Process::factory()->create(['product_id' => $second->id]);
+    $first = Boundary::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 1, 'description' => 'Proses Pertama']);
+    $second = Boundary::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2, 'description' => 'Proses Kedua']);
+    $third = Boundary::factory()->create(['scheme_id' => $otherScheme->id, 'sort_order' => 1, 'description' => 'Proses Ketiga']);
+    $firstProc = Process::factory()->create(['boundary_id' => $first->id]);
+    $secondProc = Process::factory()->create(['boundary_id' => $second->id]);
     $activityA = Activity::factory()->create(['process_id' => $firstProc->id]);
     $activityB = Activity::factory()->create(['process_id' => $secondProc->id]);
 
     $report = SustainabilityReport::query()->create([
         'scheme_id' => $second->scheme_id,
-        'product_id' => $second->id,
+        'boundary_id' => $second->id,
         'title' => 'Laporan batas',
         'slug' => 'laporan-batas',
         'total_emission' => 30,
@@ -282,11 +282,11 @@ it('renders one card per scheme with its process details', function (): void {
     $this->get(route('admin.reports.show', $report))->assertOk()
         ->assertSee('Skema Uji', false)
         ->assertSee('Skema Lain', false)
-        ->assertSee('Produk 1 dari 3', false)
-        ->assertSee('Produk 2 dari 3', false)
-        ->assertSee('Produk 3 dari 3', false)
+        ->assertSee('Boundary 1 dari 3', false)
+        ->assertSee('Boundary 2 dari 3', false)
+        ->assertSee('Boundary 3 dari 3', false)
         ->assertSee('Proses Pertama', false)
-        ->assertSee('Subtotal produk', false)
+        ->assertSee('Subtotal boundary', false)
         ->assertDontSee('Subtotal skema', false)
         ->assertSee('Belum ada isian pada proses ini', false)
         ->assertDontSee('Slug', false);
@@ -295,14 +295,14 @@ it('renders one card per scheme with its process details', function (): void {
 it('renders report stages in configured order regardless of emissions', function (): void {
     $this->actingAs($this->user);
     $scheme = Scheme::factory()->create(['sort_order' => 1]);
-    $product = Product::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 1]);
+    $boundary = Boundary::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 1]);
     $firstStage = Process::factory()->create([
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'description' => 'Tahap Urutan Pertama',
         'sort_order' => 1,
     ]);
     $secondStage = Process::factory()->create([
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'description' => 'Tahap Urutan Kedua',
         'sort_order' => 2,
     ]);
@@ -311,7 +311,7 @@ it('renders report stages in configured order regardless of emissions', function
 
     $report = SustainabilityReport::query()->create([
         'scheme_id' => $scheme->id,
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'title' => 'Laporan urutan tahap',
         'slug' => 'laporan-urutan-tahap',
         'total_emission' => 110,
@@ -343,11 +343,11 @@ it('renders report stages in configured order regardless of emissions', function
 
 it('creates a report through the calculator action and persists items with total', function (): void {
     $this->actingAs($this->user);
-    [$scheme, $product] = reportSchemeWithProduct();
-    $process = Process::factory()->create(['product_id' => $product->id]);
+    [$scheme, $boundary] = reportSchemeWithBoundary();
+    $process = Process::factory()->create(['boundary_id' => $boundary->id]);
     $activity = Activity::factory()->create(['process_id' => $process->id]);
 
-    $payload = validReportPayload($scheme, $product);
+    $payload = validReportPayload($scheme, $boundary);
 
     if (method_exists(UpsertReport::class, 'handle')) {
         $report = app(UpsertReport::class)->handle($payload);
@@ -358,7 +358,7 @@ it('creates a report through the calculator action and persists items with total
         // The calculator wizard is the only entry point that saves a report.
         $this->post(route('admin.calculator.start'))->assertRedirect();
         $this->post(route('admin.calculator.step'), [
-            'product_id' => $product->id,
+            'boundary_id' => $boundary->id,
             'direction' => 'next',
             'items' => [
                 ['activity_id' => $activity->id, 'option_id' => null, 'quantity' => 1],
@@ -408,11 +408,11 @@ it('creates a report through the calculator action and persists items with total
 
 it('toggles publish status without recalculating the total', function (): void {
     $this->actingAs($this->user);
-    [$scheme, $product] = reportSchemeWithProduct();
+    [$scheme, $boundary] = reportSchemeWithBoundary();
 
     $report = SustainabilityReport::query()->create([
         'scheme_id' => $scheme->id,
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'title' => 'Laporan draf',
         'slug' => 'laporan-draf',
         'total_emission' => 9.5,
@@ -441,12 +441,12 @@ it('toggles publish status without recalculating the total', function (): void {
 
 it('deletes a report together with its items', function (): void {
     $this->actingAs($this->user);
-    [$scheme, $product] = reportSchemeWithProduct();
+    [$scheme, $boundary] = reportSchemeWithBoundary();
     $activity = Activity::factory()->create();
 
     $report = SustainabilityReport::query()->create([
         'scheme_id' => $scheme->id,
-        'product_id' => $product->id,
+        'boundary_id' => $boundary->id,
         'title' => 'Laporan dihapus',
         'slug' => 'laporan-dihapus',
         'total_emission' => 3,

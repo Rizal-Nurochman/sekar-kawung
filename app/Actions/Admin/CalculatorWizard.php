@@ -3,7 +3,7 @@
 namespace App\Actions\Admin;
 
 use App\Models\Activity;
-use App\Models\Product;
+use App\Models\Boundary;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -14,29 +14,29 @@ class CalculatorWizard
     public function __construct(protected CalculateEmissions $calculator) {}
 
     /**
-     * All products in wizard order: scheme sort, then product sort.
+     * All boundaries in wizard order: scheme sort, then boundary sort.
      *
-     * @return Collection<int, Product>
+     * @return Collection<int, Boundary>
      */
-    public function orderedProducts(): Collection
+    public function orderedBoundaries(): Collection
     {
-        return Product::query()
+        return Boundary::query()
             ->with('scheme')
-            ->join('schemes', 'schemes.id', '=', 'products.scheme_id')
+            ->join('schemes', 'schemes.id', '=', 'boundaries.scheme_id')
             ->orderBy('schemes.sort_order')
             ->orderBy('schemes.id')
-            ->orderBy('products.sort_order')
-            ->orderBy('products.id')
-            ->select('products.*')
+            ->orderBy('boundaries.sort_order')
+            ->orderBy('boundaries.id')
+            ->select('boundaries.*')
             ->get();
     }
 
     /**
-     * Load one product with its full inventory, ordered.
+     * Load one boundary with its full inventory, ordered.
      */
-    public function productWithInventory(Product $product): Product
+    public function boundaryWithInventory(Boundary $boundary): Boundary
     {
-        return Product::query()
+        return Boundary::query()
             ->with([
                 'scheme',
                 'processes' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
@@ -47,7 +47,7 @@ class CalculatorWizard
                 'processes.activities.options.activityUnit',
                 'processes.activities.options.emissionFactor.source',
             ])
-            ->findOrFail($product->getKey());
+            ->findOrFail($boundary->getKey());
     }
 
     /**
@@ -83,7 +83,7 @@ class CalculatorWizard
     /**
      * @param  array<int, array{activity_id: int|string, option_id?: int|string|null, quantity?: float|int|string|null}>  $items
      */
-    public function saveStep(Product $product, array $items): void
+    public function saveStep(Boundary $boundary, array $items): void
     {
         $state = $this->state() ?? ['current' => 0, 'entries' => []];
         $entries = $state['entries'];
@@ -119,14 +119,14 @@ class CalculatorWizard
     }
 
     /**
-     * Per-scheme totals for saved entries outside the given product.
+     * Per-scheme totals for saved entries outside the given boundary.
      *
      * @param  array<string, array{option_id: ?int, quantity: float}>  $entries
      * @return array<int, array{id: int, name: string, total: float}>
      */
-    public function baseTotals(Product $currentProduct, array $entries): array
+    public function baseTotals(Boundary $currentBoundary, array $entries): array
     {
-        $currentActivityIds = $currentProduct->processes
+        $currentActivityIds = $currentBoundary->processes
             ->flatMap(fn ($process) => $process->activities->pluck('id'))
             ->map(fn ($id): string => (string) (int) $id)
             ->all();
@@ -150,11 +150,11 @@ class CalculatorWizard
         $calculation = $this->calculator->handle(['items' => $otherItems]);
 
         $schemeByActivity = Activity::query()
-            ->with('process.product.scheme')
+            ->with('process.boundary.scheme')
             ->whereIn('id', collect($otherItems)->pluck('activity_id')->all())
             ->get()
             ->mapWithKeys(function (Activity $activity): array {
-                $scheme = $activity->process?->product?->scheme;
+                $scheme = $activity->process?->boundary?->scheme;
 
                 return [(int) $activity->getKey() => $scheme === null ? null : [
                     'id' => (int) $scheme->getKey(),
@@ -184,11 +184,11 @@ class CalculatorWizard
     }
 
     /**
-     * Enriched review data across all products.
+     * Enriched review data across all boundaries.
      *
      * @param  array<string, array{option_id: ?int, quantity: float}>  $entries
      * @return array{
-     *     products: Collection,
+     *     summaries: Collection,
      *     boundaries: Collection,
      *     stages: Collection,
      *     items: Collection,
@@ -201,13 +201,13 @@ class CalculatorWizard
      */
     public function reviewData(): array
     {
-        $ordered = $this->orderedProducts();
+        $ordered = $this->orderedBoundaries();
         $state = $this->state();
         $entries = $state['entries'] ?? [];
 
-        $productIds = $ordered->pluck('id')->all();
+        $boundaryIds = $ordered->pluck('id')->all();
 
-        $inventory = Product::query()
+        $inventory = Boundary::query()
             ->with([
                 'scheme',
                 'processes' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
@@ -218,7 +218,7 @@ class CalculatorWizard
                 'processes.activities.options.activityUnit',
                 'processes.activities.options.emissionFactor.source',
             ])
-            ->whereIn('id', $productIds)
+            ->whereIn('id', $boundaryIds)
             ->get()
             ->sortBy([
                 fn ($a, $b): int => [$a->scheme->sort_order, $a->scheme->id, $a->sort_order, $a->id] <=> [$b->scheme->sort_order, $b->scheme->id, $b->sort_order, $b->id],
@@ -226,8 +226,8 @@ class CalculatorWizard
             ->values();
 
         $allItems = [];
-        foreach ($inventory as $product) {
-            foreach ($product->processes as $process) {
+        foreach ($inventory as $boundary) {
+            foreach ($boundary->processes as $process) {
                 foreach ($process->activities as $activity) {
                     $key = (string) $activity->getKey();
                     $saved = $entries[$key] ?? ['option_id' => null, 'quantity' => 0.0];
@@ -265,12 +265,12 @@ class CalculatorWizard
         $enriched = collect();
         $stages = collect();
 
-        foreach ($inventory as $product) {
-            $productTotal = 0.0;
-            $productFilled = 0;
-            $productCount = 0;
+        foreach ($inventory as $boundary) {
+            $boundaryTotal = 0.0;
+            $boundaryFilled = 0;
+            $boundaryCount = 0;
 
-            foreach ($product->processes as $process) {
+            foreach ($boundary->processes as $process) {
                 $stageTotal = 0.0;
                 $stageCount = 0;
 
@@ -302,8 +302,8 @@ class CalculatorWizard
                         'activity_id' => $activity->getKey(),
                         'activity' => $activity->description,
                         'process' => $process->description,
-                        'product' => $product->description,
-                        'scheme' => $product->scheme?->description,
+                        'boundary' => $boundary->description,
+                        'scheme' => $boundary->scheme?->description,
                         'option' => $optionName,
                         'quantity' => $quantity,
                         'unit' => $unit,
@@ -316,17 +316,17 @@ class CalculatorWizard
 
                     $stageTotal += $emission;
                     $stageCount++;
-                    $productTotal += $emission;
-                    $productCount++;
+                    $boundaryTotal += $emission;
+                    $boundaryCount++;
 
                     if ($quantity > 0) {
-                        $productFilled++;
+                        $boundaryFilled++;
                     }
                 }
 
                 $stages->push([
-                    'product' => $product->description,
-                    'scheme' => $product->scheme?->description,
+                    'boundary' => $boundary->description,
+                    'scheme' => $boundary->scheme?->description,
                     'name' => $process->description,
                     'total' => $stageTotal,
                     'count' => $stageCount,
@@ -337,15 +337,15 @@ class CalculatorWizard
         $total = (float) ($calculation['total'] ?? 0);
         $filled = $enriched->where(fn ($row): bool => (float) $row['quantity'] > 0)->count();
 
-        $productSummaries = $inventory->map(function (Product $product) use ($enriched): array {
-            $rows = $enriched->where(fn ($row): bool => $row['product'] === $product->description);
-            $productTotal = (float) $rows->sum('emission');
+        $boundarySummaries = $inventory->map(function (Boundary $boundary) use ($enriched): array {
+            $rows = $enriched->where(fn ($row): bool => $row['boundary'] === $boundary->description);
+            $boundaryTotal = (float) $rows->sum('emission');
 
             return [
-                'id' => $product->getKey(),
-                'scheme' => $product->scheme?->description,
-                'description' => $product->description,
-                'total' => $productTotal,
+                'id' => $boundary->getKey(),
+                'scheme' => $boundary->scheme?->description,
+                'description' => $boundary->description,
+                'total' => $boundaryTotal,
                 'count' => $rows->count(),
                 'filled' => $rows->where(fn ($row): bool => (float) $row['quantity'] > 0)->count(),
             ];
@@ -354,22 +354,22 @@ class CalculatorWizard
         // Per-boundary cumulative scheme subtotals: within one scheme,
         // boundary 2 includes boundary 1 (PRD progressive Cradle-to-Gate).
         $cumulativeByScheme = [];
-        $boundarySections = $inventory->map(function (Product $product) use ($enriched, $stages, $total, &$cumulativeByScheme): array {
-            $rows = $enriched->where(fn ($row): bool => $row['product'] === $product->description);
-            $productTotal = (float) $rows->sum('emission');
-            $schemeKey = $product->scheme?->description ?? 'Tanpa skema';
-            $cumulativeByScheme[$schemeKey] = ($cumulativeByScheme[$schemeKey] ?? 0.0) + $productTotal;
+        $boundarySections = $inventory->map(function (Boundary $boundary) use ($enriched, $stages, $total, &$cumulativeByScheme): array {
+            $rows = $enriched->where(fn ($row): bool => $row['boundary'] === $boundary->description);
+            $boundaryTotal = (float) $rows->sum('emission');
+            $schemeKey = $boundary->scheme?->description ?? 'Tanpa skema';
+            $cumulativeByScheme[$schemeKey] = ($cumulativeByScheme[$schemeKey] ?? 0.0) + $boundaryTotal;
 
             return [
-                'id' => $product->getKey(),
-                'scheme' => $product->scheme?->description,
-                'description' => $product->description,
-                'total' => $productTotal,
+                'id' => $boundary->getKey(),
+                'scheme' => $boundary->scheme?->description,
+                'description' => $boundary->description,
+                'total' => $boundaryTotal,
                 'cumulative' => (float) $cumulativeByScheme[$schemeKey],
-                'share' => $total > 0 ? $productTotal / $total * 100 : 0.0,
+                'share' => $total > 0 ? $boundaryTotal / $total * 100 : 0.0,
                 'count' => $rows->count(),
                 'filled' => $rows->where(fn ($row): bool => (float) $row['quantity'] > 0)->count(),
-                'stages' => $stages->where(fn ($stage): bool => $stage['product'] === $product->description)->values(),
+                'stages' => $stages->where(fn ($stage): bool => $stage['boundary'] === $boundary->description)->values(),
                 'items' => $rows->values(),
             ];
         })->values();
@@ -390,7 +390,7 @@ class CalculatorWizard
         })->toArray();
 
         $sources = $inventory
-            ->flatMap(fn (Product $product) => $product->processes)
+            ->flatMap(fn (Boundary $boundary) => $boundary->processes)
             ->flatMap(fn ($process) => $process->activities)
             ->flatMap(function ($activity) use ($entries): array {
                 $key = (string) $activity->getKey();
@@ -410,7 +410,7 @@ class CalculatorWizard
             ->values();
 
         return [
-            'products' => $productSummaries,
+            'summaries' => $boundarySummaries,
             'boundaries' => $boundarySections,
             'stages' => $stages,
             'items' => $enriched,
@@ -425,24 +425,24 @@ class CalculatorWizard
     /**
      * Build the payload for UpsertReport from the wizard session.
      *
-     * @return array{scheme_id: int, product_id: int, title: string, slug: null, summary: null, is_published: true, items: array}
+     * @return array{scheme_id: int, boundary_id: int, title: string, slug: null, summary: null, is_published: true, items: array}
      */
     public function buildStorePayload(): array
     {
-        $ordered = $this->orderedProducts();
+        $ordered = $this->orderedBoundaries();
 
         if ($ordered->isEmpty()) {
-            abort(422, 'Belum ada produk untuk disimpan.');
+            abort(422, 'Belum ada boundary untuk disimpan.');
         }
 
         $state = $this->state() ?? ['current' => 0, 'entries' => []];
         $entries = $state['entries'] ?? [];
 
-        /** @var Process $last */
+        /** @var Boundary $last */
         $last = $ordered->last();
 
         $activityIds = Activity::query()
-            ->whereHas('process', fn ($query) => $query->whereIn('product_id', $ordered->pluck('id')))
+            ->whereHas('process', fn ($query) => $query->whereIn('boundary_id', $ordered->pluck('id')))
             ->pluck('id');
 
         $items = [];
@@ -466,7 +466,7 @@ class CalculatorWizard
 
         return [
             'scheme_id' => (int) $last->scheme_id,
-            'product_id' => (int) $last->getKey(),
+            'boundary_id' => (int) $last->getKey(),
             'title' => $title,
             'slug' => null,
             'summary' => null,
@@ -475,18 +475,18 @@ class CalculatorWizard
         ];
     }
 
-    public function activityIdsForProduct(Product $process): array
+    public function activityIdsForBoundary(Boundary $boundary): array
     {
         return Activity::query()
-            ->whereHas('process', fn ($query) => $query->where('product_id', $process->getKey()))
+            ->whereHas('process', fn ($query) => $query->where('boundary_id', $boundary->getKey()))
             ->pluck('id')
             ->map(fn ($id): int => (int) $id)
             ->all();
     }
 
-    public function assertProductInScope(int $productId): bool
+    public function assertBoundaryInScope(int $boundaryId): bool
     {
-        return $this->orderedProducts()->contains('id', $productId);
+        return $this->orderedBoundaries()->contains('id', $boundaryId);
     }
 
     public function optionBelongsToActivity(int $activityId, int $optionId): bool

@@ -1,8 +1,8 @@
 <?php
 
 use App\Models\Activity;
+use App\Models\Boundary;
 use App\Models\Process;
-use App\Models\Product;
 use App\Models\Scheme;
 use App\Models\SustainabilityReport;
 use App\Models\SustainabilityReportItem;
@@ -14,15 +14,15 @@ uses(RefreshDatabase::class);
 it('swaps the detail section when a scheme card is clicked', function () {
     $scheme = Scheme::factory()->create(['description' => 'Gedog Tuban', 'sort_order' => 1]);
     $otherScheme = Scheme::factory()->create(['description' => 'Tenun ATBM Pisano', 'sort_order' => 2]);
-    $first = Product::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 1, 'description' => 'Produk Kain Gedog']);
-    $second = Product::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2, 'description' => 'Produk Batik Gedog']);
-    $third = Product::factory()->create(['scheme_id' => $otherScheme->id, 'sort_order' => 1, 'description' => 'Produk Kain Pisano']);
-    $firstProc = Process::factory()->create(['product_id' => $first->id]);
+    $first = Boundary::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 1, 'description' => 'Boundary Kain Gedog']);
+    $second = Boundary::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 2, 'description' => 'Boundary Batik Gedog']);
+    $third = Boundary::factory()->create(['scheme_id' => $otherScheme->id, 'sort_order' => 1, 'description' => 'Boundary Kain Pisano']);
+    $firstProc = Process::factory()->create(['boundary_id' => $first->id]);
     $activity = Activity::factory()->create(['process_id' => $firstProc->id]);
 
     $report = SustainabilityReport::query()->create([
-        'scheme_id' => $second->id,
-        'product_id' => $second->id,
+        'scheme_id' => $scheme->id,
+        'boundary_id' => $second->id,
         'title' => 'Laporan Skema',
         'slug' => 'laporan-skema',
         'total_emission' => 10,
@@ -58,7 +58,7 @@ it('swaps the detail section when a scheme card is clicked', function () {
     $page->click('[data-scheme-card="'.$otherScheme->id.'"]')
         ->assertVisible('#skema-'.$otherScheme->id.'-detail')
         ->assertMissing('#skema-'.$scheme->id.'-detail')
-        ->assertSee('Produk Kain Pisano')
+        ->assertSee('Boundary Kain Pisano')
         ->assertSee('Belum ada isian pada proses ini')
         ->assertNoJavaScriptErrors();
 });

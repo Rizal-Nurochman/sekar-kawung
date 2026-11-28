@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['scheme_id', 'description', 'sort_order'])]
-class Product extends Model
+class Boundary extends Model
 {
     use HasFactory;
 

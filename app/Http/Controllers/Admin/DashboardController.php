@@ -23,7 +23,7 @@ class DashboardController extends Controller
         $totalEmission = (float) SustainabilityReport::query()->where('is_published', true)->sum('total_emission');
 
         $recentReports = SustainabilityReport::query()
-            ->with(['scheme', 'product'])
+            ->with(['scheme', 'boundary'])
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->limit(5)
