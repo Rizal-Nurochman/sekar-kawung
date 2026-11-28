@@ -108,8 +108,6 @@ class ReportController extends Controller
             ->select('products.*')
             ->get();
 
-        $grandTotal = (float) $report->items->sum(fn ($item) => (float) $item->emission_result);
-
         $boundaries = $orderedProducts->map(function (Product $product) use ($report): array {
             $rows = $report->items
                 ->filter(fn ($item) => (int) ($item->activity?->process?->product_id) === (int) $product->getKey())
@@ -118,13 +116,16 @@ class ReportController extends Controller
             $productTotal = (float) $rows->sum(fn ($item) => (float) $item->emission_result);
 
             $stages = $rows
-                ->groupBy(fn ($item) => $item->activity?->process?->description ?? 'Tahap lain')
-                ->map(fn ($items, $name) => [
-                    'name' => $name,
+                ->groupBy(fn ($item) => $item->activity?->process?->getKey() ?? 'other')
+                ->sortBy(fn ($items): array => [
+                    $items->first()->activity?->process?->sort_order ?? PHP_INT_MAX,
+                    $items->first()->activity?->process?->getKey() ?? PHP_INT_MAX,
+                ])
+                ->map(fn ($items) => [
+                    'name' => $items->first()->activity?->process?->description ?? 'Tahap lain',
                     'total' => (float) $items->sum(fn ($item) => (float) $item->emission_result),
                     'count' => $items->count(),
                 ])
-                ->sortByDesc('total')
                 ->values();
 
             return [
@@ -152,18 +153,6 @@ class ReportController extends Controller
             ])
             ->values();
 
-        $stages = $report->items
-            ->groupBy(fn ($item) => $item->activity?->process?->description ?? 'Tahap lain')
-            ->map(fn ($items, $name) => [
-                'name' => $name,
-                'total' => (float) $items->sum(fn ($item) => (float) $item->emission_result),
-                'count' => $items->count(),
-            ])
-            ->sortByDesc('total')
-            ->values();
-
-        $stageTotal = (float) $stages->sum('total');
-
         $sources = $report->items
             ->map(fn ($item) => $item->activity?->emissionFactor?->source ?? $item->option?->emissionFactor?->source)
             ->filter()
@@ -174,9 +163,6 @@ class ReportController extends Controller
             'report' => $report,
             'schemes' => $schemes,
             'boundaries' => $boundaries,
-            'grandTotal' => $grandTotal,
-            'stages' => $stages,
-            'stageTotal' => $stageTotal,
             'sources' => $sources,
         ]);
     }

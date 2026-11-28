@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Public\CalculatorWizard;
 use App\Models\Activity;
 use App\Models\EmissionFactor;
 use App\Models\Option;
@@ -43,7 +44,7 @@ it('lets guests start the public wizard with no login and no report rows', funct
 });
 
 it('shows process 1 with option dropdown, unit pill, and live-total wiring', function () {
-    [, , $process] = publicCalculatorContext();
+    [$scheme, $product, $process] = publicCalculatorContext();
 
     $option = Option::factory()->create();
     $transport = Activity::factory()->create(['process_id' => $process->id]);
@@ -53,6 +54,8 @@ it('shows process 1 with option dropdown, unit pill, and live-total wiring', fun
 
     $this->get(route('calculator'))->assertOk()
         ->assertSee('Produk 1 dari', false)
+        ->assertSee($scheme->description, false)
+        ->assertSee($product->description, false)
         ->assertSee('Pilih opsi', false)
         ->assertSee($option->description, false)
         ->assertSee('data-calculator-row', false)
@@ -61,6 +64,49 @@ it('shows process 1 with option dropdown, unit pill, and live-total wiring', fun
         ->assertSee('x-data="adminCalculator(', false)
         ->assertSee('Total sementara', false)
         ->assertDontSee('Simpan', false);
+});
+
+it('carries each scheme subtotal into the next step', function () {
+    $gedog = Scheme::factory()->create(['description' => 'Gedog Tuban', 'sort_order' => 1]);
+    $atbm = Scheme::factory()->create(['description' => 'Tenun ATBM Pisano', 'sort_order' => 2]);
+
+    $gedogProduct = Product::factory()->create(['scheme_id' => $gedog->id, 'sort_order' => 1]);
+    $atbmProduct = Product::factory()->create(['scheme_id' => $atbm->id, 'sort_order' => 1]);
+
+    $gedogProcess = Process::factory()->create(['product_id' => $gedogProduct->id]);
+    Process::factory()->create(['product_id' => $atbmProduct->id]);
+
+    $gedogActivity = Activity::factory()->create([
+        'process_id' => $gedogProcess->id,
+        'emission_factor_id' => EmissionFactor::factory()->create(['ef_value' => 2.0])->id,
+    ]);
+
+    $this->post(route('calculator.start'));
+
+    $this->post(route('calculator.step'), [
+        'product_id' => $gedogProduct->id,
+        'direction' => 'next',
+        'items' => [
+            ['activity_id' => $gedogActivity->id, 'option_id' => null, 'quantity' => 3],
+        ],
+    ])->assertRedirect();
+
+    // On the ATBM step, the Gedog subtotal is carried over (3 × 2 = 6)
+    // while the ATBM scheme starts at zero until typed.
+    $this->get(route('calculator'))->assertOk()
+        ->assertSee('Produk 2 dari', false)
+        ->assertSee('Gedog Tuban', false)
+        ->assertSee('Tenun ATBM Pisano', false)
+        ->assertSee('baseSchemeTotals', false)
+        ->assertSee('currentSchemeId', false);
+
+    $wizard = app(CalculatorWizard::class);
+    $atbmFull = $wizard->productWithInventory($atbmProduct);
+    $schemeTotals = collect($wizard->baseTotals($atbmFull, $wizard->state()['entries']))
+        ->keyBy('id');
+
+    expect($schemeTotals->get($gedog->id)['total'])->toBe(6.0)
+        ->and($schemeTotals->get($atbm->id))->toBeNull();
 });
 
 it('advances through steps and preserves entries on refresh', function () {

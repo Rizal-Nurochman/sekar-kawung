@@ -58,7 +58,7 @@ function loginAsAdmin(string $email = 'admin@example.com'): void
 }
 
 it('walks the full wizard from start to published report', function () {
-    seedWizardTwoSteps();
+    [$scheme] = seedWizardTwoSteps();
     loginAsAdmin();
 
     $page = visit('/admin/login');
@@ -88,7 +88,7 @@ it('walks the full wizard from start to published report', function () {
     // Type the quantity with real keystrokes so Alpine input events fire.
     $page->click('input[data-quantity-input]')
         ->keys('input[data-quantity-input]', '4')
-        ->assertSeeIn('#total-sementara', '10')
+        ->assertSeeIn('#total-sementara-'.$scheme->id, '10')
         ->click('#wizard-next')
         ->assertSee('Produk 2 dari 2')
         ->assertSee('Membatik Tulis')
@@ -103,7 +103,7 @@ it('walks the full wizard from start to published report', function () {
     $page->select('select[data-option-select]', 'Sepeda Motor')
         ->click('input[data-quantity-input]')
         ->keys('input[data-quantity-input]', '2')
-        ->assertSeeIn('#total-sementara', '16')
+        ->assertSeeIn('#total-sementara-'.$scheme->id, '16')
         ->click('#wizard-next')
         ->assertSee('Periksa kembali sebelum menerbitkan')
         ->assertSee('Produk 1 dari 2')
@@ -119,7 +119,7 @@ it('walks the full wizard from start to published report', function () {
 });
 
 it('keeps the temporary total visible without a save action on steps', function () {
-    seedWizardTwoSteps();
+    [$scheme] = seedWizardTwoSteps();
     loginAsAdmin('step@example.com');
 
     $page = visit('/admin/login');
@@ -132,10 +132,46 @@ it('keeps the temporary total visible without a save action on steps', function 
     $page = visit('/admin/kalkulator')
         ->click('#start-calculator')
         ->assertSee('Produk 1 dari 2')
-        ->assertVisible('#total-sementara')
+        ->assertVisible('#total-sementara-'.$scheme->id)
         ->assertMissing('Simpan & terbitkan')
         ->click('input[data-quantity-input]')
         ->keys('input[data-quantity-input]', '2')
-        ->assertSeeIn('#total-sementara', '5')
+        ->assertSeeIn('#total-sementara-'.$scheme->id, '5')
+        ->assertNoJavaScriptErrors();
+});
+
+it('updates only the active scheme in temporary totals', function () {
+    $gedog = Scheme::factory()->create(['description' => 'Gedog Tuban', 'sort_order' => 1]);
+    $atbm = Scheme::factory()->create(['description' => 'Tenun ATBM Pisano', 'sort_order' => 2]);
+    $gedogProduct = Product::factory()->for($gedog)->create(['sort_order' => 1]);
+    $atbmProduct = Product::factory()->for($atbm)->create(['sort_order' => 1]);
+    $gedogProcess = Process::factory()->for($gedogProduct)->create();
+    $atbmProcess = Process::factory()->for($atbmProduct)->create();
+    $gedogFactor = EmissionFactor::factory()->create(['ef_value' => 2.0]);
+    $atbmFactor = EmissionFactor::factory()->create(['ef_value' => 5.0]);
+    Activity::factory()->for($gedogProcess)->create(['emission_factor_id' => $gedogFactor->id]);
+    Activity::factory()->for($atbmProcess)->create(['emission_factor_id' => $atbmFactor->id]);
+    loginAsAdmin('split@example.com');
+
+    $page = visit('/admin/login');
+
+    $page->fill('email', 'split@example.com')
+        ->fill('password', 'password')
+        ->click('text=Masuk')
+        ->assertPathIs('/admin');
+
+    $page = visit('/admin/kalkulator')
+        ->click('#start-calculator')
+        ->click('input[data-quantity-input]')
+        ->keys('input[data-quantity-input]', '3')
+        ->assertSeeIn('#total-sementara-'.$gedog->id, '6')
+        ->assertSeeIn('#total-sementara-'.$atbm->id, '0')
+        ->click('#wizard-next')
+        ->assertSeeIn('#total-sementara-'.$gedog->id, '6')
+        ->assertSeeIn('#total-sementara-'.$atbm->id, '0')
+        ->click('input[data-quantity-input]')
+        ->keys('input[data-quantity-input]', '2')
+        ->assertSeeIn('#total-sementara-'.$gedog->id, '6')
+        ->assertSeeIn('#total-sementara-'.$atbm->id, '10')
         ->assertNoJavaScriptErrors();
 });

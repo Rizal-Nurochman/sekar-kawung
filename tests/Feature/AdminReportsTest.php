@@ -292,6 +292,55 @@ it('renders one card per scheme with its process details', function (): void {
         ->assertDontSee('Slug', false);
 });
 
+it('renders report stages in configured order regardless of emissions', function (): void {
+    $this->actingAs($this->user);
+    $scheme = Scheme::factory()->create(['sort_order' => 1]);
+    $product = Product::factory()->create(['scheme_id' => $scheme->id, 'sort_order' => 1]);
+    $firstStage = Process::factory()->create([
+        'product_id' => $product->id,
+        'description' => 'Tahap Urutan Pertama',
+        'sort_order' => 1,
+    ]);
+    $secondStage = Process::factory()->create([
+        'product_id' => $product->id,
+        'description' => 'Tahap Urutan Kedua',
+        'sort_order' => 2,
+    ]);
+    $firstActivity = Activity::factory()->create(['process_id' => $firstStage->id]);
+    $secondActivity = Activity::factory()->create(['process_id' => $secondStage->id]);
+
+    $report = SustainabilityReport::query()->create([
+        'scheme_id' => $scheme->id,
+        'product_id' => $product->id,
+        'title' => 'Laporan urutan tahap',
+        'slug' => 'laporan-urutan-tahap',
+        'total_emission' => 110,
+        'is_published' => false,
+    ]);
+
+    SustainabilityReportItem::query()->create([
+        'sustainability_report_id' => $report->id,
+        'activity_id' => $firstActivity->id,
+        'option_id' => null,
+        'quantity' => 1,
+        'emission_result' => 10,
+    ]);
+    SustainabilityReportItem::query()->create([
+        'sustainability_report_id' => $report->id,
+        'activity_id' => $secondActivity->id,
+        'option_id' => null,
+        'quantity' => 1,
+        'emission_result' => 100,
+    ]);
+
+    $this->get(route('admin.reports.show', $report))
+        ->assertOk()
+        ->assertViewHas('boundaries', fn ($boundaries): bool => $boundaries->first()['stages']->pluck('name')->all() === [
+            'Tahap Urutan Pertama',
+            'Tahap Urutan Kedua',
+        ]);
+});
+
 it('creates a report through the calculator action and persists items with total', function (): void {
     $this->actingAs($this->user);
     [$scheme, $product] = reportSchemeWithProduct();
