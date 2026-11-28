@@ -18,9 +18,9 @@ it('shows the hero copy, navigation, and calculator call to action', function ()
     $this->seed();
 
     $this->get('/')->assertOk()
-        ->assertSee('Carbon Footprint Emissions Calculator')
-        ->assertSee('Nurturing biodiversity through culture to achieve a sustainable economy.')
-        ->assertSee('Start Carbon Calculator')
+        ->assertSee('Kalkulator Emisi Jejak Karbon')
+        ->assertSee('Merawat biodiversitas melalui budaya untuk mencapai ekonomi lestari.')
+        ->assertSee('Mulai Kalkulator Karbon')
         ->assertSee('Mulai Kenali Jejak Karbon Anda.')
         ->assertSee('Mulai Menghitung');
 });
@@ -44,11 +44,11 @@ it('renders four boundary cards from the database', function () {
     expect($cards)->toHaveCount(4);
 
     $this->get('/')->assertOk()
-        ->assertSee('Production Boundaries')
-        ->assertSee('From Seed to Tuban Gedog Fabric')
-        ->assertSee('From Tuban Gedog Fabric to Tuban Gedog Batik Fabric')
-        ->assertSee('From Seed to Pisano Handwoven Fabric')
-        ->assertSee('From Pisano Handwoven Fabric to Pisano Handwoven Batik Fabric')
+        ->assertSee('Boundary Produksi')
+        ->assertSee('Dari Biji Kapas hingga Kain Gedog Tuban')
+        ->assertSee('Dari Kain Gedog Tuban hingga Kain Batik Gedog Tuban')
+        ->assertSee('Dari Biji Kapas hingga Kain Tenun Pisano')
+        ->assertSee('Dari Kain Tenun Pisano hingga Kain Batik Tenun Pisano')
         ->assertSee('Proses Produksi dari Biji Sampai Jadi Kain Gedog Tuban')
         ->assertDontSee('From Seed to Tuban Gedog Batik Fabric')
         ->assertDontSee('From Seed to Pisano Handwoven Batik Fabric');
@@ -56,7 +56,7 @@ it('renders four boundary cards from the database', function () {
 
 it('falls back to static cards when the database is empty', function () {
     $this->get('/')->assertOk()
-        ->assertSee('From Seed to Tuban Gedog Fabric')
+        ->assertSee('Dari Biji Kapas hingga Kain Gedog Tuban')
         ->assertSee('Data proses belum tersedia.');
 });
 
@@ -66,21 +66,21 @@ it('exposes the fallback card definition', function () {
 
 it('serves the methodology page with calculation examples', function () {
     $this->get('/methodology')->assertOk()
-        ->assertSee('Understanding Carbon Emissions and Product Footprints')
-        ->assertSee('Electricity Use')
-        ->assertSee('Research and References')
+        ->assertSee('Memahami Emisi Karbon dan Jejak Produk')
+        ->assertSee('Penggunaan Listrik')
+        ->assertSee('Riset dan Referensi')
         ->assertDontSee('Segera Hadir');
 });
 
 it('shows each production boundary with its own scope on the about page', function () {
     $this->get('/about')->assertOk()
-        ->assertSee('Four Production Boundaries')
-        ->assertSee('From Seed to Fabric')
-        ->assertSee('From Fabric to Batik Fabric')
+        ->assertSee('Empat Boundary Produksi')
+        ->assertSee('Dari Biji Kapas hingga Kain')
+        ->assertSee('Dari Kain hingga Kain Batik')
         ->assertDontSee('From Seed to Finished Fabric');
 });
 
 it('serves the remaining separate routes', function () {
-    $this->get('/calculator')->assertOk()->assertSee('Public Calculator');
-    $this->get('/about')->assertOk()->assertSee('About');
+    $this->get('/calculator')->assertOk()->assertSee('Kalkulator Publik');
+    $this->get('/about')->assertOk()->assertSee('Tentang');
 });

@@ -221,7 +221,7 @@
                 <div id="tab-impact" role="tabpanel" aria-labelledby="tab-btn-impact" x-show="activeTab === 'impact'" class="pt-5">
                     <section>
                         <h3 class="text-sm font-semibold text-slate-900">Jejak karbon</h3>
-                        <p class="mt-1 text-xs text-slate-500">Perkiraan cradle-to-gate per kg kain.</p>
+                        <p class="mt-1 text-xs text-slate-500">Perkiraan dari awal hingga gerbang pabrik per kg kain.</p>
 
                         <div class="mt-4 space-y-4">
                             <div>

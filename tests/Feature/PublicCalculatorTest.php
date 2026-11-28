@@ -32,7 +32,7 @@ it('lets guests start the public wizard with no login and no report rows', funct
     publicCalculatorContext();
 
     $this->get(route('calculator'))->assertOk()
-        ->assertSee('Public Calculator', false)
+        ->assertSee('Kalkulator Publik', false)
         ->assertSee('Mulai Menghitung', false)
         ->assertSee('id="start-calculator"', false)
         ->assertDontSee('Simpan', false);

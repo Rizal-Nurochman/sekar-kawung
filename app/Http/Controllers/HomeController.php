@@ -13,10 +13,10 @@ class HomeController extends Controller
     public static function boundaryCards(): array
     {
         return [
-            ['title' => 'From Seed to Tuban Gedog Fabric', 'body' => 'Data proses belum tersedia.'],
-            ['title' => 'From Tuban Gedog Fabric to Tuban Gedog Batik Fabric', 'body' => 'Data proses belum tersedia.'],
-            ['title' => 'From Seed to Pisano Handwoven Fabric', 'body' => 'Data proses belum tersedia.'],
-            ['title' => 'From Pisano Handwoven Fabric to Pisano Handwoven Batik Fabric', 'body' => 'Data proses belum tersedia.'],
+            ['title' => 'Dari Biji Kapas hingga Kain Gedog Tuban', 'body' => 'Data proses belum tersedia.'],
+            ['title' => 'Dari Kain Gedog Tuban hingga Kain Batik Gedog Tuban', 'body' => 'Data proses belum tersedia.'],
+            ['title' => 'Dari Biji Kapas hingga Kain Tenun Pisano', 'body' => 'Data proses belum tersedia.'],
+            ['title' => 'Dari Kain Tenun Pisano hingga Kain Batik Tenun Pisano', 'body' => 'Data proses belum tersedia.'],
         ];
     }
 
@@ -27,10 +27,10 @@ class HomeController extends Controller
             ->get();
 
         $titles = [
-            1 => 'From Seed to Tuban Gedog Fabric',
-            2 => 'From Tuban Gedog Fabric to Tuban Gedog Batik Fabric',
-            3 => 'From Seed to Pisano Handwoven Fabric',
-            4 => 'From Pisano Handwoven Fabric to Pisano Handwoven Batik Fabric',
+            1 => 'Dari Biji Kapas hingga Kain Gedog Tuban',
+            2 => 'Dari Kain Gedog Tuban hingga Kain Batik Gedog Tuban',
+            3 => 'Dari Biji Kapas hingga Kain Tenun Pisano',
+            4 => 'Dari Kain Tenun Pisano hingga Kain Batik Tenun Pisano',
         ];
 
         $cards = $schemes

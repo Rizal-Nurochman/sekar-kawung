@@ -8,7 +8,7 @@ uses(RefreshDatabase::class);
 it('renders the admin login page for guests', function () {
     $this->get(route('admin.login'))
         ->assertOk()
-        ->assertSee('Login', false)
+        ->assertSee('Masuk', false)
         ->assertDontSee('Sekar Kawung', false);
 });
 

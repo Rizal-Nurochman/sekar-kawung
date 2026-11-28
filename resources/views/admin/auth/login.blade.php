@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="light">
     <meta name="robots" content="noindex, nofollow">
 
-    <title>Login</title>
+    <title>Masuk</title>
 
     <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
 
@@ -16,7 +16,7 @@
 </head>
 <body class="flex min-h-screen items-center justify-center bg-pine-900 px-4 py-12 font-sans antialiased">
     <main class="w-full max-w-md rounded-3xl bg-foam-50 p-8 shadow-2xl">
-        <h1 class="text-center text-lg font-bold leading-6 text-pine-900">Login</h1>
+        <h1 class="text-center text-lg font-bold leading-6 text-pine-900">Masuk</h1>
 
         <form method="POST" action="{{ route('admin.login') }}" class="mt-4 space-y-5">
             @csrf

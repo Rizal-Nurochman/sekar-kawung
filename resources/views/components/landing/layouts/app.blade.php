@@ -1,5 +1,5 @@
 @props([
-    'title' => 'Sekar Kawung - Sustainable Materials',
+    'title' => 'Sekar Kawung - Material Berkelanjutan',
     'description' => 'Merawat biodiversitas melalui budaya untuk mencapai ekonomi lestari.',
     'heroBackground' => 'bg-mist-100',
 ])
@@ -48,10 +48,10 @@
                 </a>
 
                 <div class="hidden items-center gap-10 text-base leading-6 text-pine-900 md:flex">
-                    <a href="{{ route('home') }}" class="tracking-normal transition-colors hover:text-sage-600 {{ request()->routeIs('home') ? 'font-bold' : 'font-normal' }}">Home</a>
-                    <a href="{{ route('about') }}" class="tracking-normal transition-colors hover:text-sage-600 {{ request()->routeIs('about') ? 'font-bold' : 'font-normal' }}">About</a>
-                    <a href="{{ route('methodology') }}" class="tracking-normal transition-colors hover:text-sage-600 {{ request()->routeIs('methodology') ? 'font-bold' : 'font-normal' }}">Methodology</a>
-                    <a href="{{ route('calculator') }}" class="tracking-normal transition-colors hover:text-sage-600 {{ request()->routeIs('calculator') ? 'font-bold' : 'font-normal' }}">Public Calculator</a>
+                    <a href="{{ route('home') }}" class="tracking-normal transition-colors hover:text-sage-600 {{ request()->routeIs('home') ? 'font-bold' : 'font-normal' }}">Beranda</a>
+                    <a href="{{ route('about') }}" class="tracking-normal transition-colors hover:text-sage-600 {{ request()->routeIs('about') ? 'font-bold' : 'font-normal' }}">Tentang</a>
+                    <a href="{{ route('methodology') }}" class="tracking-normal transition-colors hover:text-sage-600 {{ request()->routeIs('methodology') ? 'font-bold' : 'font-normal' }}">Metodologi</a>
+                    <a href="{{ route('calculator') }}" class="tracking-normal transition-colors hover:text-sage-600 {{ request()->routeIs('calculator') ? 'font-bold' : 'font-normal' }}">Kalkulator Publik</a>
                 </div>
 
                 <div class="flex items-center md:hidden">
@@ -64,10 +64,10 @@
 
             <div id="landing-mobile-menu" x-bind:class="{ hidden: !navOpen }" class="absolute inset-x-0 top-full mt-2 hidden md:hidden">
                 <nav class="mt-2 space-y-1 rounded-3xl border border-white/65 bg-white/95 px-4 py-4 shadow-lg backdrop-blur-[14px]" aria-label="Navigasi seluler" x-on:click="closeNav()">
-                    <a href="{{ route('home') }}" class="block rounded-xl px-3 py-2 text-base font-medium text-pine-900 hover:bg-mist-100">Home</a>
-                    <a href="{{ route('about') }}" class="block rounded-xl px-3 py-2 text-base text-pine-900 hover:bg-mist-100">About</a>
-                    <a href="{{ route('methodology') }}" class="block rounded-xl px-3 py-2 text-base text-pine-900 hover:bg-mist-100">Methodology</a>
-                    <a href="{{ route('calculator') }}" class="block rounded-xl px-3 py-2 text-base text-pine-900 hover:bg-mist-100">Public Calculator</a>
+                    <a href="{{ route('home') }}" class="block rounded-xl px-3 py-2 text-base font-medium text-pine-900 hover:bg-mist-100">Beranda</a>
+                    <a href="{{ route('about') }}" class="block rounded-xl px-3 py-2 text-base text-pine-900 hover:bg-mist-100">Tentang</a>
+                    <a href="{{ route('methodology') }}" class="block rounded-xl px-3 py-2 text-base text-pine-900 hover:bg-mist-100">Metodologi</a>
+                    <a href="{{ route('calculator') }}" class="block rounded-xl px-3 py-2 text-base text-pine-900 hover:bg-mist-100">Kalkulator Publik</a>
                 </nav>
             </div>
         </header>
@@ -92,17 +92,17 @@
                 </div>
 
                 <div class="w-full sm:w-40">
-                    <h2 class="text-sm font-semibold tracking-normal text-sage-pale">Navigation</h2>
+                    <h2 class="text-sm font-semibold tracking-normal text-sage-pale">Navigasi</h2>
                     <ul class="mt-4 space-y-3 text-[15px] leading-6 tracking-normal text-footer-link">
-                        <li><a href="{{ route('home') }}" class="transition-colors hover:text-white">Home</a></li>
-                        <li><a href="{{ route('calculator') }}" class="transition-colors hover:text-white">Public Calculator</a></li>
-                        <li><a href="{{ route('methodology') }}" class="transition-colors hover:text-white">Methodology</a></li>
-                        <li><a href="{{ route('about') }}" class="transition-colors hover:text-white">About</a></li>
+                        <li><a href="{{ route('home') }}" class="transition-colors hover:text-white">Beranda</a></li>
+                        <li><a href="{{ route('calculator') }}" class="transition-colors hover:text-white">Kalkulator Publik</a></li>
+                        <li><a href="{{ route('methodology') }}" class="transition-colors hover:text-white">Metodologi</a></li>
+                        <li><a href="{{ route('about') }}" class="transition-colors hover:text-white">Tentang</a></li>
                     </ul>
                 </div>
 
                 <div class="w-full sm:w-70">
-                    <h2 class="text-sm font-semibold tracking-normal text-sage-pale">Contact</h2>
+                    <h2 class="text-sm font-semibold tracking-normal text-sage-pale">Kontak</h2>
                     <ul class="mt-4 space-y-4 text-[15px] leading-6 tracking-normal text-footer-link">
                         <li class="flex items-center gap-3">
                             <x-fas-envelope class="h-5 w-5 shrink-0" />
@@ -120,7 +120,7 @@
                 </div>
 
                 <div class="w-full sm:w-55">
-                    <h2 class="text-sm font-semibold tracking-normal text-sage-pale">Follow Us</h2>
+                    <h2 class="text-sm font-semibold tracking-normal text-sage-pale">Ikuti Kami</h2>
                     <ul class="mt-4 space-y-4 text-[15px] leading-6 tracking-normal text-footer-link">
                         <li class="flex items-center gap-3">
                             <x-fab-instagram class="h-5 w-5 shrink-0" />
@@ -139,7 +139,7 @@
             </div>
 
             <div class="mt-12 border-t border-white/25 pt-6 text-center text-xs font-medium leading-5 tracking-normal text-sage-muted">
-                <p>&copy; {{ date('Y') }} Sekar Kawung - Sustainable Materials. Hak Cipta Dilindungi Undang-Undang.</p>
+                <p>&copy; {{ date('Y') }} Sekar Kawung - Material Berkelanjutan. Hak Cipta Dilindungi Undang-Undang.</p>
             </div>
         </div>
     </footer>

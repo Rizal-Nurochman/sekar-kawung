@@ -47,7 +47,7 @@
                 <img src="{{ asset('images/landing/hero-mark.png') }}" alt="" aria-hidden="true" class="size-8 shrink-0 object-contain">
                 <span class="min-w-0">
                     <span class="block text-[15px] font-bold leading-5 tracking-tight text-white">Sekar Kawung</span>
-                    <span class="block text-[11px] leading-4 text-sage-muted">Admin workspace</span>
+                    <span class="block text-[11px] leading-4 text-sage-muted">Ruang kerja admin</span>
                 </span>
             </a>
 

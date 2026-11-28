@@ -1,49 +1,49 @@
 @php
     $concepts = [
-        ['title' => 'Activity Data', 'description' => 'The measured amount of a material, fuel, electricity, or other resource used in a production activity.'],
-        ['title' => 'Emission Factors', 'description' => 'Values that relate an amount of activity or resource use to its associated greenhouse gas emissions.'],
-        ['title' => 'Carbon Dioxide Equivalents', 'description' => 'A common unit used to express the warming effect of different greenhouse gases relative to carbon dioxide.'],
-        ['title' => 'Activity Contributions', 'description' => 'A breakdown showing how much each included activity contributes to the estimated product footprint.'],
+        ['title' => 'Data Aktivitas', 'description' => 'Jumlah terukur suatu material, bahan bakar, listrik, atau sumber daya lain yang dipakai dalam kegiatan produksi.'],
+        ['title' => 'Faktor Emisi', 'description' => 'Nilai yang menghubungkan jumlah aktivitas atau penggunaan sumber daya dengan emisi gas rumah kaca yang dihasilkannya.'],
+        ['title' => 'Ekuivalen Karbon Dioksida', 'description' => 'Satuan umum untuk menyatakan efek pemanasan berbagai gas rumah kaca relatif terhadap karbon dioksida.'],
+        ['title' => 'Kontribusi Aktivitas', 'description' => 'Rincian yang menunjukkan seberapa besar setiap kegiatan yang disertakan berkontribusi terhadap perkiraan jejak produk.'],
     ];
 
     $inputs = [
-        ['number' => '01', 'title' => 'Activity Data', 'description' => 'The quantity of a resource used in an included production activity, recorded for a consistent assessment period and production quantity.'],
-        ['number' => '02', 'title' => 'Emission Factor', 'description' => 'A value that expresses greenhouse gas emissions per unit of activity. Its source, unit, geographical relevance, and reference year should be documented.'],
-        ['number' => '03', 'title' => 'Estimated Emissions', 'description' => 'The calculated contribution of an activity, expressed in carbon dioxide equivalents (CO₂e) when the selected factor represents combined greenhouse gas emissions.'],
+        ['number' => '01', 'title' => 'Data Aktivitas', 'description' => 'Kuantitas sumber daya yang dipakai dalam kegiatan produksi yang disertakan, dicatat untuk periode penilaian dan kuantitas produksi yang konsisten.'],
+        ['number' => '02', 'title' => 'Faktor Emisi', 'description' => 'Nilai yang menyatakan emisi gas rumah kaca per satuan aktivitas. Sumber, satuan, relevansi geografis, dan tahun referensinya perlu didokumentasikan.'],
+        ['number' => '03', 'title' => 'Perkiraan Emisi', 'description' => 'Kontribusi terhitung dari suatu aktivitas, dinyatakan dalam ekuivalen karbon dioksida (CO₂e) jika faktor yang dipilih mewakili gabungan emisi gas rumah kaca.'],
     ];
 
     $examples = [
-        ['title' => 'Electricity Use', 'description' => 'Multiply electricity consumption by an electricity emission factor that is appropriate for the assessment location and period.', 'equation' => 'Electricity Used (kWh) × Emission Factor (kg CO₂e/kWh) = Emissions (kg CO₂e)', 'icon' => 'electricity'],
-        ['title' => 'Material Use', 'description' => 'Multiply the quantity of a material by an emission factor that matches the material and the process represented by that factor.', 'equation' => 'Material Used (kg) × Emission Factor (kg CO₂e/kg) = Emissions (kg CO₂e)', 'icon' => 'material'],
+        ['title' => 'Penggunaan Listrik', 'description' => 'Kalikan konsumsi listrik dengan faktor emisi listrik yang sesuai untuk lokasi dan periode penilaian.', 'equation' => 'Listrik Terpakai (kWh) × Faktor Emisi (kg CO₂e/kWh) = Emisi (kg CO₂e)', 'icon' => 'electricity'],
+        ['title' => 'Penggunaan Material', 'description' => 'Kalikan kuantitas material dengan faktor emisi yang sesuai dengan material dan proses yang diwakili faktor tersebut.', 'equation' => 'Material Terpakai (kg) × Faktor Emisi (kg CO₂e/kg) = Emisi (kg CO₂e)', 'icon' => 'material'],
     ];
 
     $factorDetails = [
-        'Source title and author or organization',
-        'Publication year',
-        'Material or activity represented',
-        'Factor value and unit',
-        'Geographical and process coverage',
-        'Original source link',
-        'Relevant assumptions',
+        'Judul sumber serta penulis atau organisasi',
+        'Tahun terbit',
+        'Material atau aktivitas yang diwakili',
+        'Nilai dan satuan faktor',
+        'Cakupan geografis dan proses',
+        'Tautan sumber asli',
+        'Asumsi yang relevan',
     ];
 @endphp
 
 <x-landing.layouts.app
-    title="Methodology | Sekar Kawung"
-    description="How the Sekar Kawung Carbon Calculator estimates textile production emissions using activity data and emission factors."
+    title="Metodologi | Sekar Kawung"
+    description="Cara Kalkulator Karbon Sekar Kawung memperkirakan emisi produksi tekstil menggunakan data aktivitas dan faktor emisi."
     hero-background="bg-white"
 >
     <x-slot:hero>
         <section class="mx-auto w-full max-w-[1200px] px-4 pb-9 pt-16 text-pine-900 sm:px-6 lg:px-0" aria-labelledby="methodology-heading">
-            <h1 id="methodology-heading" class="text-4xl font-bold leading-tight tracking-[-0.02em] sm:text-5xl sm:leading-[58px]">Methodology</h1>
-            <p class="mt-5 text-lg leading-[30px] lg:text-justify">The Sekar Kawung Carbon Calculator uses activity data to estimate greenhouse gas emissions within a defined textile production boundary. Material and energy use are linked to relevant emission factors to calculate the contribution of each included activity. The assessment follows the production activities recorded for the selected boundary. Results should be interpreted alongside the data sources, units, and assumptions used.</p>
+            <h1 id="methodology-heading" class="text-4xl font-bold leading-tight tracking-[-0.02em] sm:text-5xl sm:leading-[58px]">Metodologi</h1>
+            <p class="mt-5 text-lg leading-[30px] lg:text-justify">Kalkulator Karbon Sekar Kawung memakai data aktivitas untuk memperkirakan emisi gas rumah kaca dalam batas produksi tekstil yang ditetapkan. Penggunaan material dan energi dihubungkan dengan faktor emisi yang relevan untuk menghitung kontribusi setiap kegiatan yang disertakan. Penilaian mengikuti kegiatan produksi yang tercatat untuk batas yang dipilih. Hasilnya perlu ditafsirkan bersama sumber data, satuan, dan asumsi yang dipakai.</p>
         </section>
     </x-slot:hero>
 
     <section class="bg-white pb-9 text-pine-900" aria-labelledby="footprints-heading">
         <div class="mx-auto w-full max-w-[1200px] border-t border-mist-100 px-4 pt-9 sm:px-6 lg:px-0">
-            <h2 id="footprints-heading" class="text-3xl font-bold leading-tight tracking-[-0.02em] sm:text-[40px] sm:leading-[48px]">Understanding Carbon Emissions and Product Footprints</h2>
-            <p class="mt-5 text-lg leading-[30px] lg:text-justify">Greenhouse gas emissions include carbon dioxide (CO₂), methane (CH₄), and nitrous oxide (N₂O), which contribute to climate change. A product carbon footprint brings these emissions together across the activities included in the assessment boundary. The gases are expressed in carbon dioxide equivalents (CO₂e), allowing their different warming effects to be represented using a common unit.</p>
+            <h2 id="footprints-heading" class="text-3xl font-bold leading-tight tracking-[-0.02em] sm:text-[40px] sm:leading-[48px]">Memahami Emisi Karbon dan Jejak Produk</h2>
+            <p class="mt-5 text-lg leading-[30px] lg:text-justify">Emisi gas rumah kaca mencakup karbon dioksida (CO₂), metana (CH₄), dan dinitrogen oksida (N₂O), yang berkontribusi terhadap perubahan iklim. Jejak karbon produk menggabungkan emisi tersebut dari kegiatan yang disertakan dalam batas penilaian. Gas-gas itu dinyatakan dalam ekuivalen karbon dioksida (CO₂e) sehingga efek pemanasannya yang berbeda dapat diwakili dengan satuan yang sama.</p>
 
             <div class="mt-9 grid gap-7 sm:grid-cols-2 sm:gap-x-12">
                 @foreach ($concepts as $concept)
@@ -57,11 +57,11 @@
 
             <div class="mt-9 rounded-xl border border-pine-900 bg-mist-100 px-6 py-4 sm:px-8">
                 <p class="text-center text-2xl font-bold leading-9 sm:text-[26px]">PCF = Σ (ADᵢ × EFᵢ)</p>
-                <p class="mt-4 text-center text-lg font-bold leading-8 sm:text-[26px] sm:leading-9">Product Carbon Footprint = Activity Data × Emission Factor</p>
-                <p class="mt-4 text-base leading-6">Activity units must match the units used by the emission factor. Total emissions are calculated by adding the included contributions without double counting.</p>
+                <p class="mt-4 text-center text-lg font-bold leading-8 sm:text-[26px] sm:leading-9">Jejak Karbon Produk = Data Aktivitas × Faktor Emisi</p>
+                <p class="mt-4 text-base leading-6">Satuan aktivitas harus sama dengan satuan yang dipakai faktor emisi. Total emisi dihitung dengan menjumlahkan kontribusi yang disertakan tanpa penghitungan ganda.</p>
             </div>
 
-            <h3 class="mt-9 text-[32px] font-bold leading-10 tracking-[-0.02em]">Understanding the Inputs</h3>
+            <h3 class="mt-9 text-[32px] font-bold leading-10 tracking-[-0.02em]">Memahami Input</h3>
             <dl class="mt-9 border-t border-mist-100">
                 @foreach ($inputs as $input)
                     <div class="grid gap-3 border-b border-mist-100 py-6 sm:grid-cols-[30px_244px_minmax(0,1fr)] sm:gap-8">
@@ -76,7 +76,7 @@
 
     <section class="bg-white py-9 text-pine-900" aria-labelledby="examples-heading">
         <div class="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-0">
-            <h2 id="examples-heading" class="text-[32px] font-bold leading-10 tracking-[-0.02em]">Calculation Examples</h2>
+            <h2 id="examples-heading" class="text-[32px] font-bold leading-10 tracking-[-0.02em]">Contoh Perhitungan</h2>
             <div class="mt-6 space-y-6">
                 @foreach ($examples as $example)
                     <article class="flex flex-col gap-6 rounded-xl bg-mist-100 p-6 sm:flex-row sm:p-8">
@@ -103,12 +103,12 @@
     <section class="bg-white py-9 text-pine-900" aria-labelledby="factors-heading">
         <div class="mx-auto grid w-full max-w-[1200px] gap-8 px-4 sm:px-6 lg:grid-cols-[600px_minmax(0,1fr)] lg:gap-16 lg:px-0">
             <div>
-                <h2 id="factors-heading" class="text-[32px] font-bold leading-10 tracking-[-0.02em]">Emission Factors and Data Sources</h2>
-                <p class="mt-5 text-lg leading-[30px]">Emission factors should be selected for their relevance to the material, energy source, process, location, and assessment period. Research papers, technical reports, and documented datasets can provide supporting information.</p>
-                <p class="mt-5 text-lg leading-[30px]">Each factor used in the calculation should be traceable to its original source. Differences in source boundaries and units should be reviewed before applying a factor.</p>
+                <h2 id="factors-heading" class="text-[32px] font-bold leading-10 tracking-[-0.02em]">Faktor Emisi dan Sumber Data</h2>
+                <p class="mt-5 text-lg leading-[30px]">Faktor emisi dipilih berdasarkan relevansinya terhadap material, sumber energi, proses, lokasi, dan periode penilaian. Paper riset, laporan teknis, dan kumpulan data terdokumentasi dapat menjadi informasi pendukung.</p>
+                <p class="mt-5 text-lg leading-[30px]">Setiap faktor yang dipakai dalam perhitungan harus dapat dilacak ke sumber aslinya. Perbedaan batas sumber dan satuan perlu ditinjau sebelum menerapkan suatu faktor.</p>
             </div>
             <div class="rounded-xl bg-mist-100 p-7">
-                <h3 class="text-2xl font-bold leading-8">For Each Factor, Record:</h3>
+                <h3 class="text-2xl font-bold leading-8">Untuk Setiap Faktor, Catat:</h3>
                 <ul class="mt-3 space-y-3 text-base leading-6">
                     @foreach ($factorDetails as $detail)
                         <li class="flex gap-2"><span aria-hidden="true">•</span><span>{{ $detail }}</span></li>
@@ -120,29 +120,29 @@
 
     <section id="references" class="bg-white pb-[72px] pt-9 text-pine-900" aria-labelledby="references-heading">
         <div class="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-0">
-            <h2 id="references-heading" class="text-[32px] font-bold leading-10 tracking-[-0.02em]">Research and References</h2>
-            <p class="mt-6 text-lg leading-[30px]">Explore the research and source documents supporting the calculation methodology and emission factors.</p>
+            <h2 id="references-heading" class="text-[32px] font-bold leading-10 tracking-[-0.02em]">Riset dan Referensi</h2>
+            <p class="mt-6 text-lg leading-[30px]">Telusuri dokumen riset dan sumber yang mendukung metodologi perhitungan serta faktor emisi.</p>
 
             <div class="mt-6 grid gap-6 sm:grid-cols-2">
                 @foreach (range(1, 4) as $number)
                     <article class="flex min-h-[300px] flex-col gap-4 rounded-xl border border-mist-100 bg-white p-6">
                         <div class="flex items-start justify-between gap-3">
-                            <span class="rounded-full bg-mist-100 px-[10px] py-1 text-base font-bold leading-6">Reference to be added</span>
+                            <span class="rounded-full bg-mist-100 px-[10px] py-1 text-base font-bold leading-6">Referensi akan ditambahkan</span>
                             <span class="text-base font-bold leading-6">{{ str_pad((string) $number, 2, '0', STR_PAD_LEFT) }}</span>
                         </div>
-                        <h3 class="text-[22px] font-bold leading-[30px]">[Full Paper or Report Title]</h3>
-                        <p class="text-base leading-6">[Author / Organization] · [Year]</p>
-                        <p class="text-base leading-6">[Brief explanation of how this source supports the methodology or an emission factor.]</p>
+                        <h3 class="text-[22px] font-bold leading-[30px]">[Judul Lengkap Paper atau Laporan]</h3>
+                        <p class="text-base leading-6">[Penulis / Organisasi] · [Tahun]</p>
+                        <p class="text-base leading-6">[Penjelasan singkat tentang bagaimana sumber ini mendukung metodologi atau faktor emisi.]</p>
                         <div class="mt-auto text-base leading-6">
-                            <p class="font-bold opacity-65">View Original Source ↗</p>
-                            <p class="mt-1 opacity-80">Source link pending</p>
+                            <p class="font-bold opacity-65">Lihat Sumber Asli ↗</p>
+                            <p class="mt-1 opacity-80">Tautan sumber belum tersedia</p>
                         </div>
                     </article>
                 @endforeach
             </div>
 
             <div class="mt-6 text-right">
-                <button type="button" disabled title="References are not available yet" class="inline-flex items-center gap-2 rounded-xl bg-pine-900 px-[33px] py-[15px] text-base font-bold leading-5 text-white">View All References <img src="{{ asset('images/landing/methodology-arrow.svg') }}" alt="" width="16" height="16"></button>
+                <button type="button" disabled title="Referensi belum tersedia" class="inline-flex items-center gap-2 rounded-xl bg-pine-900 px-[33px] py-[15px] text-base font-bold leading-5 text-white">Lihat Semua Referensi <img src="{{ asset('images/landing/methodology-arrow.svg') }}" alt="" width="16" height="16"></button>
             </div>
         </div>
     </section>

@@ -19,17 +19,17 @@
                     fetchpriority="high"
                 >
                 <h1 class="-mt-2 font-serif text-3xl font-normal leading-tight text-black sm:text-4xl lg:-mt-[17px] lg:text-[36px] lg:leading-[64px] xl:w-max xl:origin-left xl:scale-x-[1.22] xl:text-[42px] xl:whitespace-nowrap">
-                    Carbon Footprint Emissions Calculator
+                    Kalkulator Emisi Jejak Karbon
                 </h1>
                 <p class="mt-4 text-xl font-light leading-8 tracking-wide text-black sm:text-2xl lg:text-[28px] lg:tracking-[2px]">
-                    Nurturing biodiversity through culture to achieve a sustainable economy.
+                    Merawat biodiversitas melalui budaya untuk mencapai ekonomi lestari.
                 </p>
                 <div class="mt-6">
                     <a
                         href="{{ route('calculator') }}"
                         class="inline-flex items-center justify-center rounded-xl bg-pine-900 px-6 py-3 text-base font-bold leading-5 tracking-normal text-white transition-colors hover:bg-pine-950 lg:text-xl lg:leading-4"
                     >
-                        Start Carbon Calculator
+                        Mulai Kalkulator Karbon
                     </a>
                 </div>
             </div>
@@ -42,10 +42,10 @@
             <div class="grid items-start gap-10 lg:grid-cols-[536px_1fr] lg:gap-16">
                 <div>
                     <h2 id="emissions-heading" class="text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl sm:leading-[1.15]">
-                        What Are Carbon Emissions and Carbon Footprints?
+                        Apa Itu Emisi Karbon dan Jejak Karbon?
                     </h2>
                     <p class="mt-6 max-w-[65ch] text-lg leading-8 text-sage-muted">
-                        Carbon emissions commonly refer to carbon dioxide (CO₂) released through activities such as burning fuel and using energy. A carbon footprint measures the total greenhouse gas emissions (including CO₂, methane (CH₄), and nitrous oxide (N₂O)) generated directly and indirectly by a person, organization, or activity. It is expressed in carbon dioxide equivalents (CO₂e). Understanding these emissions helps identify opportunities to reduce environmental impact.
+                        Emisi karbon umumnya merujuk pada karbon dioksida (CO₂) yang dilepaskan melalui kegiatan seperti pembakaran bahan bakar dan penggunaan energi. Jejak karbon mengukur total emisi gas rumah kaca (termasuk CO₂, metana (CH₄), dan dinitrogen oksida (N₂O)) yang dihasilkan secara langsung maupun tidak langsung oleh seseorang, organisasi, atau suatu kegiatan. Nilainya dinyatakan dalam ekuivalen karbon dioksida (CO₂e). Memahami emisi ini membantu mengidentifikasi peluang untuk mengurangi dampak lingkungan.
                     </p>
                 </div>
                 <img
@@ -60,14 +60,14 @@
             </div>
 
             <div class="pt-16 sm:pt-24">
-                <h3 class="text-2xl font-bold leading-8 tracking-tight text-white">Production Boundaries</h3>
+                <h3 class="text-2xl font-bold leading-8 tracking-tight text-white">Boundary Produksi</h3>
                 <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
                     @foreach ($boundaryCards as $card)
                         <x-landing.boundary-card :title="$card['title']" :body="$card['body']" />
                     @endforeach
                 </div>
                 <p class="mt-6 text-right">
-                    <a href="{{ route('about') }}" class="inline-flex items-center gap-1 text-[15px] font-semibold leading-5 text-sage-pale transition-colors hover:text-white">Read More <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4 translate-y-px" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12l-7.5 7.5M21 12H3" /></svg></a>
+                    <a href="{{ route('about') }}" class="inline-flex items-center gap-1 text-[15px] font-semibold leading-5 text-sage-pale transition-colors hover:text-white">Selengkapnya <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4 translate-y-px" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12l-7.5 7.5M21 12H3" /></svg></a>
                 </p>
             </div>
         </div>
@@ -86,17 +86,17 @@
                 class="h-auto w-full rounded-2xl object-cover"
             >
             <div>
-                <h2 id="methodology-heading" class="text-3xl font-bold leading-tight tracking-tight text-pine-900 sm:text-4xl sm:leading-[1.15]">Methodology</h2>
+                <h2 id="methodology-heading" class="text-3xl font-bold leading-tight tracking-tight text-pine-900 sm:text-4xl sm:leading-[1.15]">Metodologi</h2>
                 <p class="mt-6 max-w-[65ch] text-lg leading-8 text-ink-soft">
-                    We apply a shared life cycle inventory across seed to fabric and seed to batik boundaries, using published emission factors and field data from Tuban. Totals are expressed in carbon dioxide equivalents (CO₂e) so hotspots can be compared across stages.
+                    Kami memakai inventaris daur hidup yang sama untuk batas dari biji hingga kain dan dari biji hingga batik, dengan faktor emisi terpublikasi dan data lapangan dari Tuban. Total dinyatakan dalam ekuivalen karbon dioksida (CO₂e) agar hotspot dapat dibandingkan antar tahap.
                 </p>
                 <div class="mt-4 rounded-xl border border-pine-900 bg-mist-100 px-4 py-4 text-pine-900">
                     <p class="text-center text-xl font-bold leading-8">PCF = Σ (ADᵢ × EFᵢ)</p>
-                    <p class="mt-2 text-center text-base font-bold leading-7">Product Carbon Footprint = Activity Data × Emission Factor</p>
-                    <p class="mt-3 text-sm leading-6">Activity units must match the units used by the emission factor. Total emissions are calculated by adding the included contributions without double counting.</p>
+                    <p class="mt-2 text-center text-base font-bold leading-7">Jejak Karbon Produk = Data Aktivitas × Faktor Emisi</p>
+                    <p class="mt-3 text-sm leading-6">Satuan aktivitas harus sama dengan satuan yang dipakai faktor emisi. Total emisi dihitung dengan menjumlahkan kontribusi yang disertakan tanpa penghitungan ganda.</p>
                 </div>
                 <p class="mt-6 text-right">
-                    <a href="{{ route('methodology') }}" class="inline-flex items-center gap-1 text-[15px] font-semibold leading-5 text-sage-600 transition-colors hover:text-pine-900">Read More <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4 translate-y-px" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12l-7.5 7.5M21 12H3" /></svg></a>
+                    <a href="{{ route('methodology') }}" class="inline-flex items-center gap-1 text-[15px] font-semibold leading-5 text-sage-600 transition-colors hover:text-pine-900">Selengkapnya <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4 translate-y-px" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12l-7.5 7.5M21 12H3" /></svg></a>
                 </p>
             </div>
         </div>

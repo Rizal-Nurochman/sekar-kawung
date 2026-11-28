@@ -1,6 +1,6 @@
 @props([
-    'title' => 'Sekar Kawung - Sustainable Materials - Katalok & Kalkulator Jejak Karbon Tekstil',
-    'description' => 'Katalok material tekstil ramah lingkungan dan kalkulator jejak karbon untuk industri tekstil berkelanjutan.',
+    'title' => 'Sekar Kawung - Material Berkelanjutan - Katalog & Kalkulator Jejak Karbon Tekstil',
+    'description' => 'Katalog material tekstil ramah lingkungan dan kalkulator jejak karbon untuk industri tekstil berkelanjutan.',
 ])
 
 <!DOCTYPE html>
@@ -50,7 +50,7 @@
                     <img src="{{ asset('images/logo.webp') }}" alt="Logo Sekar Kawung" width="200" height="200" class="size-12 rounded-lg bg-white object-contain">
                     <span class="block">
                         <span class="block text-base font-bold tracking-tight text-slate-900 sm:text-xl">Sekar Kawung</span>
-                        <span class="-mt-1 block text-[10px] font-semibold uppercase tracking-widest text-slate-400">Sustainable Materials</span>
+                        <span class="-mt-1 block text-[10px] font-semibold uppercase tracking-widest text-slate-400">Material Berkelanjutan</span>
                     </span>
                 </a>
 
@@ -100,10 +100,10 @@
                 <div class="md:col-span-1">
                     <div class="mb-4 flex items-center gap-3">
                         <img src="{{ asset('images/logo.webp') }}" alt="Logo Sekar Kawung" width="200" height="200" class="size-12 shrink-0 rounded-lg bg-white object-contain">
-                        <span class="text-lg font-bold">Sekar Kawung - Sustainable Materials</span>
+                        <span class="text-lg font-bold">Sekar Kawung - Material Berkelanjutan</span>
                     </div>
                     <p class="text-xs leading-relaxed text-slate-400">
-                        Inovasi katalok dan alat kalkulasi karbon terkini untuk percepatan industri tekstil hijau yang ramah lingkungan.
+                        Inovasi katalog dan alat kalkulasi karbon terkini untuk percepatan industri tekstil hijau yang ramah lingkungan.
                     </p>
                 </div>
 
@@ -151,7 +151,7 @@
             </div>
 
             <div class="mt-12 border-t border-slate-800 pt-8 text-center text-xs text-slate-500">
-                <p>&copy; {{ date('Y') }} Sekar Kawung - Sustainable Materials. Hak Cipta Dilindungi Undang-Undang. Prototipe Web Industri Tekstil.</p>
+                <p>&copy; {{ date('Y') }} Sekar Kawung - Material Berkelanjutan. Hak Cipta Dilindungi Undang-Undang. Prototipe Web Industri Tekstil.</p>
             </div>
         </div>
     </footer>

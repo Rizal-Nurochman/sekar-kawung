@@ -12,12 +12,12 @@
             </h1>
 
             <p class="mt-6 max-w-2xl text-lg font-light text-slate-300 sm:text-xl">
-                Jelajahi katalok material ramah lingkungan berkualitas tinggi dan kalkulasi jejak karbon produksi Anda secara akurat dalam hitungan detik.
+                Jelajahi katalog material ramah lingkungan berkualitas tinggi dan kalkulasi jejak karbon produksi Anda secara akurat dalam hitungan detik.
             </p>
 
             <div class="mt-10 flex w-full flex-col gap-4 sm:w-auto sm:flex-row">
                 <x-old.ui.button href="#katalog" variant="primary-light" size="xl" weight="semibold">
-                    <span>Lihat Katalok Produk</span>
+                    <span>Lihat Katalog Produk</span>
                     <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                 </x-old.ui.button>
 
@@ -177,7 +177,7 @@
                             <i class="fa-solid fa-square-poll-vertical text-sage-600" aria-hidden="true"></i>
                             <span>Hasil Estimasi Emisi</span>
                         </span>
-                        <span class="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Real-time Calculation</span>
+                        <span class="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Perhitungan Waktu Nyata</span>
                     </h3>
 
                     <div class="mb-8 rounded-2xl bg-linear-to-br from-slate-900 to-slate-800 p-6 text-white shadow-inner">
@@ -262,7 +262,7 @@
                 </div>
 
                 <div>
-                    <span class="text-xs font-bold uppercase tracking-widest text-sage-600">Tentang Sekar Kawung - Sustainable Materials</span>
+                    <span class="text-xs font-bold uppercase tracking-widest text-sage-600">Tentang Sekar Kawung - Material Berkelanjutan</span>
                     <h2 class="mt-2 text-3xl font-extrabold text-slate-900 sm:text-4xl">Mendorong Transformasi Hijau Sektor Tekstil</h2>
                     <p class="mt-4 text-base leading-relaxed text-slate-600">
                         Sekar Kawung merupakan yayasan sekaligus social enterprise yang didirikan oleh Chandra Kirana Prijosusilo pada tahun 2015 dengan misi memuliakan budaya, menjaga alam, serta menguatkan ekonomi berbasis potensi lokal di Indonesia. Melalui pendekatan yang mengintegrasikan kearifan lokal dengan inovasi modern, seluruh kegiatan yang dijalankan oleh Sekar Kawung berupaya menerapkan sistem berkelanjutan (sustainability) serta prinsip ekonomi sirkular yang menjaga keseimbangan ekosistem dan kesejahteraan rakyat.

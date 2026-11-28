@@ -2,10 +2,10 @@
     $mode = $mode ?? 'empty';
 @endphp
 
-<x-landing.layouts.app title="Public Calculator | Sekar Kawung" hero-background="bg-foam-50">
+<x-landing.layouts.app title="Kalkulator Publik | Sekar Kawung" hero-background="bg-foam-50">
     <x-slot:hero>
         <section class="mx-auto w-full max-w-[1200px] px-4 pb-10 pt-14 sm:px-6 lg:px-0">
-            <p class="text-[13px] font-medium text-ink-muted">Public Calculator</p>
+            <p class="text-[13px] font-medium text-ink-muted">Kalkulator Publik</p>
             <h1 class="mt-2 max-w-[688px] text-4xl font-bold leading-tight tracking-[-0.02em] text-balance text-pine-900 sm:text-5xl sm:leading-[1.2]">Kalkulator Emisi Karbon</h1>
             <p class="mt-4 max-w-[65ch] text-lg leading-8 text-ink-soft">Isi aktivitas Anda tahap demi tahap, lalu lihat hasil perhitungan jejak karbon Anda secara langsung.</p>
         </section>
