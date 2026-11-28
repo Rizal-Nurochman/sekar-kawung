@@ -457,17 +457,10 @@ class CalculatorWizard
             ];
         }
 
-        $timestamp = now()->translatedFormat('j F Y, H:i');
-        $title = trim(($last->scheme?->description ?? 'Kalkulator').' — '.$last->description.' — '.$timestamp);
-
-        if (mb_strlen($title) > 255) {
-            $title = mb_substr($title, 0, 255);
-        }
-
         return [
             'scheme_id' => (int) $last->scheme_id,
             'boundary_id' => (int) $last->getKey(),
-            'title' => $title,
+            'title' => 'Laporan',
             'slug' => null,
             'summary' => null,
             'is_active' => true,

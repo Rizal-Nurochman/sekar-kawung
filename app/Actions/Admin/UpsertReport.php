@@ -4,7 +4,6 @@ namespace App\Actions\Admin;
 
 use App\Models\SustainabilityReport;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class UpsertReport
 {
@@ -17,26 +16,21 @@ class UpsertReport
 
             $report ??= new SustainabilityReport;
 
-            $slug = $validated['slug'] ?? null;
-
-            if (! is_string($slug) || trim($slug) === '') {
-                $slug = $report->exists && is_string($report->slug) && $report->slug !== ''
-                    ? $report->slug
-                    : (string) ($validated['title'] ?? 'laporan');
-            }
-
-            $slug = $this->uniqueSlug($slug, $report->getKey());
-
             $report->fill([
                 'scheme_id' => $validated['scheme_id'],
                 'boundary_id' => $validated['boundary_id'],
-                'title' => $validated['title'],
-                'slug' => $slug,
+                'title' => 'Laporan',
+                'slug' => 'laporan',
                 'summary' => $validated['summary'] ?? null,
                 'total_emission' => $calculation['total'],
                 'is_active' => (bool) ($validated['is_active'] ?? false),
             ]);
             $report->save();
+
+            $report->update([
+                'title' => 'Laporan '.$report->getKey(),
+                'slug' => 'laporan-'.$report->getKey(),
+            ]);
 
             if ($report->is_active) {
                 SustainabilityReport::query()
@@ -52,24 +46,5 @@ class UpsertReport
 
             return $report->refresh();
         });
-    }
-
-    private function uniqueSlug(string $slug, mixed $ignoreId = null): string
-    {
-        $base = Str::slug($slug) !== '' ? Str::slug($slug) : 'laporan';
-        $candidate = $base;
-        $suffix = 2;
-
-        while (
-            SustainabilityReport::query()
-                ->where('slug', $candidate)
-                ->when($ignoreId !== null, fn ($query) => $query->where('id', '!=', $ignoreId))
-                ->exists()
-        ) {
-            $candidate = $base.'-'.$suffix;
-            $suffix++;
-        }
-
-        return $candidate;
     }
 }

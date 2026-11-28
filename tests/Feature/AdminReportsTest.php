@@ -421,8 +421,8 @@ it('creates a report through the calculator action and persists items with total
 
     $this->assertDatabaseHas('sustainability_reports', [
         'id' => $report->id,
-        'title' => 'Jejak Karbon Batik Tulis',
-        'slug' => 'jejak-karbon-batik-tulis',
+        'title' => 'Laporan '.$report->id,
+        'slug' => 'laporan-'.$report->id,
     ]);
 
     SustainabilityReportItem::query()->create([
@@ -447,7 +447,7 @@ it('creates a report through the calculator action and persists items with total
     expect((float) $report->refresh()->total_emission)->toBe(12.5);
 
     // The stored report renders on its detail page.
-    $this->get(route('admin.reports.show', $report))->assertOk()->assertSee('Jejak Karbon Batik Tulis', false);
+    $this->get(route('admin.reports.show', $report))->assertOk()->assertSee('Laporan '.$report->id, false);
 });
 
 it('makes the newest calculated report the only active report', function (): void {
